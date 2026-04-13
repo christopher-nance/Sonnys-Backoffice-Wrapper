@@ -274,7 +274,8 @@ Employee ID is extracted from any `/employee/(edit|permissions|compensation)/<id
 - **Minimal POST does NOT apply the template.** `POST /employee/permissions/update` with only `{employeeId, templateId, hasActionApprovalAuthority}` returns HTTP 302 → `/employee`, but the employee's Access column stays at "None".
 - **Full-matrix POST works.** Browser-driven save (Write 2b) with all 34 `permissions[N][id|label|description]` entries plus `permissions[22][hasGrantAccess]=1` (General User grants only permission 22 = Time Clock) successfully set the Access column to "General User".
 - **Template data source:** `<option data-permissions-set="..." data-manager-override-permissions-set="...">` on the `templateId` select. Comma-separated lists of permission IDs. The `employeePermissionEdit.js` handles the dropdown change event and reads these attributes to toggle checkboxes client-side. No AJAX call involved.
-- **WashU POS template defaults** (recorded for reference):
+- **IMPORTANT: templates are tenant-specific.** Only Manager, Cashier, and General User are guaranteed to exist on every Sonny's subdomain. The other templates listed below are WashU-specific — do not assume they exist on other tenants.
+- **WashU POS template defaults** (recorded for reference, tenant-specific):
   - Manager (1): grants all 34
   - Cashier (2): grants 2-34, overrides 2,3,4,6,7,8,9,24,28-34
   - General User (3): grants 22 only

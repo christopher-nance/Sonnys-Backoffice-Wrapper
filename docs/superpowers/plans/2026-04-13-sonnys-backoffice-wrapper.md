@@ -5002,6 +5002,8 @@ def build_employee_step2_permissions_payload(
 
 **Important:** the permission schema is cached per-client but is extracted from an *existing employee's* permissions page. If the tenant has zero employees, the wrapper cannot populate the schema. For Milestone 1, assume at least one employee exists on the tenant (true for the bot user at minimum).
 
+**Templates are tenant-specific.** Only **Manager**, **Cashier**, and **General User** are guaranteed to exist on every Sonny's subdomain. Other templates (Shift Leader, CSA, General Manager, Assistant Manager, etc.) are customized per tenant and may be absent or have different grant sets on different subdomains. The wrapper must **never hardcode template IDs or grant lists** — always parse them from the tenant's own `/employee/permissions/<id>` page. The "unknown name fallback to General User" rule is safe because General User is universal.
+
 ### Delta D-5.3 (Task 5.3: `create_employee` orchestrator)
 
 Before building the step-1 payload, the orchestrator must resolve the wage site:
