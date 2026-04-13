@@ -1,0 +1,14 @@
+{
+  "method": "POST",
+  "url": "https://washu.sonnyscontrols.com/employee/update",
+  "fields": [
+    {
+      "name": "employee[id]",
+      "value": "484"
+    },
+    {
+      "name": "employee[isActive]",
+      "value": "0"
+    }
+  ]
+}

@@ -4940,18 +4940,41 @@ def find_employee_in_list_html(
 
 **Known limitation:** the visible list columns may not include email. If email lookup fails via the list scan, the wrapper falls back to iterating the list and fetching each `/employee/edit/<id>` to check the email field server-side — that's too slow for production and is deferred. For Milestone 1, **document that email lookup on `disable_employee` requires the email to appear in the employee list's visible columns**. If the caller has only an email and it's not in the list, they get `NotFoundError` with a hint to use `pos_user_id` instead. (Alternatively, a server-side search param `/employee?search=...` may exist — test during Task 1.4.)
 
-### Delta D-6.2 (Task 6.2: `disable_employee`)
+### Delta D-6.2 (Task 6.2: `disable_employee`) — UPDATED after Phase 1.4 write testing
 
-The disable endpoint is NOT `/employee/<id>/disable`. Replace the implementation body:
+**Finding from Phase 1.4 Write 1.5 test:** the minimal-POST approach does NOT work. Sending `{employee[id]=X, employee[isActive]=0}` to `/employee/update` returns HTTP 302 but does NOT actually disable the employee. Symfony's form binding reads the *presence* of `employee[isActive]` in the POST as "checked = true", regardless of the value (`"0"` or `"1"`). To uncheck a checkbox via the wire, the field must be **absent** from the POST entirely.
+
+Additionally, a POST containing only `employee[id]` without the other form fields also fails to update anything — the form is effectively ignored.
+
+**The only reliable disable mechanism is a full form round-trip:**
+
+1. `GET /employee/edit/<id>` — load the full edit form HTML
+2. Parse every input/select/textarea inside `<form action="/employee/update">` into a payload dict, preserving all current values
+3. **OMIT** `employee[isActive]` from the payload (this is the "flip to unchecked" action)
+4. Preserve all other checkboxes based on their current `checked` state — include them only if they were checked
+5. `POST /employee/update` with the full payload
+
+Replacement implementation:
 
 ```python
+from datetime import datetime, timezone
+from typing import Any
+
+import re
+from bs4 import BeautifulSoup
+
+from .exceptions import BackofficeServerError, NotFoundError
+from .models import DisableEmployeeRequest, EmployeeDisabled
+
+
 def disable_employee(
     *,
     session: Any,
     request: DisableEmployeeRequest,
 ) -> EmployeeDisabled:
-    # Step 1: look up employee_id
-    list_resp = session.get("/employee")
+    # Step 1: look up employee_id via the employee list (pre-flight cache not
+    # applicable here since we want a fresh snapshot)
+    list_resp = session.get("/employee?limit=10000")
     _check_create_response(list_resp)
     employee_id = find_employee_in_list_html(
         list_resp.text,
@@ -4959,26 +4982,27 @@ def disable_employee(
         email=request.email,
     )
 
-    # Step 2: try a minimal POST first
-    minimal_payload = {
-        "employee[id]": str(employee_id),
-        "employee[isActive]": "0",
-    }
-    resp = session.post("/employee/update", data=minimal_payload)
+    # Step 2: GET the edit form and parse it into a payload dict
+    edit_resp = session.get(f"/employee/edit/{employee_id}")
+    _check_create_response(edit_resp)
+    payload = _parse_edit_form_into_payload(edit_resp.text, drop_fields={"employee[isActive]"})
+
+    # Ensure the employee id is in the payload
+    payload.setdefault("employee[id]", str(employee_id))
+
+    # Step 3: POST the full payload with isActive omitted
+    resp = session.post("/employee/update", data=payload, allow_redirects=False)
     _check_create_response(resp)
 
-    # Step 3: sanity check — re-fetch the edit page and confirm isActive=0 and
-    # that the employee's first_name/last_name are still populated (minimal-POST
-    # did not wipe other fields). If the sanity check fails, fall back to a
-    # full round-trip (GET /employee/edit/<id>, parse every field, flip isActive,
-    # POST back). The full-roundtrip fallback is NOT implemented in the initial
-    # cut — it's a follow-up if Task 1.4 testing proves minimal POST is unsafe.
+    # Step 4: verify the disable took effect
     verify_resp = session.get(f"/employee/edit/{employee_id}")
-    if '"employee[isActive]"' in verify_resp.text and 'value="1"' in verify_resp.text:
+    soup = BeautifulSoup(verify_resp.text, "html.parser")
+    active_input = soup.find("input", attrs={"name": "employee[isActive]"})
+    still_active = active_input is not None and active_input.has_attr("checked")
+    if still_active:
         raise BackofficeServerError(
             f"disable POST accepted but employee {employee_id} is still active — "
-            "minimal-POST approach is not working on this tenant; "
-            "implement the full-round-trip fallback"
+            "full-form round-trip did not take effect"
         )
 
     return EmployeeDisabled(
@@ -4987,7 +5011,77 @@ def disable_employee(
         email=request.email,
         disabled_at=datetime.now(timezone.utc),
     )
+
+
+def _parse_edit_form_into_payload(
+    html: str,
+    *,
+    drop_fields: set[str],
+) -> list[tuple[str, str]]:
+    """Parse an /employee/edit/<id> form into a list of (name, value) tuples
+    suitable for a requests POST.
+
+    - Text/hidden/number/email/tel/password fields are always included with their
+      current value (empty string if no value).
+    - Checkboxes are included (with their `value` attribute as the posted value)
+      only if they are currently checked.
+    - Radios are included only if currently checked.
+    - Select single: include the selected option's value; skip if placeholder is selected.
+    - Select multiple: include each selected option as a separate entry.
+    - Textareas are included with their current text content.
+    - Fields in `drop_fields` are always excluded (used to uncheck a checkbox by omission).
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    form = soup.find("form", action=re.compile(r"/employee/update"))
+    if form is None:
+        raise BackofficeServerError("could not locate /employee/update form on edit page")
+
+    out: list[tuple[str, str]] = []
+    for el in form.find_all(["input", "select", "textarea"]):
+        name = el.get("name")
+        if not name or name in drop_fields:
+            continue
+        if el.name == "input":
+            t = (el.get("type") or "text").lower()
+            if t in ("text", "hidden", "number", "email", "tel", "password", "search", "url", "date", "time"):
+                out.append((name, el.get("value") or ""))
+            elif t == "checkbox":
+                if el.has_attr("checked"):
+                    out.append((name, el.get("value") or "on"))
+                # otherwise omit
+            elif t == "radio":
+                if el.has_attr("checked"):
+                    out.append((name, el.get("value") or ""))
+            elif t in ("submit", "button", "reset"):
+                continue
+            else:
+                # unknown type — include by value for safety
+                out.append((name, el.get("value") or ""))
+        elif el.name == "select":
+            if el.has_attr("multiple"):
+                for opt in el.find_all("option"):
+                    if opt.has_attr("selected"):
+                        out.append((name, opt.get("value") or ""))
+            else:
+                sel_opt = next((o for o in el.find_all("option") if o.has_attr("selected")), None)
+                if sel_opt is None:
+                    # Default: first non-empty option if the form had no explicit selection
+                    sel_opt = next((o for o in el.find_all("option") if (o.get("value") or "").strip()), None)
+                if sel_opt is not None:
+                    out.append((name, sel_opt.get("value") or ""))
+        elif el.name == "textarea":
+            out.append((name, el.get_text()))
+    return out
 ```
+
+**Important note about disabled hidden inputs:** the site availability markup contains hidden `<input type="hidden" name="employee[sites][N][siteId]" disabled value="N">` for sites that are NOT available to the employee. `_parse_edit_form_into_payload` must NOT include fields with the `disabled` attribute, because browsers do not submit disabled fields. Add this check:
+
+```python
+        if el.get("disabled") is not None:
+            continue  # disabled inputs are not submitted by real browsers
+```
+
+...at the top of the element loop, right after the `drop_fields` check.
 
 ### Delta D-7.1 (Task 7.1: BO user creation)
 

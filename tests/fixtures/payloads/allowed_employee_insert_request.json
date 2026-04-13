@@ -1,0 +1,222 @@
+{
+  "method": "POST",
+  "url": "https://washu.sonnyscontrols.com/employee/insert",
+  "fields": [
+    {
+      "name": "employee[firstName]",
+      "value": "WrapperExplore"
+    },
+    {
+      "name": "employee[lastName]",
+      "value": "DeleteMe-A3F9"
+    },
+    {
+      "name": "employee[phone]",
+      "value": "5555550001"
+    },
+    {
+      "name": "employee[email]",
+      "value": "wrapper-explore-A3F9@example.invalid"
+    },
+    {
+      "name": "employee[startDate]",
+      "value": "04/13/2026"
+    },
+    {
+      "name": "posCredential[POSLoginID]",
+      "value": "99001"
+    },
+    {
+      "name": "posCredential[POSLoginPassword]",
+      "value": "99999"
+    },
+    {
+      "name": "wage[isHourly]",
+      "value": "1"
+    },
+    {
+      "name": "wage[regularRate]",
+      "value": "1.00"
+    },
+    {
+      "name": "wage[overtimeRate]",
+      "value": "1.50"
+    },
+    {
+      "name": "wage[isOvertimeEligible]",
+      "value": "1"
+    },
+    {
+      "name": "wage[siteId]",
+      "value": "17"
+    },
+    {
+      "name": "employee[departments][]",
+      "value": "3"
+    },
+    {
+      "name": "employee[isAllRegionsAllowed]",
+      "value": "0"
+    },
+    {
+      "name": "employee[disabledRegions][]",
+      "value": "2"
+    },
+    {
+      "name": "employee[disabledDistricts][]",
+      "value": "2"
+    },
+    {
+      "name": "employee[sites][1][isAvailable]",
+      "value": "0"
+    },
+    {
+      "name": "employee[sites][1][siteId]",
+      "value": "1"
+    },
+    {
+      "name": "employee[sites][2][isAvailable]",
+      "value": "0"
+    },
+    {
+      "name": "employee[sites][2][siteId]",
+      "value": "2"
+    },
+    {
+      "name": "employee[sites][4][isAvailable]",
+      "value": "0"
+    },
+    {
+      "name": "employee[sites][4][siteId]",
+      "value": "4"
+    },
+    {
+      "name": "employee[sites][5][isAvailable]",
+      "value": "0"
+    },
+    {
+      "name": "employee[sites][5][siteId]",
+      "value": "5"
+    },
+    {
+      "name": "employee[sites][6][isAvailable]",
+      "value": "0"
+    },
+    {
+      "name": "employee[sites][6][siteId]",
+      "value": "6"
+    },
+    {
+      "name": "employee[sites][7][isAvailable]",
+      "value": "0"
+    },
+    {
+      "name": "employee[sites][7][siteId]",
+      "value": "7"
+    },
+    {
+      "name": "employee[sites][8][isAvailable]",
+      "value": "0"
+    },
+    {
+      "name": "employee[sites][8][siteId]",
+      "value": "8"
+    },
+    {
+      "name": "employee[sites][9][isAvailable]",
+      "value": "0"
+    },
+    {
+      "name": "employee[sites][9][siteId]",
+      "value": "9"
+    },
+    {
+      "name": "employee[sites][10][isAvailable]",
+      "value": "0"
+    },
+    {
+      "name": "employee[sites][10][siteId]",
+      "value": "10"
+    },
+    {
+      "name": "employee[sites][11][isAvailable]",
+      "value": "0"
+    },
+    {
+      "name": "employee[sites][11][siteId]",
+      "value": "11"
+    },
+    {
+      "name": "employee[sites][12][isAvailable]",
+      "value": "0"
+    },
+    {
+      "name": "employee[sites][12][siteId]",
+      "value": "12"
+    },
+    {
+      "name": "employee[sites][13][isAvailable]",
+      "value": "0"
+    },
+    {
+      "name": "employee[sites][13][siteId]",
+      "value": "13"
+    },
+    {
+      "name": "employee[sites][14][isAvailable]",
+      "value": "0"
+    },
+    {
+      "name": "employee[sites][14][siteId]",
+      "value": "14"
+    },
+    {
+      "name": "employee[sites][15][isAvailable]",
+      "value": "0"
+    },
+    {
+      "name": "employee[sites][15][siteId]",
+      "value": "15"
+    },
+    {
+      "name": "employee[sites][16][isAvailable]",
+      "value": "0"
+    },
+    {
+      "name": "employee[sites][16][siteId]",
+      "value": "16"
+    },
+    {
+      "name": "employee[sites][17][isAvailable]",
+      "value": "1"
+    },
+    {
+      "name": "employee[sites][17][siteId]",
+      "value": "17"
+    },
+    {
+      "name": "employee[sites][18][isAvailable]",
+      "value": "1"
+    },
+    {
+      "name": "employee[sites][18][siteId]",
+      "value": "18"
+    },
+    {
+      "name": "employee[sites][19][isAvailable]",
+      "value": "1"
+    },
+    {
+      "name": "employee[sites][19][siteId]",
+      "value": "19"
+    },
+    {
+      "name": "employee[sites][20][isAvailable]",
+      "value": "0"
+    },
+    {
+      "name": "employee[sites][20][siteId]",
+      "value": "20"
+    }
+  ]
+}

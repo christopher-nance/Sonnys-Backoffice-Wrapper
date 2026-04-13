@@ -233,10 +233,46 @@ Employee-create pre-flight uniqueness checking uses two HTTP sources to cover al
 
 Employee ID is extracted from any `/employee/(edit|permissions|compensation)/<id>` href in the row (the rows don't have `data-employee-id` attributes).
 
+## Phase 1.4 write-test findings (append as they complete)
+
+### Write 1 (create employee 484)
+
+- `POST /employee/insert` successful → HTTP 302 → `/employee/permissions/<new_id>`.
+- Response body was an HTML redirect shell (~346 bytes); new `employee_id` is extracted from the `Location` header.
+- **BUG in my first-cut site availability payload.** I sent `employee[sites][N][isAvailable]` AND `employee[sites][N][siteId]` for every site, expecting `isAvailable=1/0` to control availability. Result: the employee was assigned to all 19 sites. Root cause: Symfony checkbox binding uses **presence, not value** — any key present in the POST is bound as `true` regardless of its value. Simultaneously, the `isAllRegionsAllowed=0` I sent was read as `true` for the same reason.
+- **Correct site payload pattern** (matching what a real browser would send):
+  - OMIT `employee[isAllRegionsAllowed]` entirely (so it defaults to unchecked = "by region")
+  - OMIT `employee[isAllDistrictsAllowedByRegion][]` entirely
+  - OMIT `employee[isAllSitesAllowedByDistrict][<district>]` entirely
+  - SEND `employee[disabledRegions][]=<region_id>` for each region to disable (presence = disabled)
+  - SEND `employee[disabledDistricts][]=<district_id>` for each district to disable
+  - For each AVAILABLE site: send only the hidden `employee[sites][<id>][siteId]=<id>` (no isAvailable)
+  - For each NOT-AVAILABLE site: send only `employee[sites][<id>][isAvailable]=<id>` (no siteId)
+  - Never send both `siteId` and `isAvailable` for the same site
+- **Corollary:** any form builder in the wrapper that translates caller intent into a POST payload must follow the "presence = checked" rule. Sending `=0` or `=false` for a checkbox field does NOT uncheck it — the field must be absent.
+
+### Write 1.5 (minimal disable test)
+
+- **Minimal POST does NOT disable.** `POST /employee/update` with `{employee[id]=484, employee[isActive]=0}` returned HTTP 302 but the employee remained active.
+- Same Symfony checkbox presence-binding issue as Write 1: my `=0` was bound as `true`.
+- **Browser-driven full-form POST DOES disable.** Clicking the toggle off in the UI and clicking save:
+  - Sends a full form POST to `/employee/update` with all fields
+  - `employee[isActive]` is **omitted** from the payload (browser doesn't submit unchecked checkboxes)
+  - Server accepts and redirects to `/employee` (the list)
+  - All other fields preserved
+- **Implication for `disable_employee`:** the wrapper must use a full-form round-trip (GET edit page, parse all fields, POST back with isActive omitted). The minimal-POST fast path does not work. The plan's Delta D-6.2 is updated accordingly.
+
+### Side finding: employee list default filter
+
+- `GET /employee?limit=10000` by default returns only ACTIVE employees. Disabled employees do not appear.
+- Employee 99001 (now disabled) was no longer visible in the list.
+- **Implication for uniqueness pre-flight:** a disabled employee's POS ID / phone / email may not appear in the pre-flight cache. Callers attempting to reuse a disabled person's credentials may bypass the pre-flight and hit a server-side rejection. This is acceptable for Milestone 1 but worth documenting.
+- There is likely a query param or toggle to include disabled employees — not yet probed. TBD follow-up.
+
 ## Open questions (for Task 1.4 and beyond)
 
 1. Does `POST /employee/permissions/update` accept just `templateId` + `employeeId`, or does it require the full `permissions[]` matrix?
-2. Does `POST /employee/update` accept a minimal `{employee[id], employee[isActive]=0}` payload, or does it require the full form round-trip?
+2. ~~Does `POST /employee/update` accept a minimal `{employee[id], employee[isActive]=0}` payload, or does it require the full form round-trip?~~ **RESOLVED:** no. Full form round-trip is required. See "Write 1.5" findings above.
 3. What's the response shape for a successful `/employee/insert`? Is the new `employee_id` in the redirect Location, in the response body, or must we re-fetch the employee list?
 4. What's the exact URL pattern for BO user permissions — `/user/permissions/<id>` or something else?
 5. ~~Does `/employee?search=<query>` support server-side filtering for lookups, or do we always page through the full list?~~ **RESOLVED:** no server-side search. Use `?limit=<big>` instead. See "Employee list pagination" section above.
