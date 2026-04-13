@@ -101,3 +101,71 @@ class CreateEmployeeRequest(_BackofficeBaseModel):
         if self.requires_backoffice and not self.backoffice_username:
             raise ValueError("backoffice_username is required when requires_backoffice=True")
         return self
+
+
+_USERNAME_RE = re.compile(r"^[A-Za-z][\w]{2,63}$")
+
+
+class DisableEmployeeRequest(_BackofficeBaseModel):
+    pos_user_id: str | None = None
+    email: str | None = None
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def _validate_email(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        if not _EMAIL_RE.match(v.strip()):
+            raise ValueError(f"email must contain a valid @domain.tld: {v!r}")
+        return v.strip()
+
+    @model_validator(mode="after")
+    def _check_exactly_one(self) -> "DisableEmployeeRequest":
+        provided = [x for x in (self.pos_user_id, self.email) if x]
+        if len(provided) != 1:
+            raise ValueError("exactly one of pos_user_id or email is required")
+        return self
+
+
+class CreateBackofficeUserRequest(_BackofficeBaseModel):
+    username: str
+    email: str
+    password: str | None = None
+    permission: str
+    link_to_employee_pos_user_id: str | None = None
+    link_to_employee_email: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    available_sites: list[str] | Literal["all"] = "all"
+
+    @field_validator("username", mode="before")
+    @classmethod
+    def _validate_username(cls, v: str) -> str:
+        if not _USERNAME_RE.match(v):
+            raise ValueError(
+                "username must start with a letter and contain 3-64 alphanumeric characters"
+            )
+        return v
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def _validate_bo_email(cls, v: str) -> str:
+        if not _EMAIL_RE.match(v.strip()):
+            raise ValueError(f"email must contain a valid @domain.tld: {v!r}")
+        return v.strip()
+
+    @model_validator(mode="after")
+    def _check_link_or_standalone(self) -> "CreateBackofficeUserRequest":
+        has_link = bool(self.link_to_employee_pos_user_id or self.link_to_employee_email)
+        has_standalone = bool(self.first_name or self.last_name)
+        if has_link and has_standalone:
+            raise ValueError(
+                "provide either link_to_employee_* or first_name+last_name — not both"
+            )
+        if not has_link and not has_standalone:
+            raise ValueError(
+                "provide either link_to_employee_pos_user_id / link_to_employee_email or first_name+last_name"
+            )
+        if has_standalone and not (self.first_name and self.last_name):
+            raise ValueError("standalone BO user requires both first_name and last_name")
+        return self
