@@ -197,6 +197,80 @@ def test_create_employee_raises_duplicate_on_preflight_hit():
     assert session.post.call_count == 0
 
 
+def test_create_employee_with_backoffice_user_link():
+    session = MagicMock()
+    insert_resp = MagicMock()
+    insert_resp.status_code = 302
+    insert_resp.headers = {"Location": "/employee/edit/42"}
+    insert_resp.url = ""
+    insert_resp.text = ""
+    perms_resp = MagicMock()
+    perms_resp.status_code = 302
+    perms_resp.headers = {}
+    perms_resp.text = ""
+    bo_insert_resp = MagicMock()
+    bo_insert_resp.status_code = 302
+    bo_insert_resp.headers = {"Location": "/user/permissions/99?userIsNew=1"}
+    bo_insert_resp.url = ""
+    bo_insert_resp.text = ""
+    session.post.side_effect = [insert_resp, perms_resp, bo_insert_resp]
+
+    req = _valid_request(
+        requires_backoffice=True,
+        backoffice_username="janedoe",
+    )
+    bo_perms = [Permission(id=3, name="General User", scope="backoffice")]
+    result = create_employee(
+        session=session,
+        request=req,
+        site_tree=_flat_tree(),
+        departments=_depts(),
+        pos_permissions=_pos_perms(),
+        pos_permission_schema=_pos_schema(),
+        bo_permissions=bo_perms,
+    )
+    assert result.backoffice_user_id == 99
+    assert result.backoffice_username == "janedoe"
+    assert result.backoffice_password is not None
+    assert len(result.backoffice_password) == 12
+    assert session.post.call_count == 3
+    assert any("deferred to Milestone 2" in w for w in result.warnings)
+
+
+def test_create_employee_bo_path_posts_to_user_insert():
+    session = MagicMock()
+    session.post.side_effect = [
+        MagicMock(status_code=302, headers={"Location": "/employee/edit/42"}, url="", text=""),
+        MagicMock(status_code=302, headers={}, url="", text=""),
+        MagicMock(
+            status_code=302,
+            headers={"Location": "/user/permissions/99"},
+            url="",
+            text="",
+        ),
+    ]
+    req = _valid_request(
+        requires_backoffice=True,
+        backoffice_username="janedoe",
+    )
+    create_employee(
+        session=session,
+        request=req,
+        site_tree=_flat_tree(),
+        departments=_depts(),
+        pos_permissions=_pos_perms(),
+        pos_permission_schema=_pos_schema(),
+        bo_permissions=[Permission(id=3, name="General User", scope="backoffice")],
+    )
+    third_call = session.post.call_args_list[2]
+    assert third_call.args[0] == "/user/insert"
+    bo_data = third_call.kwargs["data"]
+    assert bo_data["user[username]"] == "janedoe"
+    assert bo_data["user[employeeId]"] == "42"
+    assert bo_data["employee[isOnSiteEmployee]"] == "1"
+    assert bo_data["user[password]"] == bo_data["user[confirmPassword]"]
+
+
 def test_create_employee_raises_on_already_exists_in_response_body():
     session = MagicMock()
     insert_resp = MagicMock()

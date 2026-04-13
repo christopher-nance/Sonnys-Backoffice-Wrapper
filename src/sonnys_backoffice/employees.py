@@ -315,6 +315,29 @@ def create_employee(
     resp2 = session.post("/employee/permissions/update", data=step2_payload)
     _check_create_response(resp2)
 
+    bo_user_id: int | None = None
+    bo_password: str | None = None
+    if resolved_request.requires_backoffice:
+        from .bo_users import create_linked_backoffice_user
+
+        bo_perm, bo_warnings = resolve_permission(
+            resolved_request.permission, bo_permissions or []
+        )
+        warnings_list.extend(bo_warnings)
+        bo_result = create_linked_backoffice_user(
+            session=session,
+            username=resolved_request.backoffice_username,
+            email=resolved_request.email,
+            password=resolved_request.backoffice_password,
+            linked_employee_id=employee_id,
+            permission=bo_perm,
+            site_tree=site_tree,
+            available_sites=resolved_request.available_sites,
+        )
+        bo_user_id = bo_result.user_id
+        bo_password = bo_result.password
+        warnings_list.extend(bo_result.warnings)
+
     return EmployeeCreated(
         employee_id=employee_id,
         pos_user_id=resolved_request.pos_user_id,
@@ -322,6 +345,9 @@ def create_employee(
         first_name=resolved_request.first_name,
         last_name=resolved_request.last_name,
         email=resolved_request.email,
+        backoffice_user_id=bo_user_id,
+        backoffice_username=resolved_request.backoffice_username,
+        backoffice_password=bo_password,
         permission_applied=pos_perm.name,
         sites_granted=[s.name for s in site_tree.resolve_all(resolved_request.available_sites)],
         departments=list(resolved_request.departments or []),
