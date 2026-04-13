@@ -8,12 +8,12 @@ def test_disable_requires_exactly_one_lookup_key():
     with pytest.raises(PydanticValidationError, match="exactly one"):
         DisableEmployeeRequest()
     with pytest.raises(PydanticValidationError, match="exactly one"):
-        DisableEmployeeRequest(pos_user_id="x", email="y@z.com")
+        DisableEmployeeRequest(pos_user_id=12345, email="y@z.com")
 
 
 def test_disable_accepts_pos_user_id_alone():
-    req = DisableEmployeeRequest(pos_user_id="jdoe")
-    assert req.pos_user_id == "jdoe"
+    req = DisableEmployeeRequest(pos_user_id=12345)
+    assert req.pos_user_id == 12345
     assert req.email is None
 
 

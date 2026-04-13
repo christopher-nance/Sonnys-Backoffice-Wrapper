@@ -10,6 +10,7 @@ from bs4 import BeautifulSoup
 from .exceptions import (
     BackofficeServerError,
     DuplicateError,
+    NotFoundError,
     ValidationError,
 )
 from .models import (
@@ -130,6 +131,51 @@ def build_employee_index(
         by_pos_user_id=pos_map,
         by_email=email_map,
         by_phone=phone_map,
+    )
+
+
+def find_employee_in_list_html(
+    html: str,
+    *,
+    pos_user_id: int | None = None,
+    email: str | None = None,
+) -> int:
+    """Scan /employee list HTML for a matching row, return the employee_id.
+
+    Employee IDs are extracted from the action links in the edit/permissions/
+    compensation columns. POS User ID matching scans the visible row text.
+    Email matching usually fails because emails are not in the list columns —
+    callers should use `build_employee_index` + `parse_user_create_employee_options`
+    for email lookup instead.
+    """
+    if pos_user_id is None and email is None:
+        raise ValueError("pos_user_id or email is required")
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find("table", class_="table-employees-list")
+    if table is None:
+        raise NotFoundError("employee list table not found in HTML")
+    pos_user_id_str = str(pos_user_id) if pos_user_id is not None else None
+    email_lower = email.lower() if email is not None else None
+    for row in table.find_all("tr"):
+        emp_id: int | None = None
+        for a in row.find_all("a", href=True):
+            m = _EMP_ID_RE.search(a["href"])
+            if m:
+                emp_id = int(m.group(1))
+                break
+        if emp_id is None:
+            continue
+        if pos_user_id_str is not None:
+            pos_cell = row.find("td", class_="employees-col-pos-user-id")
+            if pos_cell is not None and pos_cell.get_text(strip=True) == pos_user_id_str:
+                return emp_id
+        if email_lower is not None:
+            row_text = row.get_text(" ", strip=True).lower()
+            if email_lower in row_text:
+                return emp_id
+    raise NotFoundError(
+        f"no employee found for "
+        f"{'pos_user_id=' + str(pos_user_id) if pos_user_id is not None else 'email=' + (email or '')}"
     )
 
 

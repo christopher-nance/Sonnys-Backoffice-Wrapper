@@ -107,7 +107,7 @@ _USERNAME_RE = re.compile(r"^[A-Za-z][\w]{2,63}$")
 
 
 class DisableEmployeeRequest(_BackofficeBaseModel):
-    pos_user_id: str | None = None
+    pos_user_id: int | None = None
     email: str | None = None
 
     @field_validator("email", mode="before")
@@ -121,7 +121,7 @@ class DisableEmployeeRequest(_BackofficeBaseModel):
 
     @model_validator(mode="after")
     def _check_exactly_one(self) -> "DisableEmployeeRequest":
-        provided = [x for x in (self.pos_user_id, self.email) if x]
+        provided = [x for x in (self.pos_user_id, self.email) if x is not None]
         if len(provided) != 1:
             raise ValueError("exactly one of pos_user_id or email is required")
         return self
