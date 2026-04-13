@@ -3,10 +3,13 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from typing import Any, Mapping
 
 from bs4 import BeautifulSoup
 
 from .exceptions import DuplicateError
+from .models import CreateEmployeeRequest
+from .sites import SiteTree
 
 _EMP_ID_RE = re.compile(r"/employee/(?:edit|permissions|compensation)/(\d+)")
 _DIGITS_ONLY_RE = re.compile(r"\D")
@@ -115,3 +118,72 @@ def build_employee_index(
         by_email=email_map,
         by_phone=phone_map,
     )
+
+
+def build_employee_step1_payload(
+    request: CreateEmployeeRequest,
+    *,
+    site_tree: SiteTree,
+    departments_by_name: Mapping[str, int],
+    wage_site_id: int,
+) -> dict[str, Any]:
+    """Build the `/employee/insert` payload.
+
+    Field names are sourced from `tests/fixtures/payloads/e2e_create_employee_request.json`.
+    """
+    payload: dict[str, Any] = {
+        "employee[firstName]": request.first_name,
+        "employee[lastName]": request.last_name,
+        "employee[phone]": request.phone,
+        "employee[email]": request.email,
+        "employee[startDate]": request.start_date.strftime("%m/%d/%Y"),
+        "posCredential[POSLoginID]": str(request.pos_user_id),
+        "posCredential[POSLoginPassword]": str(request.pos_pin) if request.pos_pin is not None else "",
+        "wage[isHourly]": "1",
+        "wage[regularRate]": f"{request.wage_rate:.2f}",
+        "wage[overtimeRate]": f"{request.overtime_wage_rate:.2f}",
+        "wage[isOvertimeEligible]": "1",
+        "wage[siteId]": str(wage_site_id),
+    }
+    if request.adp_employee_id:
+        payload["employee[adpEmployeeId]"] = request.adp_employee_id
+    if request.emergency_contact_name:
+        payload["employee[emergencyContactName]"] = request.emergency_contact_name
+    if request.emergency_contact_phone:
+        payload["employee[emergencyContactPhone]"] = request.emergency_contact_phone
+
+    dept_ids: list[int] = []
+    for dept_name in request.departments or []:
+        did = departments_by_name.get(dept_name)
+        if did is not None:
+            dept_ids.append(did)
+    payload["employee[departments][]"] = dept_ids
+
+    resolved_sites = site_tree.resolve_all(request.available_sites)
+    if site_tree.is_hierarchical:
+        enabled_region_ids = {s.region_id for s in resolved_sites if s.region_id}
+        enabled_district_ids = {s.district_id for s in resolved_sites if s.district_id}
+        if request.available_sites == "all":
+            payload["employee[isAllRegionsAllowed]"] = "1"
+        else:
+            payload["employee[isAllRegionsAllowed]"] = "0"
+            payload["employee[disabledRegions][]"] = [
+                r.id for r in site_tree.regions if r.id not in enabled_region_ids
+            ]
+            payload["employee[disabledDistricts][]"] = [
+                d.id for d in site_tree.districts if d.id not in enabled_district_ids
+            ]
+            enabled_site_ids = {s.id for s in resolved_sites}
+            for s in site_tree.sites:
+                payload[f"employee[sites][{s.id}][isAvailable]"] = (
+                    "1" if s.id in enabled_site_ids else "0"
+                )
+                payload[f"employee[sites][{s.id}][siteId]"] = str(s.id)
+    else:
+        if request.available_sites == "all":
+            payload["employee[isAllSitesAllowed]"] = "1"
+        else:
+            payload["employee[isAllSitesAllowed]"] = "0"
+            payload["employee[siteIds][]"] = [s.id for s in resolved_sites]
+
+    return payload
