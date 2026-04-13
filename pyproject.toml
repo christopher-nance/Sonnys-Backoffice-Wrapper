@@ -34,6 +34,7 @@ dev = [
     "pytest-cov>=4.0",
     "ruff>=0.1",
     "playwright>=1.40",
+    "requests-mock>=1.11",
 ]
 docs = [
     "mkdocs-material>=9.5",
