@@ -269,9 +269,23 @@ Employee ID is extracted from any `/employee/(edit|permissions|compensation)/<id
 - **Implication for uniqueness pre-flight:** a disabled employee's POS ID / phone / email may not appear in the pre-flight cache. Callers attempting to reuse a disabled person's credentials may bypass the pre-flight and hit a server-side rejection. This is acceptable for Milestone 1 but worth documenting.
 - There is likely a query param or toggle to include disabled employees — not yet probed. TBD follow-up.
 
+### Write 2 (minimal permissions template POST)
+
+- **Minimal POST does NOT apply the template.** `POST /employee/permissions/update` with only `{employeeId, templateId, hasActionApprovalAuthority}` returns HTTP 302 → `/employee`, but the employee's Access column stays at "None".
+- **Full-matrix POST works.** Browser-driven save (Write 2b) with all 34 `permissions[N][id|label|description]` entries plus `permissions[22][hasGrantAccess]=1` (General User grants only permission 22 = Time Clock) successfully set the Access column to "General User".
+- **Template data source:** `<option data-permissions-set="..." data-manager-override-permissions-set="...">` on the `templateId` select. Comma-separated lists of permission IDs. The `employeePermissionEdit.js` handles the dropdown change event and reads these attributes to toggle checkboxes client-side. No AJAX call involved.
+- **WashU POS template defaults** (recorded for reference):
+  - Manager (1): grants all 34
+  - Cashier (2): grants 2-34, overrides 2,3,4,6,7,8,9,24,28-34
+  - General User (3): grants 22 only
+  - General Manager (4): grants all 34
+  - Assistant Manager (5): grants 1-34 except 28, 29
+  - Shift Leader (6): grants 20 perms, overrides 18, 33
+  - CSA (8): grants 19 perms, overrides 4, 17, 18, 30, 31, 33
+
 ## Open questions (for Task 1.4 and beyond)
 
-1. Does `POST /employee/permissions/update` accept just `templateId` + `employeeId`, or does it require the full `permissions[]` matrix?
+1. ~~Does `POST /employee/permissions/update` accept just `templateId` + `employeeId`, or does it require the full `permissions[]` matrix?~~ **RESOLVED:** requires the full matrix. Minimal POST is accepted but silently does nothing. See Write 2/2b findings above.
 2. ~~Does `POST /employee/update` accept a minimal `{employee[id], employee[isActive]=0}` payload, or does it require the full form round-trip?~~ **RESOLVED:** no. Full form round-trip is required. See "Write 1.5" findings above.
 3. What's the response shape for a successful `/employee/insert`? Is the new `employee_id` in the redirect Location, in the response body, or must we re-fetch the employee list?
 4. What's the exact URL pattern for BO user permissions — `/user/permissions/<id>` or something else?

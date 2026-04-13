@@ -1,0 +1,18 @@
+{
+  "method": "POST",
+  "url": "https://washu.sonnyscontrols.com/employee/permissions/update",
+  "fields": [
+    {
+      "name": "employeeId",
+      "value": "485"
+    },
+    {
+      "name": "templateId",
+      "value": "3"
+    },
+    {
+      "name": "hasActionApprovalAuthority",
+      "value": "0"
+    }
+  ]
+}

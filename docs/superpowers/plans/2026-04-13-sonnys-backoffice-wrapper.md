@@ -4872,31 +4872,135 @@ def build_employee_step1_payload(
 
 The test file must pass a `wage_site_id` fixture value and set `pos_user_id` and `pos_pin` as ints.
 
-### Delta D-5.2 (Task 5.2: `build_employee_step2_permissions_payload`)
+### Delta D-5.2 (Task 5.2: `build_employee_step2_permissions_payload`) — UPDATED after Phase 1.4 Write 2/2b
 
-Replace entirely:
+**Finding from Phase 1.4 Write 2 and 2b:** the minimal payload approach (`templateId` + `employeeId` + `hasActionApprovalAuthority` only) is **accepted by the server** (HTTP 302) **but has no effect** — the employee's Access column stays at "None". The server requires the **full `permissions[N]` matrix** to be submitted, where N is every permission ID in the tenant's system (typically 1-34).
+
+**Where the template data lives:** `<option>` elements in the `templateId` `<select>` on `/employee/permissions/<id>` carry `data-permissions-set` and `data-manager-override-permissions-set` attributes containing comma-separated lists of permission IDs. The wrapper parses these at runtime; no hardcoded template mapping needed.
+
+**Required payload structure:**
+
+```
+employeeId=<new_id>
+templateId=<N>
+hasActionApprovalAuthority=0  (or 1)
+permissions[1][id]=1
+permissions[1][label]=<from form>
+permissions[1][description]=<from form>
+# permissions[1][hasGrantAccess]=1   only if 1 is in the template's grants set
+# permissions[1][requiresOverride]=1 only if 1 is in the template's overrides set
+permissions[2][id]=2
+permissions[2][label]=...
+# ... repeat for every permission in the tenant's system ...
+```
+
+Every permission in the tenant's system must appear in the POST with its `id`, `label`, and `description` fields (these are static metadata). Only the permissions granted by the template have `hasGrantAccess=1` added. Only permissions requiring override have `requiresOverride=1`. Omit both flags to leave them unchecked — **do not send `=0`, that gets bound as true by Symfony's presence-is-boolean rule**.
+
+**Revised data model.** `Permission` in `models.py` needs to carry the template's grant/override sets:
+
+```python
+class Permission(_BackofficeBaseModel):
+    id: int
+    name: str                        # e.g. "General User"
+    scope: Literal["pos", "backoffice"]
+    grants: frozenset[int] = Field(default_factory=frozenset)   # permission IDs this template grants
+    overrides: frozenset[int] = Field(default_factory=frozenset)  # permission IDs this template requires-override for
+```
+
+**New domain type** `PermissionFieldMeta` representing static permission metadata from the form:
+
+```python
+class PermissionFieldMeta(_BackofficeBaseModel):
+    id: int
+    label: str
+    description: str
+```
+
+**Updated `parse_permissions` signature** — now returns both the template list AND the permission metadata schema from the same page:
+
+```python
+def parse_permissions_and_schema(
+    html: str,
+    *,
+    scope: Literal["pos", "backoffice"],
+) -> tuple[list[Permission], list[PermissionFieldMeta]]:
+    """Parse /employee/permissions/<id> into a template list and a permission schema."""
+    soup = BeautifulSoup(html, "html.parser")
+    # Templates from the templateId select
+    templates: list[Permission] = []
+    sel = soup.find("select", attrs={"name": "templateId"})
+    if sel is not None:
+        for opt in sel.find_all("option"):
+            val = (opt.get("value") or "").strip()
+            if not val:
+                continue
+            try:
+                tid = int(val)
+            except ValueError:
+                continue
+            grants_raw = opt.get("data-permissions-set", "") or ""
+            overrides_raw = opt.get("data-manager-override-permissions-set", "") or ""
+            grants = frozenset(int(x) for x in grants_raw.split(",") if x.strip().isdigit())
+            overrides = frozenset(int(x) for x in overrides_raw.split(",") if x.strip().isdigit())
+            templates.append(
+                Permission(
+                    id=tid,
+                    name=opt.get_text(strip=True),
+                    scope=scope,
+                    grants=grants,
+                    overrides=overrides,
+                )
+            )
+
+    # Schema — one entry per unique permission id found in the form
+    schema: dict[int, PermissionFieldMeta] = {}
+    for inp in soup.find_all("input", attrs={"name": re.compile(r"permissions\[\d+\]\[id\]")}):
+        m = re.match(r"permissions\[(\d+)\]\[id\]", inp.get("name", ""))
+        if not m:
+            continue
+        pid = int(m.group(1))
+        if pid in schema:
+            continue  # first occurrence wins
+        # Find the corresponding label/description inputs
+        label_inp = soup.find("input", attrs={"name": f"permissions[{pid}][label]"})
+        desc_inp = soup.find("input", attrs={"name": f"permissions[{pid}][description]"})
+        schema[pid] = PermissionFieldMeta(
+            id=pid,
+            label=(label_inp.get("value") or "") if label_inp else "",
+            description=(desc_inp.get("value") or "") if desc_inp else "",
+        )
+    return templates, [schema[k] for k in sorted(schema.keys())]
+```
+
+**Updated `build_employee_step2_permissions_payload`:**
 
 ```python
 def build_employee_step2_permissions_payload(
     *,
-    permission: Permission,
+    permission: Permission,             # the selected template, with grants/overrides populated
+    permission_schema: list[PermissionFieldMeta],  # all permissions in the tenant's system
     employee_id: int,
     has_action_approval_authority: bool = False,
-) -> dict[str, Any]:
-    """Minimal permissions POST — sets the templateId and lets the server apply defaults."""
-    return {
-        "employeeId": str(employee_id),
-        "templateId": str(permission.id),
-        "hasActionApprovalAuthority": "1" if has_action_approval_authority else "0",
-    }
+) -> list[tuple[str, str]]:
+    payload: list[tuple[str, str]] = [
+        ("employeeId", str(employee_id)),
+        ("templateId", str(permission.id)),
+        ("hasActionApprovalAuthority", "1" if has_action_approval_authority else "0"),
+    ]
+    for perm in permission_schema:
+        payload.append((f"permissions[{perm.id}][id]", str(perm.id)))
+        payload.append((f"permissions[{perm.id}][label]", perm.label))
+        payload.append((f"permissions[{perm.id}][description]", perm.description))
+        if perm.id in permission.grants:
+            payload.append((f"permissions[{perm.id}][hasGrantAccess]", "1"))
+        if perm.id in permission.overrides:
+            payload.append((f"permissions[{perm.id}][requiresOverride]", "1"))
+    return payload
 ```
 
-The tests must check:
-- `"templateId"` key with the role's id (integer-as-string)
-- `"employeeId"` key with the employee's id
-- `"hasActionApprovalAuthority"` key with "0" or "1"
+**Client cache update:** `SonnysBackofficeClient._pos_permissions` now stores the parsed `(templates, schema)` tuple instead of just a list. The `list_permissions(scope="pos")` method returns just the templates list to callers — the schema is an internal detail used by the form builder. `list_permissions(scope="pos")` is triggered either on first call to `create_employee` (via `_ensure_caches`) or explicitly by the caller.
 
-NO `"employee[permissionId]"` — that was a pre-exploration guess.
+**Important:** the permission schema is cached per-client but is extracted from an *existing employee's* permissions page. If the tenant has zero employees, the wrapper cannot populate the schema. For Milestone 1, assume at least one employee exists on the tenant (true for the bot user at minimum).
 
 ### Delta D-5.3 (Task 5.3: `create_employee` orchestrator)
 
