@@ -1,0 +1,17 @@
+{
+  "headers": {
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    "content-type": "application/x-www-form-urlencoded",
+    "cookie": "PHPSESSID=cddragm90n1l34k506kt9ecljk",
+    "origin": "https://washu.sonnyscontrols.com",
+    "referer": "https://washu.sonnyscontrols.com/login",
+    "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"HeadlessChrome\";v=\"145\", \"Chromium\";v=\"145\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "upgrade-insecure-requests": "1",
+    "user-agent": "SonnysBackofficeWrapper/0.1-exploration"
+  },
+  "method": "POST",
+  "post_data": "_username=SonnysWrapperTestAccount&_password=ThisIsATestAccount123%21",
+  "url": "https://washu.sonnyscontrols.com/login_check"
+}

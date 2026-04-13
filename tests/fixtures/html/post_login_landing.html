@@ -1,0 +1,3243 @@
+<!DOCTYPE html><html lang="en"><head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+                <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+                <meta name="apple-mobile-web-app-capable" content="yes">
+        
+        
+                <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5">
+        <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5">
+        <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5">
+        <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5">
+        <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5">
+        <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5">
+        <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5">
+        <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5">
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5">
+        <link rel="apple-touch-icon-precomposed" href="/apple-touch-icon-precomposed.png?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5">
+        <link rel="icon" type="image/png" href="/favicon-32x32.png?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5" sizes="32x32">
+        <link rel="icon" type="image/png" href="/android-chrome-192x192.png?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5" sizes="192x192">
+        <link rel="icon" type="image/png" href="/favicon-96x96.png?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5" sizes="96x96">
+        <link rel="icon" type="image/png" href="/favicon-16x16.png?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5" sizes="16x16">
+        <link rel="manifest" href="/manifest.json?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5">
+        <link rel="mask-icon" href="/safari-pinned-tab.svg?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5" color="#0a8137">
+        <link rel="shortcut icon" href="/favicon.ico?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5">
+        <meta name="apple-mobile-web-app-title" content="Sonny's Controls">
+        <meta name="application-name" content="Sonny's Controls">
+        <meta name="msapplication-TileColor" content="#0a8137">
+        <meta name="msapplication-TileImage" content="/mstile-144x144.png?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5">
+        <meta name="theme-color" content="#0a8137">
+        
+                <title>
+							Sonny's Controls
+			
+        </title>
+        
+        <!-- Bootstrap -->
+        <link href="/dist/css/sonnyapc.css?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5" rel="stylesheet">
+
+                                
+    <link rel="stylesheet" type="text/css" href="/css/global.css?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5">
+    <link rel="stylesheet" type="text/css" href="/css/loading-spinner.css?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5">
+    <link rel="stylesheet" type="text/css" href="/css/recalculate-plan-prices.css?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5">
+    <link rel="stylesheet" type="text/css" href="/css/addtohomescreen.css?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5">
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+    <!-- DataTables -->
+    <link rel="stylesheet" type="text/css" href="/datatables/jquery.dataTables.min.css?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5">
+        <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+        <script src="/dist/js/html5shiv.min.js?&_cb=90ffa6defae00b36deab0bed67c5cfc5"></script>
+        <script src="/dist/js/respond.min.js?&_cb=90ffa6defae00b36deab0bed67c5cfc5"></script>
+        <![endif]-->
+
+                                <style>[data-columns]::before{display:block;visibility:hidden;position:absolute;font-size:1px;}</style></head>
+
+    <body>                 <div id="notify-old-browser">
+    <h6>You are using an outdated browser !</h6>
+    <p>Please, update your browser for better experience and a correctly displayed website
+        <a id="btnUpdateBrowser" href="https://bestvpn.org/outdatedbrowser/"> Update Browser </a>
+    </p>
+    <p class="last"><a href="#" id="closeNotificationBtn" title="Close Notification">×</a></p>
+</div>
+                
+                    <header class="sonny-navbar hidden-print">
+        <nav class="sonny-navbar-menu sonny-menu" role="navigation">
+            <ul id="sonny-navbar-menu-left">
+                <li id="mobile-menu-toggle">
+                    <a href="#main-menu-collapse" id="btn-mobile-menu-toggle" class="sonny-nav btn-menu-toggle" data-toggle="collapse" aria-expanded="false"><i class="open-menu fa fa-bars"></i><i class="close-menu fa fa-times"></i><span class="sr-only">Toggle Main Menu</span></a>
+                </li>
+                <li id="sidebar-toggle">
+                    <a href="#" id="btn-sidebar-toggle" class="sonny-nav btn-menu-toggle"><i class="open-menu fa fa-bars"></i><i class="close-menu fa fa-times"></i><span class="sr-only">Toggle Main Menu</span></a>
+                </li>
+                <li>
+                    <a id="btn-navbar-logo" href="/">
+                        <img id="logo" src="/dist/img/nav-logo.svg?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5" alt="Sonny's Controls logo"></a>
+                </li>
+            </ul>
+
+            <ul id="sonny-navbar-menu-right">
+                <li>
+                    <a class="sonny-nav install-button" style="display: none;">
+                        <i class="fa fa-arrow-alt-circle-down text-success"></i>
+                        <span class="nav-label">Install</span>
+                    </a>
+                </li>
+                                                
+                <li>
+                    <a href="https://www.sonnysdirect.com/sonnysdirect/en/tech_support" class="sonny-nav" target="_blank"><i class="sonnys-icon sonnys-icon-drop text-info"></i><span class="nav-label">Open a Ticket</span></a>
+                </li>
+                <li>
+                    <a href="https://sonnysdirect.com/lrn_car_wash_college" class="sonny-nav" target="_blank"><i class="fa fa-graduation-cap text-info"></i><span class="nav-label">CarWash College</span></a>
+                </li>
+                <li>
+                    <a href="https://sonnysdirect.com/tech_support" class="sonny-nav" target="_blank"><i class="fa fa-question-circle text-success"></i><span class="nav-label">Help Desk</span></a>
+                </li>
+                <li class="sonny-navbar-dropdown">
+                    <a id="btn-user-menu-dropdown" class="sonny-nav" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><i class="fa fa-user text-warning"></i><span class="nav-label">Sonnys Backoffice Wrapper<i class="fa fa-caret-down fa-spacer-left"></i></span></a>
+                    <ul class="sub-menu">
+                        <li><a href="/logout" class="sonny-nav"><i class="fa fa-caret-right fa-spacer-right"></i>Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    
+
+
+
+<div class="container-sidebar">
+    <div id="main-menu-collapse" class="collapse">
+        <nav id="main-menu" class="sonny-menu" role="navigation">
+            <ul>
+                                                                <li id="li-link-dashboard">
+                    <a class="sonny-nav" href="/" id="a-link-sidebar-dropdown-dashboard">
+                <div class="css-table">
+                                            <div class="css-table-cell">
+                            <i class="fa fa-tachometer-alt fa-fw"></i>
+                        </div>
+                                                            <div class="css-table-cell css-table-max-cell">
+                        Dashboard
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                                                                    <li id="li-link-search">
+                    <a class="sonny-nav" href="/search" id="a-link-sidebar-dropdown-search">
+                <div class="css-table">
+                                            <div class="css-table-cell">
+                            <i class="fa fa-search fa-fw"></i>
+                        </div>
+                                                            <div class="css-table-cell css-table-max-cell">
+                        Search
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                                                                                    <li id="li-link-sidebar-dropdown-reports-super-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-reports-super-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-reports-super-category" aria-controls="sidebar-dropdown-reports-super-category">
+            <div class="css-table">
+
+                                    <div class="css-table-cell">
+                        <i class="fa fa-chart-line fa-fw"></i>
+                    </div>
+                
+                <div class="css-table-cell css-table-max-cell">
+                    Reports
+                </div>
+
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-reports-super-category" class="collapse sub-menu">
+            
+                                                <li id="li-link-sidebar-dropdown-sales-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-sales-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-sales-category" aria-controls="sidebar-dropdown-sales-category">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    Sales
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-sales-category" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-sales-overview">
+                    <a class="sonny-nav" href="/heatwave/sales-overview" id="a-link-sidebar-dropdown-sales-overview">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Sales Overview
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-sales-overview-v2">
+                    <a class="sonny-nav" href="/heatwave/sales-overview-v2" id="a-link-sidebar-dropdown-sales-overview-v2">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Sales Overview V2
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-sales-detail">
+                    <a class="sonny-nav" href="/heatwave/sales-detail" id="a-link-sidebar-dropdown-sales-detail">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Sales Detail
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-line-item-sales">
+                    <a class="sonny-nav" href="/heatwave/line-item-sales" id="a-link-sidebar-dropdown-line-item-sales">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Line Item Sales
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-saf-transaction-summary">
+                    <a class="sonny-nav" href="/heatwave/saf-transaction-summary" id="a-link-sidebar-dropdown-saf-transaction-summary">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        SAF Transaction Summary
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-overview-comparison">
+                    <a class="sonny-nav" href="/heatwave/overview-comparison" id="a-link-sidebar-dropdown-overview-comparison">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Overview Comparison
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-report-special-transactions">
+                    <a class="sonny-nav" href="/heatwave/special-transactions" id="a-link-sidebar-dropdown-report-special-transactions">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Special Transactions
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-inventory">
+                    <a class="sonny-nav" href="/heatwave/inventory" id="a-link-sidebar-dropdown-inventory">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Inventory
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-report-incomplete-transactions">
+                    <a class="sonny-nav" href="/heatwave/incomplete-transactions" id="a-link-sidebar-dropdown-report-incomplete-transactions">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Incomplete Transactions
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-general-ledger">
+                    <a class="sonny-nav" href="/heatwave/general-ledger" id="a-link-sidebar-dropdown-general-ledger">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        General Ledger
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-report-general-ledger-v2-offload">
+                    <a class="sonny-nav" href="/report/general-ledger-v2" id="a-link-sidebar-dropdown-report-general-ledger-v2-offload">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        General Ledger V2
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-loyalty-audit">
+                    <a class="sonny-nav" href="/heatwave/loyalty-audit" id="a-link-sidebar-dropdown-loyalty-audit">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Loyalty Audit
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                                                <li id="li-link-sidebar-dropdown-multi-site-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-multi-site-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-multi-site-category" aria-controls="sidebar-dropdown-multi-site-category">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    Multi-Site
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-multi-site-category" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-multisite-hourly-comparison">
+                    <a class="sonny-nav" href="/heatwave/hourly-comparison" id="a-link-sidebar-dropdown-multisite-hourly-comparison">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Hourly Comparison
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-multisite-daily-comparison">
+                    <a class="sonny-nav" href="/heatwave/daily-comparison" id="a-link-sidebar-dropdown-multisite-daily-comparison">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Daily Comparison
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-multisite-monthly-comparison">
+                    <a class="sonny-nav" href="/heatwave/monthly-comparison" id="a-link-sidebar-dropdown-multisite-monthly-comparison">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Monthly Comparison
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-report-multisite-car-count-hourly-comparison">
+                    <a class="sonny-nav" href="/report/car-count-hourly-comparison" id="a-link-sidebar-dropdown-report-multisite-car-count-hourly-comparison">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Car Count Hourly Comparison
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-report-multisite-car-count-comparison">
+                    <a class="sonny-nav" href="/report/car-count-daily-comparison" id="a-link-sidebar-dropdown-report-multisite-car-count-comparison">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Car Count Daily Comparison
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                                                <li id="li-link-sidebar-dropdown-trends-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-trends-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-trends-category" aria-controls="sidebar-dropdown-trends-category">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    Trends
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-trends-category" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-hourly-car-and-redemption-count">
+                    <a class="sonny-nav" href="/heatwave/car-and-redemption-count" id="a-link-sidebar-dropdown-hourly-car-and-redemption-count">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Hourly Peak
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-service-trends">
+                    <a class="sonny-nav" href="/heatwave/service-trends" id="a-link-sidebar-dropdown-service-trends">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Service Trends
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-polish-tunnel">
+                    <a class="sonny-nav" href="/heatwave/polish-tunnel" id="a-link-sidebar-dropdown-polish-tunnel">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Polish Tunnel
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-ecommerce-cancellation-survey">
+                    <a class="sonny-nav" href="/report/ecommerce-cancellation-survey" id="a-link-sidebar-dropdown-ecommerce-cancellation-survey">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Cancellation Survey
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                                                <li id="li-link-sidebar-dropdown-promotions-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-promotions-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-promotions-category" aria-controls="sidebar-dropdown-promotions-category">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    Promotions
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-promotions-category" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-internal-wash-discounts">
+                    <a class="sonny-nav" href="/heatwave/internal-wash-discounts" id="a-link-sidebar-dropdown-internal-wash-discounts">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Internal Discounts
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-otu-redeemed-codes">
+                    <a class="sonny-nav" href="/report/otu-redeemed-codes" id="a-link-sidebar-dropdown-otu-redeemed-codes">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        OTU Redeemed Codes
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-report-external-discounts">
+                    <a class="sonny-nav" href="/heatwave/external-discounts" id="a-link-sidebar-dropdown-report-external-discounts">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        External Discounts
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-report-fundraiser">
+                    <a class="sonny-nav" href="/heatwave/fundraiser" id="a-link-sidebar-dropdown-report-fundraiser">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Fundraiser
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-report-instant-promotions">
+                    <a class="sonny-nav" href="/heatwave/instant-promotions" id="a-link-sidebar-dropdown-report-instant-promotions">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Instant Promotions
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                                                <li id="li-link-sidebar-dropdown-prepaids-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-prepaids-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-prepaids-category" aria-controls="sidebar-dropdown-prepaids-category">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    Prepaids
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-prepaids-category" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-prepaid-wash-count">
+                    <a class="sonny-nav" href="/heatwave/prepaid-wash-count" id="a-link-sidebar-dropdown-prepaid-wash-count">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Wash Redemption Count
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-prepaid-wash-stats">
+                    <a class="sonny-nav" href="/heatwave/prepaid-wash-stats" id="a-link-sidebar-dropdown-prepaid-wash-stats">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Prepaid Wash Stats
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-washbook-stats">
+                    <a class="sonny-nav" href="/heatwave/washbook-recurring-stats" id="a-link-sidebar-dropdown-washbook-stats">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Wash Book Stats
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-giftcard-liability">
+                    <a class="sonny-nav" href="/heatwave/giftcard-liability" id="a-link-sidebar-dropdown-giftcard-liability">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Gift Card Liability
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-giftcard-audit">
+                    <a class="sonny-nav" href="/heatwave/giftcard-audit" id="a-link-sidebar-dropdown-giftcard-audit">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Gift Card Audit
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-washbook-audit">
+                    <a class="sonny-nav" href="/heatwave/washbook-audit" id="a-link-sidebar-dropdown-washbook-audit">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Wash Book Audit
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-washbook-pending">
+                    <a class="sonny-nav" href="/heatwave/washbook-pending" id="a-link-sidebar-dropdown-washbook-pending">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Wash Book Pending
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-washbook-conversion">
+                    <a class="sonny-nav" href="/heatwave/washbook-conversion" id="a-link-sidebar-dropdown-washbook-conversion">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Wash Book Conversion
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-giftcard-pending">
+                    <a class="sonny-nav" href="/heatwave/giftcard-pending" id="a-link-sidebar-dropdown-giftcard-pending">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Gift Card Pending
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-prepaid-wash-liability">
+                    <a class="sonny-nav" href="/heatwave/prepaid-wash-liability" id="a-link-sidebar-dropdown-prepaid-wash-liability">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Prepaid Wash Liability
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                                                <li id="li-link-sidebar-dropdown-recurring-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-recurring-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-recurring-category" aria-controls="sidebar-dropdown-recurring-category">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    Recurring
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-recurring-category" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-recurring-cc-exp">
+                    <a class="sonny-nav" href="/heatwave/recurring-cc-exp" id="a-link-sidebar-dropdown-recurring-cc-exp">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Recurring CC Exp
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-report-recurring-churn-billing-site">
+                    <a class="sonny-nav" href="/report/v2/recurring-churn" id="a-link-sidebar-dropdown-report-recurring-churn-billing-site">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Recurring Churn
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-recurring-profitability">
+                    <a class="sonny-nav" href="/heatwave/recurring-profitability" id="a-link-sidebar-dropdown-recurring-profitability">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Recurring Profitability
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-report-recurring-sale">
+                    <a class="sonny-nav" href="/heatwave/recurring-sale" id="a-link-sidebar-dropdown-report-recurring-sale">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Recurring Purchases
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-report-recurring-sign-up-prorate">
+                    <a class="sonny-nav" href="/heatwave/recurring-sign-up-prorate" id="a-link-sidebar-dropdown-report-recurring-sign-up-prorate">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Recurring Sign up Prorate
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-recurring-tracking">
+                    <a class="sonny-nav" href="/heatwave/recurring-tracking" id="a-link-sidebar-dropdown-recurring-tracking">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Recurring Tracking
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-recurring-usage">
+                    <a class="sonny-nav" href="/report/recurring-usage/landing" id="a-link-sidebar-dropdown-recurring-usage">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Recurring Usage
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-recurring-conversion">
+                    <a class="sonny-nav" href="/heatwave/recurring-conversion" id="a-link-sidebar-dropdown-recurring-conversion">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Recurring Conversion
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-recurring-cancellation">
+                    <a class="sonny-nav" href="/heatwave/recurring-cancellation" id="a-link-sidebar-dropdown-recurring-cancellation">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Recurring Cancellation
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-current-membership-lifetime-value">
+                    <a class="sonny-nav" href="/report/membership-lifetime-value" id="a-link-sidebar-dropdown-current-membership-lifetime-value">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Average Current Membership Lifetime Value
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-current-membership-value">
+                    <a class="sonny-nav" href="/heatwave/membership-realtime-value" id="a-link-sidebar-dropdown-current-membership-value">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Current Membership Value
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-recurring-pending">
+                    <a class="sonny-nav" href="/heatwave/recurring-pending" id="a-link-sidebar-dropdown-recurring-pending">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Recurring Pending
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-recurring-billing-redemption-overview-report">
+                    <a class="sonny-nav" href="/heatwave/billing-redemption-overview" id="a-link-sidebar-dropdown-recurring-billing-redemption-overview-report">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Billing vs Redemption Overview
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-recurring-billing-redemption-detail-report">
+                    <a class="sonny-nav" href="/heatwave/billing-redemption-detail" id="a-link-sidebar-dropdown-recurring-billing-redemption-detail-report">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Billing vs Redemption Detail
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-recurring-import-tokenized-accounts-report">
+                    <a class="sonny-nav" href="/heatwave/recurring-import-tokenized-accounts" id="a-link-sidebar-dropdown-recurring-import-tokenized-accounts-report">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Recurring Import Tokenized Accounts
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-recurring-retention-discount-report">
+                    <a class="sonny-nav" href="/heatwave/recurring-retention-discount-report" id="a-link-sidebar-dropdown-recurring-retention-discount-report">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Recurring Retention Discount
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-recurring-retention-usage">
+                    <a class="sonny-nav" href="/report/recurring-retention-usage" id="a-link-sidebar-dropdown-recurring-retention-usage">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Recurring Retention Usage
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-datacap-account-update">
+                    <a class="sonny-nav" href="/report/datacap-account-update" id="a-link-sidebar-dropdown-datacap-account-update">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        DataCap Account Updater
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-dual-processing">
+                    <a class="sonny-nav" href="/report/dual-processing" id="a-link-sidebar-dropdown-dual-processing">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Dual Processing Conversion
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-recurring-last-visit">
+                    <a class="sonny-nav" href="/report/recurring-last-visit" id="a-link-sidebar-dropdown-recurring-last-visit">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Recurring Last Visit
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-recurring-member-usage">
+                    <a class="sonny-nav" href="/report/recurring-member-usage" id="a-link-sidebar-dropdown-recurring-member-usage">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Recurring Member Usage
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                                                <li id="li-link-sidebar-dropdown-house-account-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-house-account-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-house-account-category" aria-controls="sidebar-dropdown-house-account-category">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    House Account
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-house-account-category" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-house-account-overview">
+                    <a class="sonny-nav" href="/heatwave/house-account-overview" id="a-link-sidebar-dropdown-house-account-overview">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        House Account Overview
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-house-account-billing">
+                    <a class="sonny-nav" href="/heatwave/house-account-billing" id="a-link-sidebar-dropdown-house-account-billing">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        House Account Billing
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                                                <li id="li-link-sidebar-dropdown-labor-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-labor-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-labor-category" aria-controls="sidebar-dropdown-labor-category">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    Labor
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-labor-category" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-employee-labor-cost">
+                    <a class="sonny-nav" href="/heatwave/daily-labor" id="a-link-sidebar-dropdown-employee-labor-cost">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Net Daily Labor Costs
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-daily-employee-department-labor">
+                    <a class="sonny-nav" href="/heatwave/daily-department-labor" id="a-link-sidebar-dropdown-daily-employee-department-labor">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Net Daily Department Labor Costs
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-hourly-labor-cost">
+                    <a class="sonny-nav" href="/heatwave/hourly-labor" id="a-link-sidebar-dropdown-hourly-labor-cost">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Net Hourly Labor Costs
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-gross-employee-labor-cost">
+                    <a class="sonny-nav" href="/heatwave/gross-daily-labor" id="a-link-sidebar-dropdown-gross-employee-labor-cost">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Gross Daily Labor Costs
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-gross-daily-employee-department-labor">
+                    <a class="sonny-nav" href="/heatwave/gross-daily-department-labor" id="a-link-sidebar-dropdown-gross-daily-employee-department-labor">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Gross Daily Department Labor Costs
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-gross-hourly-labor-cost">
+                    <a class="sonny-nav" href="/heatwave/gross-hourly-labor" id="a-link-sidebar-dropdown-gross-hourly-labor-cost">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Gross Hourly Labor Costs
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                                                <li id="li-link-sidebar-dropdown-employee-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-employee-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-employee-category" aria-controls="sidebar-dropdown-employee-category">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    Employee
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-employee-category" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-report-employee-timesheets">
+                    <a class="sonny-nav" href="/report/employee-timesheets" id="a-link-sidebar-dropdown-report-employee-timesheets">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Employee Timesheets
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-report-commissions">
+                    <a class="sonny-nav" href="/heatwave/commissions" id="a-link-sidebar-dropdown-report-commissions">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Commissions
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-report-commissions-recurring">
+                    <a class="sonny-nav" href="/report/commissions-recurring" id="a-link-sidebar-dropdown-report-commissions-recurring">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Recurring Commissions
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                                                <li id="li-link-sidebar-dropdown-lpr-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-lpr-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-lpr-category" aria-controls="sidebar-dropdown-lpr-category">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    License Plate Recognition
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-lpr-category" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-report-new-vs-returning-vehicle">
+                    <a class="sonny-nav" href="/heatwave/new-vs-returning" id="a-link-sidebar-dropdown-report-new-vs-returning-vehicle">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        New vs. Returning Vehicles
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-recurring-retarget-report">
+                    <a class="sonny-nav" href="/heatwave/recurring-retarget" id="a-link-sidebar-dropdown-recurring-retarget-report">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Recurring Retargeting
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-report-redemption-manual-entry">
+                    <a class="sonny-nav" href="/heatwave/redemption-manual-entry" id="a-link-sidebar-dropdown-report-redemption-manual-entry">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Redemption Manual Entry
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                                                <li id="li-link-sidebar-dropdown-report-maintenance-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-report-maintenance-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-report-maintenance-category" aria-controls="sidebar-dropdown-report-maintenance-category">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    Maintenance
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-report-maintenance-category" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-report-maintenance-report">
+                    <a class="sonny-nav" href="/heatwave/maintenance" id="a-link-sidebar-dropdown-report-maintenance-report">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Maintenance Report
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-report-incidents-report">
+                    <a class="sonny-nav" href="/heatwave/incident-tracking" id="a-link-sidebar-dropdown-report-incidents-report">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Incident Report
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                                                <li id="li-link-sidebar-dropdown-tunnel-controller-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-tunnel-controller-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-tunnel-controller-category" aria-controls="sidebar-dropdown-tunnel-controller-category">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    Tunnel Controller
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-tunnel-controller-category" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-report-tunnel-exceptions">
+                    <a class="sonny-nav" href="/heatwave/tunnel-exceptions" id="a-link-sidebar-dropdown-report-tunnel-exceptions">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Unpaid Wash Report
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-report-tunnel-retract">
+                    <a class="sonny-nav" href="/report/tunnel-retract" id="a-link-sidebar-dropdown-report-tunnel-retract">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Tunnel Retract Report
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                                                <li id="li-link-sidebar-dropdown-report-smartstop-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-report-smartstop-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-report-smartstop-category" aria-controls="sidebar-dropdown-report-smartstop-category">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    SmartStop
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-report-smartstop-category" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-report-smartstop-report">
+                    <a class="sonny-nav" href="/report/smartstop" id="a-link-sidebar-dropdown-report-smartstop-report">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        SmartStop Report
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                    </ul>
+    </li>
+
+                                                                                                    <li id="li-link-sidebar-dropdown-marketing">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-marketing" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-marketing" aria-controls="sidebar-dropdown-marketing">
+            <div class="css-table">
+
+                                    <div class="css-table-cell">
+                        <i class="fa fa-bullhorn fa-fw"></i>
+                    </div>
+                
+                <div class="css-table-cell css-table-max-cell">
+                    Marketing
+                </div>
+
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-marketing" class="collapse sub-menu">
+            
+                                                <li id="li-link-sidebar-dropdown-campaigns">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-campaigns" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-campaigns" aria-controls="sidebar-dropdown-campaigns">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    Campaigns
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-campaigns" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-campaign-one-time-use-list">
+                    <a class="sonny-nav" href="/campaign/one-time-use" id="a-link-sidebar-dropdown-campaign-one-time-use-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        One-Time-Use
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-event-driven-promotion-list">
+                    <a class="sonny-nav" href="/campaign/events" id="a-link-sidebar-dropdown-event-driven-promotion-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Event Promotions
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-discount-time-based-list">
+                    <a class="sonny-nav" href="/time-based-promotion" id="a-link-sidebar-dropdown-discount-time-based-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Time Based Promotions
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-instant-discounts">
+                    <a class="sonny-nav" href="/instant-discount" id="a-link-sidebar-dropdown-instant-discounts">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Instant Promotions
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-marketing-page-action-open-list">
+                    <a class="sonny-nav" href="/marketing-page" id="a-link-sidebar-dropdown-marketing-page-action-open-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Recurring Retargeting
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-lottery">
+                    <a class="sonny-nav" href="/lottery" id="a-link-sidebar-dropdown-lottery">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Lottery Wash
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                                                <li id="li-link-sidebar-dropdown-promotions">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-promotions" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-promotions" aria-controls="sidebar-dropdown-promotions">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    Promotions
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-promotions" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-discounts">
+                    <a class="sonny-nav" href="/discount" id="a-link-sidebar-dropdown-discounts">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Discounts
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-visit-based-promotion-list">
+                    <a class="sonny-nav" href="/visit-based-promotion" id="a-link-sidebar-dropdown-visit-based-promotion-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Visit Based Promotion
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-routing-retention-discount-list">
+                    <a class="sonny-nav" href="/retention-discount" id="a-link-sidebar-dropdown-routing-retention-discount-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Retention Discount
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-fundraisers">
+                    <a class="sonny-nav" href="/fundraiser" id="a-link-sidebar-dropdown-fundraisers">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Fundraisers
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                                                <li id="li-link-sidebar-dropdown-loyalty">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-loyalty" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-loyalty" aria-controls="sidebar-dropdown-loyalty">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    Loyalty
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-loyalty" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-sps-loyalty">
+                    <a class="sonny-nav" href="/loyalty/sps" id="a-link-sidebar-dropdown-sps-loyalty">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        SPS Loyalty Points
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-loyalty-wash-action-open-list">
+                    <a class="sonny-nav" href="/loyalty-wash" id="a-link-sidebar-dropdown-loyalty-wash-action-open-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        SPS Sign Up Message
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-pos-loyalty">
+                    <a class="sonny-nav" href="/loyalty/points" id="a-link-sidebar-dropdown-pos-loyalty">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Loyalty Points
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                                                <li id="li-link-sidebar-dropdown-e-commerce-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-e-commerce-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-e-commerce-category" aria-controls="sidebar-dropdown-e-commerce-category">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    ECommerce
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-e-commerce-category" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-e-commerce-product-list">
+                    <a class="sonny-nav" href="/ecomm/product" id="a-link-sidebar-dropdown-e-commerce-product-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Product List
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-ecomm-push-notification-list">
+                    <a class="sonny-nav" href="/ecomm/push-notification/list" id="a-link-sidebar-dropdown-ecomm-push-notification-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Send Notifications
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-ecomm-display-theme">
+                    <a class="sonny-nav" href="/ecomm/theme/theme/display" id="a-link-sidebar-dropdown-ecomm-display-theme">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Theme
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-ecomm-cancellation-survey">
+                    <a class="sonny-nav" href="/ecomm/cancellation-survey" id="a-link-sidebar-dropdown-ecomm-cancellation-survey">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Cancellation Survey
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-recurring-terms-agreement">
+                    <a class="sonny-nav" href="/ecomm/terms-agreement" id="a-link-sidebar-dropdown-recurring-terms-agreement">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Recurring Terms of Agreement
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                    </ul>
+    </li>
+
+                                                                                                    <li id="li-link-sidebar-dropdown-recurring-prepaids-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-recurring-prepaids-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-recurring-prepaids-category" aria-controls="sidebar-dropdown-recurring-prepaids-category">
+            <div class="css-table">
+
+                                    <div class="css-table-cell">
+                        <i class="fa fa-sync-alt fa-fw"></i>
+                    </div>
+                
+                <div class="css-table-cell css-table-max-cell">
+                    Recurring/Prepaids
+                </div>
+
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-recurring-prepaids-category" class="collapse sub-menu">
+            
+                                                <li id="li-link-sidebar-dropdown-washbook-recurring-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-washbook-recurring-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-washbook-recurring-category" aria-controls="sidebar-dropdown-washbook-recurring-category">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    Recurring
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-washbook-recurring-category" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-washbooks-recurring">
+                    <a class="sonny-nav" href="/recurring/monthly" id="a-link-sidebar-dropdown-washbooks-recurring">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Monthly Plans
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-washbooks-annual-recurring">
+                    <a class="sonny-nav" href="/recurring/annual" id="a-link-sidebar-dropdown-washbooks-annual-recurring">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Annual Plans
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-washbooks-recurring-declined-list">
+                    <a class="sonny-nav" href="/washbook/account/declines" id="a-link-sidebar-dropdown-washbooks-recurring-declined-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Declines
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                                                <li id="li-link-sidebar-dropdown-prepaids">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-prepaids" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-prepaids" aria-controls="sidebar-dropdown-prepaids">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    Prepaids
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-prepaids" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-giftcards">
+                    <a class="sonny-nav" href="/giftcard" id="a-link-sidebar-dropdown-giftcards">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Gift Cards
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-washbooks-single">
+                    <a class="sonny-nav" href="/washbook" id="a-link-sidebar-dropdown-washbooks-single">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Wash Books
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-washes">
+                    <a class="sonny-nav" href="/prepaid-wash" id="a-link-sidebar-dropdown-washes">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Washes
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                    </ul>
+    </li>
+
+                                                                                                    <li id="li-link-sidebar-dropdown-product-management">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-product-management" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-product-management" aria-controls="sidebar-dropdown-product-management">
+            <div class="css-table">
+
+                                    <div class="css-table-cell">
+                        <i class="fa fa-list fa-fw"></i>
+                    </div>
+                
+                <div class="css-table-cell css-table-max-cell">
+                    Product
+                </div>
+
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-product-management" class="collapse sub-menu">
+            
+                                                <li id="li-link-sidebar-dropdown-wash-management">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-wash-management" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-wash-management" aria-controls="sidebar-dropdown-wash-management">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    Wash Management
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-wash-management" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-washes">
+                    <a class="sonny-nav" href="/wash" id="a-link-sidebar-dropdown-washes">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Washes
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-services">
+                    <a class="sonny-nav" href="/service" id="a-link-sidebar-dropdown-services">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Services
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-washbooks">
+                    <a class="sonny-nav" href="/detail" id="a-link-sidebar-dropdown-washbooks">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Details
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                                                <li id="li-link-sidebar-dropdown-item-management">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-item-management" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-item-management" aria-controls="sidebar-dropdown-item-management">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    Item Management
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-item-management" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-merchandise">
+                    <a class="sonny-nav" href="/merchandise" id="a-link-sidebar-dropdown-merchandise">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Merchandise
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                    </ul>
+    </li>
+
+                                                                                                    <li id="li-link-sidebar-dropdown-visitors-list">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-visitors-list" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-visitors-list" aria-controls="sidebar-dropdown-visitors-list">
+            <div class="css-table">
+
+                                    <div class="css-table-cell">
+                        <i class="fa fa-car fa-fw"></i>
+                    </div>
+                
+                <div class="css-table-cell css-table-max-cell">
+                    Visitors
+                </div>
+
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-visitors-list" class="collapse sub-menu">
+                                <li id="li-link-customers">
+                    <a class="sonny-nav" href="/customer/start" id="a-link-sidebar-dropdown-customers">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Customers
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-vehicles-list">
+                    <a class="sonny-nav" href="/vehicle" id="a-link-sidebar-dropdown-vehicles-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Vehicles
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-vehicles-banned-list">
+                    <a class="sonny-nav" href="/vehicle-blacklist" id="a-link-sidebar-dropdown-vehicles-banned-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        LPR Blacklist
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-vehicle-lpr-alias-list">
+                    <a class="sonny-nav" href="/vehicle-lpr-alias" id="a-link-sidebar-dropdown-vehicle-lpr-alias-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        LPR Alias
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-house-account-list">
+                    <a class="sonny-nav" href="/house-account" id="a-link-sidebar-dropdown-house-account-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        House Accounts
+                    </div>
+                </div>
+            </a>
+            </li>
+
+            
+                    </ul>
+    </li>
+
+                                                                                                    <li id="li-link-sidebar-dropdown-employee-management">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-employee-management" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-employee-management" aria-controls="sidebar-dropdown-employee-management">
+            <div class="css-table">
+
+                                    <div class="css-table-cell">
+                        <i class="fa fa-users fa-fw"></i>
+                    </div>
+                
+                <div class="css-table-cell css-table-max-cell">
+                    Employees
+                </div>
+
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-employee-management" class="collapse sub-menu">
+                                <li id="li-link-employees">
+                    <a class="sonny-nav" href="/employee" id="a-link-sidebar-dropdown-employees">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        List
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-backoffice-users-list">
+                    <a class="sonny-nav" href="/user" id="a-link-sidebar-dropdown-backoffice-users-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Back Office Users
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-user-call-center">
+                    <a class="sonny-nav" href="/call-center" id="a-link-sidebar-dropdown-user-call-center">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Call Center Users
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-employee-barcodes">
+                    <a class="sonny-nav" href="/employee/barcode" id="a-link-sidebar-dropdown-employee-barcodes">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Employee Barcodes
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-employee-commission-barcode-list">
+                    <a class="sonny-nav" href="/employee/commission/barcode" id="a-link-sidebar-dropdown-employee-commission-barcode-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Commission Barcodes
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-employee-departments">
+                    <a class="sonny-nav" href="/employee/department" id="a-link-sidebar-dropdown-employee-departments">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Department List
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-commission-config">
+                    <a class="sonny-nav" href="/commission" id="a-link-sidebar-dropdown-commission-config">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Commissions
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-commission-recurring-list">
+                    <a class="sonny-nav" href="/commission/recurring" id="a-link-sidebar-dropdown-commission-recurring-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Recurring Plan Commissions
+                    </div>
+                </div>
+            </a>
+            </li>
+
+            
+                    </ul>
+    </li>
+
+                                                                                                    <li id="li-link-sidebar-dropdown-reconciliation-super-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-reconciliation-super-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-reconciliation-super-category" aria-controls="sidebar-dropdown-reconciliation-super-category">
+            <div class="css-table">
+
+                                    <div class="css-table-cell">
+                        <i class="fa fa-dollar-sign fa-fw"></i>
+                    </div>
+                
+                <div class="css-table-cell css-table-max-cell">
+                    Reconciliation
+                </div>
+
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-reconciliation-super-category" class="collapse sub-menu">
+            
+                                                <li id="li-link-sidebar-dropdown-reconciliation-daily-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-reconciliation-daily-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-reconciliation-daily-category" aria-controls="sidebar-dropdown-reconciliation-daily-category">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    Daily
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-reconciliation-daily-category" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-reconciliation-daily-action-open-list">
+                    <a class="sonny-nav" href="/reconciliation/daily/open" id="a-link-sidebar-dropdown-reconciliation-daily-action-open-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Unreconciled
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-reconciliation-daily-action-done-list">
+                    <a class="sonny-nav" href="/reconciliation/daily/reconciled" id="a-link-sidebar-dropdown-reconciliation-daily-action-done-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Reconciled
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-reconciliation-daily-action-audited-list">
+                    <a class="sonny-nav" href="/reconciliation/daily/audited" id="a-link-sidebar-dropdown-reconciliation-daily-action-audited-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Audited
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                                                <li id="li-link-sidebar-dropdown-reconciliation-shift-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-reconciliation-shift-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-reconciliation-shift-category" aria-controls="sidebar-dropdown-reconciliation-shift-category">
+            <div class="css-table">
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+
+                <div class="css-table-cell css-table-max-cell">
+                    Shift
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-reconciliation-shift-category" class="collapse sub-menu sonnys-sub-cat-ul-nav">
+                                <li id="li-link-reconciliation-shift-action-open-list">
+                    <a class="sonny-nav" href="/reconciliation/shift" id="a-link-sidebar-dropdown-reconciliation-shift-action-open-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Unreconciled
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-reconciliation-shift-action-done-list">
+                    <a class="sonny-nav" href="/reconciliation/shift/reconciled" id="a-link-sidebar-dropdown-reconciliation-shift-action-done-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Reconciled
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                    </ul>
+    </li>
+
+                    </ul>
+    </li>
+
+                                                                                                    <li id="li-link-sidebar-dropdown-maintenance">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-maintenance" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-maintenance" aria-controls="sidebar-dropdown-maintenance">
+            <div class="css-table">
+
+                                    <div class="css-table-cell">
+                        <i class="fa fa-wrench fa-fw"></i>
+                    </div>
+                
+                <div class="css-table-cell css-table-max-cell">
+                    Maintenance
+                </div>
+
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-maintenance" class="collapse sub-menu">
+                                <li id="li-link-scheduled-maintenance">
+                    <a class="sonny-nav" href="/parts" id="a-link-sidebar-dropdown-scheduled-maintenance">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Scheduled Maintenance
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-incident-tracking">
+                    <a class="sonny-nav" href="/incidents" id="a-link-sidebar-dropdown-incident-tracking">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Incident Tracking
+                    </div>
+                </div>
+            </a>
+            </li>
+
+            
+                    </ul>
+    </li>
+
+                                                                                                    <li id="li-link-sidebar-dropdown-smart-stop">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-smart-stop" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-smart-stop" aria-controls="sidebar-dropdown-smart-stop">
+            <div class="css-table">
+
+                                    <div class="css-table-cell">
+                        <i class="fa fa-times fa-fw"></i>
+                    </div>
+                
+                <div class="css-table-cell css-table-max-cell">
+                    SmartStop
+                </div>
+
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-smart-stop" class="collapse sub-menu">
+                                <li id="li-link-smart-stop-alert-subscribers">
+                    <a class="sonny-nav" href="/smart-stop/alert-subscriber" id="a-link-sidebar-dropdown-smart-stop-alert-subscribers">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Alert Subscribers
+                    </div>
+                </div>
+            </a>
+            </li>
+
+            
+                    </ul>
+    </li>
+
+                                                                                                                                        <li id="li-link-sidebar-dropdown-config-super-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-config-super-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-config-super-category" aria-controls="sidebar-dropdown-config-super-category">
+            <div class="css-table">
+
+                                    <div class="css-table-cell">
+                        <i class="fa fa-cog fa-fw"></i>
+                    </div>
+                
+                <div class="css-table-cell css-table-max-cell">
+                    Config
+                </div>
+
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-config-super-category" class="collapse sub-menu">
+                                <li id="li-link-stc-tunnel-list">
+                    <a class="sonny-nav" href="/tunnel-select" id="a-link-sidebar-dropdown-stc-tunnel-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Tunnel Administration
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-">
+                    <a class="sonny-nav" href="/heatwave/scheduled/" id="a-link-sidebar-dropdown-">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Email/Text Reports
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-">
+                    <a class="sonny-nav" href="/settings" id="a-link-sidebar-dropdown-">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Global Settings
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-">
+                    <a class="sonny-nav" href="/sps-door-sensor-event-subscriber" id="a-link-sidebar-dropdown-">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        SPS Door Sensor Event Subscriber
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-category-config">
+                    <a class="sonny-nav" href="/category/" id="a-link-sidebar-dropdown-category-config">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Item Categories
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-category-config">
+                    <a class="sonny-nav" href="/bo-permission-template/list" id="a-link-sidebar-dropdown-category-config">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        BO Permission Templates
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-category-config">
+                    <a class="sonny-nav" href="/pos-permission-template/list" id="a-link-sidebar-dropdown-category-config">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        POS Permission Templates
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-gl-assignment">
+                    <a class="sonny-nav" href="/general-ledger/section-list" id="a-link-sidebar-dropdown-gl-assignment">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        GL Assignment
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-regional-settings">
+                    <a class="sonny-nav" href="/district" id="a-link-sidebar-dropdown-regional-settings">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        District Settings
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-region-settings">
+                    <a class="sonny-nav" href="/region" id="a-link-sidebar-dropdown-region-settings">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Region Settings
+                    </div>
+                </div>
+            </a>
+            </li>
+
+            
+                    </ul>
+    </li>
+
+                                                                                                    <li id="li-link-sidebar-dropdown-site-super-category">
+        <a class="sonny-nav collapsed" href="#sidebar-dropdown-site-super-category" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-site-super-category" aria-controls="sidebar-dropdown-site-super-category">
+            <div class="css-table">
+
+                                    <div class="css-table-cell">
+                        <i class="fa fa-sitemap fa-fw"></i>
+                    </div>
+                
+                <div class="css-table-cell css-table-max-cell">
+                    Sites
+                </div>
+
+                <div class="css-table-cell">
+                    <i class="fa fa-minus fa-fw open"></i>
+                    <i class="fa fa-plus fa-fw closed"></i>
+                </div>
+            </div>
+        </a>
+        <ul id="sidebar-dropdown-site-super-category" class="collapse sub-menu">
+                                <li id="li-link-site-map-list">
+                    <a class="sonny-nav" href="/site" id="a-link-sidebar-dropdown-site-map-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        Map
+                    </div>
+                </div>
+            </a>
+            </li>
+
+                                <li id="li-link-site-table-list">
+                    <a class="sonny-nav" href="/site/list" id="a-link-sidebar-dropdown-site-table-list">
+                <div class="css-table">
+                                                                <div class="css-table-cell">
+                            <i class="fa fa-caret-right"></i>
+                        </div>
+                                        <div class="css-table-cell css-table-max-cell">
+                        List
+                    </div>
+                </div>
+            </a>
+            </li>
+
+            
+                    </ul>
+    </li>
+
+                                                </ul>
+            <ul id="user-menu">
+                <li>
+                    <a class="sonny-nav install-button" style="display: none;">
+                        <div class="css-table">
+                            <div class="css-table-cell"><i class="fa fa-arrow-alt-circle-down text-success fa-fw fa-spacer-right "></i></div>
+                            <div class="css-table-cell css-table-max-cell">Install</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a class="sonny-nav" id="sonnysdirect-link" href="https://www.sonnysdirect.com/sonnysdirect/en/tech_support" target="_blank">
+                        <div class="css-table">
+                            <div class="css-table-cell"><i class="sonnys-icon sonnys-icon-drop fa-fw fa-spacer-right text-info"></i></div>
+                            <div class="css-table-cell css-table-max-cell">Open a Ticket</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a class="sonny-nav" id="carwash-college-link" href="https://sonnysdirect.com/lrn_car_wash_college" target="_blank">
+                        <div class="css-table">
+                            <div class="css-table-cell"><i class="fa fa-graduation-cap fa-fw fa-spacer-right text-info"></i></div>
+                            <div class="css-table-cell css-table-max-cell">CarWash College</div>
+                        </div>
+                    </a>
+                </li>
+                <li>
+                    <a class="sonny-nav" id="support-login-link" href="https://sonnysdirect.com/tech_support" target="_blank">
+                        <div class="css-table">
+                            <div class="css-table-cell"><i class="fa fa-question-circle fa-fw fa-spacer-right text-success"></i></div>
+                            <div class="css-table-cell css-table-max-cell">Help Desk</div>
+                        </div>
+                    </a>
+                </li>
+                <li id="li-link-sidebar-dropdown-user">
+                    <a href="#sidebar-dropdown-user" class="sonny-nav collapsed" data-toggle="collapse" aria-expanded="false" id="a-link-sidebar-dropdown-user" aria-controls="sidebar-dropdown-user">
+                        <i class="fa fa-user fa-fw fa-spacer-right text-warning"></i>
+                        <i class="fa fa-chevron-down fa-fw fa-spacer-left closed"></i>
+                        <i class="fa fa-times fa-fw fa-spacer-left open"></i>Sonnys Backoffice Wrapper
+                    </a>
+                    <ul id="sidebar-dropdown-user" class="collapse sub-menu">
+                        <li>
+                            <a class="sonny-nav" href="/logout" id="a-link-sonny-nav-logout">
+                                <div class="css-table">
+                                    <div class="css-table-cell">
+                                        <i class="fa fa-caret-right"></i>
+                                    </div>
+                                    <div class="css-table-cell css-table-max-cell">
+                                        Logout
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </nav>
+        <!-- /main-menu -->
+    </div>
+    <!-- /main-menu-collapse -->
+</div>
+<!-- /container-sidebar -->
+
+    <div id="main-column">
+        <div class="container-fluid">
+
+                
+    <style>
+
+        .notification {
+            display: none;
+            max-width: 300px;
+            margin-left: -150px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 2px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px;
+        }
+
+    </style>
+
+    <div id="push-banner" class="notification">
+        <div>Enable notifications to get the most important updates about our products.</div><br>
+        <button class="btn btn-success" id="push-enable">Get Notifications</button>
+        <button class="btn btn-primary" id="push-enable-no-yet">Not yet</button>
+    </div>
+    
+    <div id="prompt-installed-app" class="notification">
+        <div>This app can be opened from the installed apps on the home page.</div><br>
+    </div>
+
+    <header class="sonny-header">
+        <h1 id="report-title" class="nix-bm pull-left">Dashboard</h1>
+                <button type="button" id="btn-toggle-dashboard-layout-settings" class="btn btn-default btn-sm pull-right" data-toggle="collapse" data-target="#dashboard-layout-settings" aria-expanded="false" title="Settings">
+            <i class="fa fa-cog fa-spacer-right"></i>Settings
+        </button>
+                <div class="clearfix"></div>
+
+                
+<div class="alerts alerts-server">
+            </div>
+                    
+                                                
+<div id="dashboard-layout-settings" class="form-sonny collapse nix-tm" aria-expanded="true">
+    <form data-submit-once="" id="dashboard-layout-settings-form" action="/dashboard-update" autocomplete="off" method="post" data-widget-max="100">
+        <div class="form-group">
+            <div class="row">
+                <div class="form-col-main">
+                    <h3 class="nix-tm">Arrangement</h3>
+
+                    <div id="dashwidget-layout-list">
+                                                    <div id="dashwidget-layout-list-item-1" class="dashwidget-layout-list-item" rel="#dashwidget-config-input-group-1" data-type-id="7" data-site-ids="12" data-widget-layout-order="">
+        <div class="css-table">
+            <div class="css-table-cell"><i class="fa fa-arrows"></i></div>
+            <div class="css-table-cell css-table-max-cell"><span class="dashwidget-text-title">Hourly Sales</span><br><span class="dashwidget-site">
+                        <small><i class="fa fa-map-marker"></i>
+                            <span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="12" title="" data-original-title="WashU Berwyn">BERWYN</span>
+                        </small>
+                    </span></div><!-- /css-table-cell -->
+            <div class="css-table-cell text-right">
+                <button type="button" class="btn btn-link btn-sm btn-remove-list-item" data-toggle="tooltip" data-container="body" data-placement="left" data-text-remove="Remove" data-text-widget="Widget" title="" data-original-title="Remove Hourly Sales (BERWYN) Widget">
+                    <i class="fa fa-times fa-lg"></i>
+                </button>
+            </div><!-- /css-table-cell -->
+        </div><!-- /css-table -->
+    </div><!-- /dashwidget-layout-list-item -->
+
+                                                    <div id="dashwidget-layout-list-item-2" class="dashwidget-layout-list-item" rel="#dashwidget-config-input-group-2" data-type-id="8" data-site-ids="12" data-widget-layout-order="">
+        <div class="css-table">
+            <div class="css-table-cell"><i class="fa fa-arrows"></i></div>
+            <div class="css-table-cell css-table-max-cell"><span class="dashwidget-text-title">Day Over Day Sales</span><br><span class="dashwidget-site">
+                        <small><i class="fa fa-map-marker"></i>
+                            <span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="12" title="" data-original-title="WashU Berwyn">BERWYN</span>
+                        </small>
+                    </span></div><!-- /css-table-cell -->
+            <div class="css-table-cell text-right">
+                <button type="button" class="btn btn-link btn-sm btn-remove-list-item" data-toggle="tooltip" data-container="body" data-placement="left" data-text-remove="Remove" data-text-widget="Widget" title="" data-original-title="Remove Day Over Day Sales (BERWYN) Widget">
+                    <i class="fa fa-times fa-lg"></i>
+                </button>
+            </div><!-- /css-table-cell -->
+        </div><!-- /css-table -->
+    </div><!-- /dashwidget-layout-list-item -->
+
+                                                    <div id="dashwidget-layout-list-item-3" class="dashwidget-layout-list-item" rel="#dashwidget-config-input-group-3" data-type-id="3" data-site-ids="12" data-widget-layout-order="">
+        <div class="css-table">
+            <div class="css-table-cell"><i class="fa fa-arrows"></i></div>
+            <div class="css-table-cell css-table-max-cell"><span class="dashwidget-text-title">Daily Labor Stats</span><br><span class="dashwidget-site">
+                        <small><i class="fa fa-map-marker"></i>
+                            <span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="12" title="" data-original-title="WashU Berwyn">BERWYN</span>
+                        </small>
+                    </span></div><!-- /css-table-cell -->
+            <div class="css-table-cell text-right">
+                <button type="button" class="btn btn-link btn-sm btn-remove-list-item" data-toggle="tooltip" data-container="body" data-placement="left" data-text-remove="Remove" data-text-widget="Widget" title="" data-original-title="Remove Daily Labor Stats (BERWYN) Widget">
+                    <i class="fa fa-times fa-lg"></i>
+                </button>
+            </div><!-- /css-table-cell -->
+        </div><!-- /css-table -->
+    </div><!-- /dashwidget-layout-list-item -->
+
+                                                    <div id="dashwidget-layout-list-item-4" class="dashwidget-layout-list-item" rel="#dashwidget-config-input-group-4" data-type-id="2" data-site-ids="12" data-widget-layout-order="">
+        <div class="css-table">
+            <div class="css-table-cell"><i class="fa fa-arrows"></i></div>
+            <div class="css-table-cell css-table-max-cell"><span class="dashwidget-text-title">Active Labor</span><br><span class="dashwidget-site">
+                        <small><i class="fa fa-map-marker"></i>
+                            <span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="12" title="" data-original-title="WashU Berwyn">BERWYN</span>
+                        </small>
+                    </span></div><!-- /css-table-cell -->
+            <div class="css-table-cell text-right">
+                <button type="button" class="btn btn-link btn-sm btn-remove-list-item" data-toggle="tooltip" data-container="body" data-placement="left" data-text-remove="Remove" data-text-widget="Widget" title="" data-original-title="Remove Active Labor (BERWYN) Widget">
+                    <i class="fa fa-times fa-lg"></i>
+                </button>
+            </div><!-- /css-table-cell -->
+        </div><!-- /css-table -->
+    </div><!-- /dashwidget-layout-list-item -->
+
+                                            </div><!-- /dashwidget-layout-list -->
+
+                    <button type="button" id="dashwidget-add-btn" class="btn btn-success btn-block" data-toggle="modal" data-target="#dashwidget-add-modal"><i class="fa fa-plus"></i> Add a Widget</button>
+                </div><!-- /col -->
+                <div class="form-col-aside">
+                    <div class="sbox sbox-bg-white nix-bm">
+                        <p class="help-block nix-tm">Use <strong>Add a Widget</strong> to select and add widgets
+                            to your dashboard. If a widget name is dimmed and not selectable it is already in
+                            <strong>Dashboard Widgets</strong> list</p>
+                        <p class="help-block">The <strong>Dashboard Widgets</strong> list determines which
+                            widgets are loaded toward the top of your screen. Drag widgets in the
+                            <strong>Dashboard Widgets</strong> list to change their display order.</p>
+                        <p class="help-block">Use the <strong>"x"</strong> button on widget in
+                            <strong>Dashboard Widgets</strong> to remove that widget from your Dashboard. It
+                            can be re-added from <strong>Add a Widget</strong>.</p>
+                    </div><!-- /sbox -->
+                </div><!-- /col -->
+            </div><!-- /row -->
+        </div><!-- /form-group -->
+        <div class="table-filter-controls">
+            <div class="row">
+                <div class="col-xs-6">
+                    <button type="submit" id="btn-dashboard-layout-settings-save" class="btn btn-success btn-block">Apply
+                    </button>
+                </div><!-- /col -->
+                <div class="col-xs-6">
+                    <button type="reset" id="btn-dashboard-layout-settings-cancel" class="btn btn-default btn-block" data-toggle="collapse" data-target="#dashboard-layout-settings" aria-expanded="false">Cancel
+                    </button>
+                </div><!-- /col -->
+            </div><!-- /row -->
+        </div><!-- /table-filter-controls -->
+        <div id="widget-config-input-groups-wrapper">
+                                        
+    <div id="dashwidget-config-input-group-1" class="dashwidget-config-input-group" rel="#dashwidget-layout-list-item-1">
+        <input class="widget-config-input-position" name="widgets[1][position]" type="hidden" value="1">
+        <input class="widget-config-input-type" name="widgets[1][type]" type="hidden" value="7"><input class="widget-config-input-site" name="widgets[1][siteIds][]" type="hidden" value="12">                    <input class="widget-config-input-chart-as-default-view" name="widgets[1][chartAsDefaultView]" type="hidden" value="0">
+            </div><!-- /widget-config-input-group -->
+
+                            
+    <div id="dashwidget-config-input-group-2" class="dashwidget-config-input-group" rel="#dashwidget-layout-list-item-2">
+        <input class="widget-config-input-position" name="widgets[2][position]" type="hidden" value="2">
+        <input class="widget-config-input-type" name="widgets[2][type]" type="hidden" value="8"><input class="widget-config-input-site" name="widgets[2][siteIds][]" type="hidden" value="12">                    <input class="widget-config-input-chart-as-default-view" name="widgets[2][chartAsDefaultView]" type="hidden" value="0">
+            </div><!-- /widget-config-input-group -->
+
+                            
+    <div id="dashwidget-config-input-group-3" class="dashwidget-config-input-group" rel="#dashwidget-layout-list-item-3">
+        <input class="widget-config-input-position" name="widgets[3][position]" type="hidden" value="3">
+        <input class="widget-config-input-type" name="widgets[3][type]" type="hidden" value="3"><input class="widget-config-input-site" name="widgets[3][siteIds][]" type="hidden" value="12">            </div><!-- /widget-config-input-group -->
+
+                            
+    <div id="dashwidget-config-input-group-4" class="dashwidget-config-input-group" rel="#dashwidget-layout-list-item-4">
+        <input class="widget-config-input-position" name="widgets[4][position]" type="hidden" value="4">
+        <input class="widget-config-input-type" name="widgets[4][type]" type="hidden" value="2"><input class="widget-config-input-site" name="widgets[4][siteIds][]" type="hidden" value="12">            </div><!-- /widget-config-input-group -->
+
+                    </div><!-- /widget-config-input-groups-wrapper -->
+    </form><!-- /dashboard-layout-settings-form -->
+</div><!-- /dashboard-layout-settings -->
+</header><!-- /sonny-header -->
+
+<div id="dashboard" class="row" data-columns="3" data-max-position="4"><div class="col-salvattore  col-xs-4"><div>            <div id="dashwidget-salesLine-1" class="dashwidget" data-position="1" data-src="/widget/sales-hourly" data-title="Hourly Sales" data-type="salesLine" data-type-id="7" data-site-ids="12" data-has-chart="true" data-chart-as-default-view="false" data-performance-factor="6">
+                <div class="dashwidget-site-wrapper clearfix">
+                <h4 class="dashwidget-site pull-right nix-tm"><i class="fa fa-map-marker fa-spacer-right"></i>
+                    <span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="12" title="" data-original-title="WashU Berwyn">BERWYN</span>
+                </h4>
+            </div><!-- /dashwidget-site -->
+        <div class="dashwidget-container">
+    <div class="dashwidget-header">
+                    <div class="css-table">
+                <div class="css-table-cell">
+                    <h2 class="dashwidget-title">Hourly Sales</h2>
+                </div>
+                <div class="css-table-cell dashwidget-display-controls">
+                    <div class="btn-group" data-toggle="buttons">
+                                                    <label class="btn btn-sm btn-default">
+                                <input type="radio" value="charts" id="dashwidget-2-display-charts" class="dashwidget-display-toggle" name="dashwidget-display-toggle" autocomplete="off" data-widget-id="2" data-display-target=".dashwidget-display-charts">
+                                <i class="fa fa-chart-area fa-fw"></i>
+                            </label>
+                                                    <label class="btn btn-sm btn-default active">
+                                <input type="radio" value="table" id="dashwidget-2-display-table" class="dashwidget-display-toggle" name="dashwidget-display-toggle" autocomplete="off" data-widget-id="2" data-display-target=".dashwidget-display-table" checked="">
+                                <i class="fa fa-table fa-fw"></i>
+                            </label>
+                                            </div>
+                </div>
+            </div>
+            </div><!-- /dashwidget-header -->
+<div class="dashwidget-body">
+        <div id="dashwidget-2-chart-sales-cars-wrapper" class="dashwidget-chart dashwidget-display-charts hidden" data-type="cars">
+            <h5 class="dashwidget-chart-title">Cars per Hour</h5>
+            <div id="dashwidget-2-chart-sales-cars-legend" class="chartjs-legend"></div>
+            <canvas id="dashwidget-2-chart-sales-cars" class="dashwidget-chart-sales-cars" data-label-prefix="" data-label-suffix=" cars" data-label-precision="0" data-fill-transparent="true"></canvas>
+        </div><!-- /dashwidget-chart -->
+
+    <div id="dashwidget-2-chart-sales-gross-wrapper" class="dashwidget-chart dashwidget-display-charts hidden" data-type="gross">
+            <h5 class="dashwidget-chart-title">Gross Sales per Hour</h5>
+            <div id="dashwidget-2-chart-sales-gross-legend" class="chartjs-legend"></div>
+            <canvas id="dashwidget-2-chart-sales-gross" class="dashwidget-chart-sales-gross" data-label-prefix="$" data-label-suffix="" data-label-precision="2" data-fill-transparent="true"></canvas>
+        </div><!-- /dashwidget-chart -->
+
+    <div id="dashwidget-2-chart-sales-net-wrapper" class="dashwidget-chart dashwidget-display-charts hidden" data-type="net">
+            <h5 class="dashwidget-chart-title">Net Sales per Hour</h5>
+            <div id="dashwidget-2-chart-sales-net-legend" class="chartjs-legend"></div>
+            <canvas id="dashwidget-2-chart-sales-net" class="dashwidget-chart-sales-net" data-label-prefix="$" data-label-suffix="" data-label-precision="2" data-fill-transparent="true"></canvas>
+        </div><!-- /dashwidget-chart -->
+
+    <div id="dashwidget-2-chart-sales-grossAverage-wrapper" class="dashwidget-chart dashwidget-display-charts hidden" data-type="grossAverage">
+            <h5 class="dashwidget-chart-title">Average Gross Sale per Car per Hour</h5>
+            <div id="dashwidget-2-chart-sales-grossAverage-legend" class="chartjs-legend"></div>
+            <canvas id="dashwidget-2-chart-sales-grossAverage" class="dashwidget-chart-sales-grossAverage" data-label-prefix="$" data-label-suffix="" data-label-precision="2" data-fill-transparent="true"></canvas>
+        </div><!-- /dashwidget-chart -->
+
+    <div id="dashwidget-2-chart-sales-netAverage-wrapper" class="dashwidget-chart dashwidget-display-charts hidden" data-type="netAverage">
+            <h5 class="dashwidget-chart-title">Average Net Sale per Car per Hour</h5>
+            <div id="dashwidget-2-chart-sales-netAverage-legend" class="chartjs-legend"></div>
+            <canvas id="dashwidget-2-chart-sales-netAverage" class="dashwidget-chart-sales-netAverage" data-label-prefix="$" data-label-suffix="" data-label-precision="2" data-fill-transparent="true"></canvas>
+        </div><!-- /dashwidget-chart -->
+
+    
+
+    <div class="dashwidget-chart dashwidget-display-table">
+        <table class="table table-condensed table-reports">
+            <thead>
+            <tr>
+                <th>Hour</th>
+                <th class="text-right">Cars</th>
+                <th class="text-right">Gross</th>
+                <th class="text-right">Gross/Car</th>
+                <th class="text-right">Net</th>
+                <th class="text-right">Net/Car</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                        <td class="text-nowrap">07 AM</td>
+                        <td class="text-right">4</td>
+                        <td class="text-right">        $50.00
+    </td>
+                        <td class="text-right">        $12.50
+    </td>
+                        <td class="text-right">        $0.00
+    </td>
+                        <td class="text-right">        $0.00
+    </td>
+                    </tr>
+                            <tr>
+                        <td class="text-nowrap">08 AM</td>
+                        <td class="text-right">25</td>
+                        <td class="text-right">        $325.00
+    </td>
+                        <td class="text-right">        $13.00
+    </td>
+                        <td class="text-right">        $0.00
+    </td>
+                        <td class="text-right">        $0.00
+    </td>
+                    </tr>
+                            <tr>
+                        <td class="text-nowrap">09 AM</td>
+                        <td class="text-right">18</td>
+                        <td class="text-right">        $255.00
+    </td>
+                        <td class="text-right">        $14.17
+    </td>
+                        <td class="text-right">        $0.00
+    </td>
+                        <td class="text-right">        $0.00
+    </td>
+                    </tr>
+                            <tr>
+                        <td class="text-nowrap">10 AM</td>
+                        <td class="text-right">17</td>
+                        <td class="text-right">        $240.00
+    </td>
+                        <td class="text-right">        $14.12
+    </td>
+                        <td class="text-right">        $10.00
+    </td>
+                        <td class="text-right">        $0.59
+    </td>
+                    </tr>
+                            <tr>
+                        <td class="text-nowrap">11 AM</td>
+                        <td class="text-right">28</td>
+                        <td class="text-right">        $415.00
+    </td>
+                        <td class="text-right">        $14.82
+    </td>
+                        <td class="text-right">        $35.00
+    </td>
+                        <td class="text-right">        $1.25
+    </td>
+                    </tr>
+                            <tr>
+                        <td class="text-nowrap">12 PM</td>
+                        <td class="text-right">12</td>
+                        <td class="text-right">        $210.00
+    </td>
+                        <td class="text-right">        $17.50
+    </td>
+                        <td class="text-right">        $0.00
+    </td>
+                        <td class="text-right">        $0.00
+    </td>
+                    </tr>
+                                                                                                                                        </tbody>
+            <tbody>
+                            <tr class="active">
+                    <th class="text-right">Total</th>
+                    <th class="text-right">104</th>
+                    <th class="text-right">        $1,495.00
+    </th>
+                    <th class="text-right">        $14.38
+    </th>
+                    <th class="text-right">        $45.00
+    </th>
+                    <th class="text-right">        $0.43
+    </th>
+                </tr>
+                        </tbody>
+        </table>
+    </div><!-- /dashwidget-display-table -->
+</div><!-- /dashwidget-body -->
+
+</div><!-- /dashwidget-container -->
+    </div><!-- /dashwidget -->
+
+        </div><div>            <div id="dashwidget-laborActive-4" class="dashwidget" data-position="4" data-src="/widget/labor-active" data-title="Active Labor" data-type="laborActive" data-type-id="2" data-site-ids="12" data-has-chart="false" data-performance-factor="5">
+                <div class="dashwidget-site-wrapper clearfix">
+                <h4 class="dashwidget-site pull-right nix-tm"><i class="fa fa-map-marker fa-spacer-right"></i>
+                    <span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="12" title="" data-original-title="WashU Berwyn">BERWYN</span>
+                </h4>
+            </div><!-- /dashwidget-site -->
+        <div class="dashwidget-container">
+<div class="dashwidget-body">
+            <div class="dashwidget-chart">
+            <div style="text-align: left;">
+                    <b style="float: right;">Site BERWYN</b>
+                    <b>Active labor</b>
+                </div><table class="table table-condensed table-reports">
+                <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th class="text-right">Hrs Today</th>
+                    <th class="text-right">Hrs Week</th>
+                </tr>
+                </thead>
+                <tbody>
+                
+                                                                                                                        <tr class="bg-success">
+                                    <td>Oscar Plascencia</td>
+                                    <td class="text-right">5.48</td>
+                                    <td class="text-right">5.48</td>
+                                </tr>
+                                                                                                                                <tr class="bg-success">
+                                    <td>Jalen Amabeli Gutierrez</td>
+                                    <td class="text-right">3.45</td>
+                                    <td class="text-right">3.45</td>
+                                </tr>
+                                                                                                                                <tr class="bg-success">
+                                    <td>Angelica Pina</td>
+                                    <td class="text-right">3.34</td>
+                                    <td class="text-right">3.34</td>
+                                </tr>
+                                                                                </tbody>
+            </table>
+        </div>
+    </div><!-- /dashwidget-body -->
+</div><!-- /dashwidget-container -->
+    </div><!-- /dashwidget -->
+
+        </div></div><div class="col-salvattore  col-xs-4"><div>            <div id="dashwidget-salesLine-2" class="dashwidget" data-position="2" data-src="/widget/sales-day-over-day" data-title="Day Over Day Sales" data-type="salesLine" data-type-id="8" data-site-ids="12" data-has-chart="true" data-chart-as-default-view="false" data-performance-factor="7">
+                <div class="dashwidget-site-wrapper clearfix">
+                <h4 class="dashwidget-site pull-right nix-tm"><i class="fa fa-map-marker fa-spacer-right"></i>
+                    <span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="12" title="" data-original-title="WashU Berwyn">BERWYN</span>
+                </h4>
+            </div><!-- /dashwidget-site -->
+        <div class="dashwidget-container">
+                        <div class="dashwidget-loading text-center">
+                <i class="fa fa-circle-o-notch fa-spin"></i>
+                Loading <span class="dashwidget-text-title">Day Over Day Sales</span> ...
+            </div>
+        </div><!-- /dashwidget-container -->
+    </div><!-- /dashwidget -->
+
+        </div></div><div class="col-salvattore  col-xs-4"><div>            <div id="dashwidget-laborCurrent-3" class="dashwidget" data-position="3" data-src="/widget/labor-current" data-title="Daily Labor Stats" data-type="laborCurrent" data-type-id="3" data-site-ids="12" data-has-chart="false" data-performance-factor="7">
+                <div class="dashwidget-site-wrapper clearfix">
+                <h4 class="dashwidget-site pull-right nix-tm"><i class="fa fa-map-marker fa-spacer-right"></i>
+                    <span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="12" title="" data-original-title="WashU Berwyn">BERWYN</span>
+                </h4>
+            </div><!-- /dashwidget-site -->
+        <div class="dashwidget-container">
+                        <div class="dashwidget-loading text-center">
+                <i class="fa fa-circle-o-notch fa-spin"></i>
+                Loading <span class="dashwidget-text-title">Daily Labor Stats</span> ...
+            </div>
+        </div><!-- /dashwidget-container -->
+    </div><!-- /dashwidget -->
+
+        </div></div></div><!-- /dashboard -->
+
+<div id="dashwidget-error-template" class="hidden">
+    <div class="dashwidget-error-container text-danger">
+        <p class="text-center"><i class="fa fa-times"></i>
+            Error loading <span class="dashwidget-text-title"></span> ...
+
+        </p><ul class="dashwidget-error-messages hidden"></ul>
+    </div><!-- /dashwidget-error-container -->
+</div><!-- /dashwidget-error-template -->
+
+    <div id="dashwidget-layout-list-item-template" class="dashwidget-layout-list-item hidden" rel="#dashwidget-config-input-group-template" data-type-id="" data-site-ids="">
+        <div class="css-table">
+            <div class="css-table-cell"><i class="fa fa-arrows"></i></div>
+            <div class="css-table-cell css-table-max-cell"><span class="dashwidget-text-title"></span><br><span class="dashwidget-site">
+                        <small><i class="fa fa-map-marker"></i>
+                            <span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="12" title="" data-original-title="WashU Berwyn">BERWYN</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="13" title="" data-original-title="WashU Burbank T1">BURBT1</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="16" title="" data-original-title="WashU Burbank T2">BurbT2</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="8" title="" data-original-title="WashU Carol Stream">CAROL</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="2" title="" data-original-title="WashU Centennial">CENT</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="6" title="" data-original-title="WashU Des Plaines">DESPLN</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="18" title="" data-original-title="Wash 37055">DKSN</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="15" title="" data-original-title="WashU Evergreen Park T2">EVERG2</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="14" title="" data-original-title="WashU Evergreen Park T1">EVRGRN</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="1" title="" data-original-title="WashU Fiesta">FIESTA</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="19" title="" data-original-title="Wash 37062">FRVW</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="20" title="" data-original-title="Wash 38301">JKSN</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="10" title="" data-original-title="WashU Joliet">JOLIET</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="7" title="" data-original-title="WashU Naperville">NAPER</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="4" title="" data-original-title="WashU Niles">NILES</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="17" title="" data-original-title="Wash 37135">NOLO</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="11" title="" data-original-title="WashU Plainfield">PLNFLD</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="5" title="" data-original-title="WashU Villa Park">VILLAP</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="9" title="" data-original-title="WashU Wheaton">WHEAT</span>
+                        </small>
+                    </span></div><!-- /css-table-cell -->
+            <div class="css-table-cell text-right">
+                <button type="button" class="btn btn-link btn-sm btn-remove-list-item" data-toggle="tooltip" data-container="body" data-placement="left" data-text-remove="Remove" data-text-widget="Widget" data-placeholder-title="Remove :title: (:siteCodes:) Widget" data-original-title="" title="">
+                    <i class="fa fa-times fa-lg"></i>
+                </button>
+            </div><!-- /css-table-cell -->
+        </div><!-- /css-table -->
+    </div><!-- /dashwidget-layout-list-item -->
+
+
+        
+    <div id="dashwidget-config-input-group-template" class="dashwidget-config-input-group hidden" rel="#dashwidget-layout-list-item-template">
+        <input class="widget-config-input-position" name="widgets[template][position]" type="hidden" value="">
+        <input class="widget-config-input-type" name="widgets[template][type]" type="hidden" value=""><input class="widget-config-input-site" name="widgets[template][siteIds][]" type="hidden" value="12"><input class="widget-config-input-site" name="widgets[template][siteIds][]" type="hidden" value="13"><input class="widget-config-input-site" name="widgets[template][siteIds][]" type="hidden" value="16"><input class="widget-config-input-site" name="widgets[template][siteIds][]" type="hidden" value="8"><input class="widget-config-input-site" name="widgets[template][siteIds][]" type="hidden" value="2"><input class="widget-config-input-site" name="widgets[template][siteIds][]" type="hidden" value="6"><input class="widget-config-input-site" name="widgets[template][siteIds][]" type="hidden" value="18"><input class="widget-config-input-site" name="widgets[template][siteIds][]" type="hidden" value="15"><input class="widget-config-input-site" name="widgets[template][siteIds][]" type="hidden" value="14"><input class="widget-config-input-site" name="widgets[template][siteIds][]" type="hidden" value="1"><input class="widget-config-input-site" name="widgets[template][siteIds][]" type="hidden" value="19"><input class="widget-config-input-site" name="widgets[template][siteIds][]" type="hidden" value="20"><input class="widget-config-input-site" name="widgets[template][siteIds][]" type="hidden" value="10"><input class="widget-config-input-site" name="widgets[template][siteIds][]" type="hidden" value="7"><input class="widget-config-input-site" name="widgets[template][siteIds][]" type="hidden" value="4"><input class="widget-config-input-site" name="widgets[template][siteIds][]" type="hidden" value="17"><input class="widget-config-input-site" name="widgets[template][siteIds][]" type="hidden" value="11"><input class="widget-config-input-site" name="widgets[template][siteIds][]" type="hidden" value="5"><input class="widget-config-input-site" name="widgets[template][siteIds][]" type="hidden" value="9">                    <input class="widget-config-input-chart-as-default-view" name="widgets[template][chartAsDefaultView]" type="hidden" value="0">
+            </div><!-- /widget-config-input-group -->
+
+
+        <div id="dashwidget-template" class="dashwidget hidden" data-position="" data-src="" data-title="" data-type="" data-type-id="" data-site-ids="" data-has-chart="false" data-performance-factor="">
+                <div class="dashwidget-site-wrapper clearfix">
+                <h4 class="dashwidget-site pull-right nix-tm"><i class="fa fa-map-marker fa-spacer-right"></i>
+                    <span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="12" title="" data-original-title="WashU Berwyn">BERWYN</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="13" title="" data-original-title="WashU Burbank T1">BURBT1</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="16" title="" data-original-title="WashU Burbank T2">BurbT2</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="8" title="" data-original-title="WashU Carol Stream">CAROL</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="2" title="" data-original-title="WashU Centennial">CENT</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="6" title="" data-original-title="WashU Des Plaines">DESPLN</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="18" title="" data-original-title="Wash 37055">DKSN</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="15" title="" data-original-title="WashU Evergreen Park T2">EVERG2</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="14" title="" data-original-title="WashU Evergreen Park T1">EVRGRN</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="1" title="" data-original-title="WashU Fiesta">FIESTA</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="19" title="" data-original-title="Wash 37062">FRVW</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="20" title="" data-original-title="Wash 38301">JKSN</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="10" title="" data-original-title="WashU Joliet">JOLIET</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="7" title="" data-original-title="WashU Naperville">NAPER</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="4" title="" data-original-title="WashU Niles">NILES</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="17" title="" data-original-title="Wash 37135">NOLO</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="11" title="" data-original-title="WashU Plainfield">PLNFLD</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="5" title="" data-original-title="WashU Villa Park">VILLAP</span><span class="dashwidget-text-site" data-toggle="tooltip" data-container="body" data-site-id="9" title="" data-original-title="WashU Wheaton">WHEAT</span>
+                </h4>
+            </div><!-- /dashwidget-site -->
+        <div class="dashwidget-container">
+                        <div class="dashwidget-loading text-center">
+                <i class="fa fa-circle-o-notch fa-spin"></i>
+                Loading <span class="dashwidget-text-title"></span> ...
+            </div>
+        </div><!-- /dashwidget-container -->
+    </div><!-- /dashwidget -->
+
+
+<div id="chartjs-tooltip"></div>
+<div class="modal fade in" id="dashwidget-add-modal" tabindex="-1" role="dialog" aria-labelledby="dashwidget-add-modal-title">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form data-submit-once="" id="dashwidget-add-form" action="#" method="post">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                    <h4 class="modal-title" id="dashwidget-add-modal-title">Add a Widget</h4>
+                </div><!-- /modal-header -->
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-6">
+                            <div class="form-group">
+                                <label class="control-label" for="dashwidget-type-select">Widget Type</label>
+                                <select id="dashwidget-type-select" class="form-control chosen-select select2-enabled select2-hidden-accessible" data-placeholder="Select a Widget Type" required="" data-select2-id="dashwidget-type-select" tabindex="-1" aria-hidden="true">
+                                    <option class="placeholder" value="" data-select2-id="2"></option>
+                                                            <option data-type="cashBalanceSonnys" data-src="/widget/cash-balance" data-is-site-specific="true" data-is-multi-site="false" data-performance-factor="1" data-user-has-permission="true" data-has-chart="true" value="14">Cash Balance - Sonny's PayStation</option>
+                            <option data-type="cashOverview" data-src="/widget/cash-overview" data-is-site-specific="true" data-is-multi-site="false" data-performance-factor="9" data-user-has-permission="true" data-has-chart="false" value="1">Cash Overview</option>
+                            <option data-type="laborCurrent" data-src="/widget/labor-current" data-is-site-specific="true" data-is-multi-site="false" data-performance-factor="7" data-user-has-permission="true" data-has-chart="false" value="3">Daily Labor Stats</option>
+                            <option data-type="salesLine" data-src="/widget/sales-day-over-day" data-is-site-specific="true" data-is-multi-site="false" data-performance-factor="7" data-user-has-permission="true" data-has-chart="true" value="8">Day Over Day Sales</option>
+                            <option data-type="lprPercentage" data-src="/widget/lpr-percentage" data-is-site-specific="true" data-is-multi-site="false" data-performance-factor="7" data-user-has-permission="true" data-has-chart="true" value="20">LPR Percentage</option>
+                            <option data-type="salesLine" data-src="/widget/sales-month-over-month" data-is-site-specific="true" data-is-multi-site="false" data-performance-factor="8" data-user-has-permission="true" data-has-chart="true" value="6">Month Over Month Sales</option>
+                            <option data-type="salesWashPercent" data-src="/widget/sales-wash-percent-today" data-is-site-specific="true" data-is-multi-site="false" data-performance-factor="5" data-user-has-permission="true" data-has-chart="true" value="15">Today's Wash Package Percentage</option>
+                            <option data-type="salesWashPercent" data-src="/widget/sales-wash-percent-monthly" data-is-site-specific="true" data-is-multi-site="false" data-performance-factor="5" data-user-has-permission="true" data-has-chart="true" value="11">Wash Package Percentage</option>
+                            <option data-type="washTrend" data-src="/widget/wash-trend" data-is-site-specific="true" data-is-multi-site="false" data-performance-factor="4" data-user-has-permission="true" data-has-chart="true" value="17">Washes vs. Redemptions</option>
+                            <option data-type="weatherDaily" data-src="/widget/weather-daily" data-is-site-specific="true" data-is-multi-site="false" data-performance-factor="1" data-user-has-permission="true" data-has-chart="false" value="12">Weather Daily</option>
+                            <option data-type="weatherHourly" data-src="/widget/weather-hourly" data-is-site-specific="true" data-is-multi-site="false" data-performance-factor="1" data-user-has-permission="true" data-has-chart="false" value="13">Weather Hourly</option>
+                            <option data-type="salesBar" data-src="/widget/sales-year-over-year" data-is-site-specific="true" data-is-multi-site="false" data-performance-factor="10" data-user-has-permission="true" data-has-chart="true" value="10">Year Over Year Sales</option>
+                                                        <optgroup label="Multi Site">        <option data-type="laborActive" data-src="/widget/labor-active" data-is-site-specific="true" data-is-multi-site="true" data-performance-factor="5" data-user-has-permission="true" data-has-chart="false" value="2">Active Labor</option>
+                            <option data-type="currentCarCount" data-src="/widget/current-car-count" data-is-site-specific="true" data-is-multi-site="true" data-performance-factor="2" data-user-has-permission="true" data-has-chart="false" value="19">Current Car Count</option>
+                            <option data-type="salesLine" data-src="/widget/sales-daily" data-is-site-specific="true" data-is-multi-site="true" data-performance-factor="7" data-user-has-permission="true" data-has-chart="true" value="5">Daily Sales</option>
+                            <option data-type="salesLine" data-src="/widget/sales-hourly" data-is-site-specific="true" data-is-multi-site="true" data-performance-factor="6" data-user-has-permission="true" data-has-chart="true" value="7">Hourly Sales</option>
+                            <option data-type="salesBar" data-src="/widget/sales-monthly" data-is-site-specific="true" data-is-multi-site="true" data-performance-factor="8" data-user-has-permission="true" data-has-chart="true" value="9">Monthly Sales</option>
+                            <option data-type="yearToDateIncidents" data-src="/widget/ytd-incidents" data-is-site-specific="true" data-is-multi-site="true" data-performance-factor="2" data-user-has-permission="true" data-has-chart="true" value="16">Year to date Incidents</option>
+                                                        </optgroup><optgroup label="All Sites">        <option data-type="recurringAccountTracking" data-src="/widget/recurring-account-tracking" data-is-site-specific="false" data-is-multi-site="false" data-performance-factor="7" data-user-has-permission="true" data-has-chart="false" value="18">Recurring Account Tracking</option>
+                            <option data-type="recurringTracking" data-src="/widget/recurring-tracking" data-is-site-specific="false" data-is-multi-site="false" data-performance-factor="5" data-user-has-permission="true" data-has-chart="false" value="4">Recurring Tracking</option>
+                                        </optgroup></select><span class="select2 select2-container select2-container--bootstrap" dir="ltr" data-select2-id="1" style="width: 100%;"><span class="selection"><span class="select2-selection select2-selection--single" role="combobox" aria-haspopup="true" aria-expanded="false" tabindex="0" aria-labelledby="select2-dashwidget-type-select-container"><span class="select2-selection__rendered" id="select2-dashwidget-type-select-container" role="textbox" aria-readonly="true"><span class="select2-selection__placeholder">Select a Widget Type</span></span><span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span></span></span><span class="dropdown-wrapper" aria-hidden="true"></span></span>
+                            </div><!-- /form-group -->
+                        </div><!-- /col -->
+
+                        <div class="col-xs-12 col-sm-6">
+                            <div class="form-group">
+                                    <label id="dashwidget-site-select-label" class="control-label">Data From</label>
+                                                                            <div id="dashwidget-site-select-wrapper-multi" class="dashwidget-site-select-wrapper hidden">
+                                            <select id="dashwidget-site-select-multi" class="dashwidget-site-selection form-control chosen-select select2-enabled select2-hidden-accessible" data-placeholder="Select Site(s)" multiple="" title="Please select a unique site or set of sites." required="" disabled="" data-select2-id="dashwidget-site-select-multi" tabindex="-1" aria-hidden="true">
+                                                                                                <option value="12" data-site-code="BERWYN" data-site-name="WashU Berwyn">WashU Berwyn (BERWYN)</option><option value="13" data-site-code="BURBT1" data-site-name="WashU Burbank T1">WashU Burbank T1 (BURBT1)</option><option value="16" data-site-code="BurbT2" data-site-name="WashU Burbank T2">WashU Burbank T2 (BurbT2)</option><option value="8" data-site-code="CAROL" data-site-name="WashU Carol Stream">WashU Carol Stream (CAROL)</option><option value="2" data-site-code="CENT" data-site-name="WashU Centennial">WashU Centennial (CENT)</option><option value="6" data-site-code="DESPLN" data-site-name="WashU Des Plaines">WashU Des Plaines (DESPLN)</option><option value="18" data-site-code="DKSN" data-site-name="Wash 37055">Wash 37055 (DKSN)</option><option value="15" data-site-code="EVERG2" data-site-name="WashU Evergreen Park T2">WashU Evergreen Park T2 (EVERG2)</option><option value="14" data-site-code="EVRGRN" data-site-name="WashU Evergreen Park T1">WashU Evergreen Park T1 (EVRGRN)</option><option value="1" data-site-code="FIESTA" data-site-name="WashU Fiesta">WashU Fiesta (FIESTA)</option><option value="19" data-site-code="FRVW" data-site-name="Wash 37062">Wash 37062 (FRVW)</option><option value="20" data-site-code="JKSN" data-site-name="Wash 38301">Wash 38301 (JKSN)</option><option value="10" data-site-code="JOLIET" data-site-name="WashU Joliet">WashU Joliet (JOLIET)</option><option value="7" data-site-code="NAPER" data-site-name="WashU Naperville">WashU Naperville (NAPER)</option><option value="4" data-site-code="NILES" data-site-name="WashU Niles">WashU Niles (NILES)</option><option value="17" data-site-code="NOLO" data-site-name="Wash 37135">Wash 37135 (NOLO)</option><option value="11" data-site-code="PLNFLD" data-site-name="WashU Plainfield">WashU Plainfield (PLNFLD)</option><option value="5" data-site-code="VILLAP" data-site-name="WashU Villa Park">WashU Villa Park (VILLAP)</option><option value="9" data-site-code="WHEAT" data-site-name="WashU Wheaton">WashU Wheaton (WHEAT)</option>                                            </select><span class="select2 select2-container select2-container--bootstrap select2-container--disabled" dir="ltr" data-select2-id="3" style="width: 100%;"><span class="selection"><span class="select2-selection select2-selection--multiple" role="combobox" aria-haspopup="true" aria-expanded="false" title="Please select a unique site or set of sites." tabindex="-1"><ul class="select2-selection__rendered"><li class="select2-search select2-search--inline"><input class="select2-search__field" type="search" tabindex="0" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" role="textbox" aria-autocomplete="list" placeholder="Select Site(s)" disabled="" style="width: 0px;"></li></ul></span></span><span class="dropdown-wrapper" aria-hidden="true"></span></span>
+                                        </div><!-- /dashwidget-site-select-wrapper -->
+                                                                            <div id="dashwidget-site-select-wrapper-single" class="dashwidget-site-select-wrapper hidden">
+                                            <select id="dashwidget-site-select-single" class="dashwidget-site-selection form-control chosen-select select2-enabled select2-hidden-accessible" data-placeholder="Select Site" required="" disabled="" data-select2-id="dashwidget-site-select-single" tabindex="-1" aria-hidden="true">
+                                                                                                    <option class="placeholder" value="" data-select2-id="5"></option>
+                                                                                                <option value="12" data-site-code="BERWYN" data-site-name="WashU Berwyn">WashU Berwyn (BERWYN)</option><option value="13" data-site-code="BURBT1" data-site-name="WashU Burbank T1">WashU Burbank T1 (BURBT1)</option><option value="16" data-site-code="BurbT2" data-site-name="WashU Burbank T2">WashU Burbank T2 (BurbT2)</option><option value="8" data-site-code="CAROL" data-site-name="WashU Carol Stream">WashU Carol Stream (CAROL)</option><option value="2" data-site-code="CENT" data-site-name="WashU Centennial">WashU Centennial (CENT)</option><option value="6" data-site-code="DESPLN" data-site-name="WashU Des Plaines">WashU Des Plaines (DESPLN)</option><option value="18" data-site-code="DKSN" data-site-name="Wash 37055">Wash 37055 (DKSN)</option><option value="15" data-site-code="EVERG2" data-site-name="WashU Evergreen Park T2">WashU Evergreen Park T2 (EVERG2)</option><option value="14" data-site-code="EVRGRN" data-site-name="WashU Evergreen Park T1">WashU Evergreen Park T1 (EVRGRN)</option><option value="1" data-site-code="FIESTA" data-site-name="WashU Fiesta">WashU Fiesta (FIESTA)</option><option value="19" data-site-code="FRVW" data-site-name="Wash 37062">Wash 37062 (FRVW)</option><option value="20" data-site-code="JKSN" data-site-name="Wash 38301">Wash 38301 (JKSN)</option><option value="10" data-site-code="JOLIET" data-site-name="WashU Joliet">WashU Joliet (JOLIET)</option><option value="7" data-site-code="NAPER" data-site-name="WashU Naperville">WashU Naperville (NAPER)</option><option value="4" data-site-code="NILES" data-site-name="WashU Niles">WashU Niles (NILES)</option><option value="17" data-site-code="NOLO" data-site-name="Wash 37135">Wash 37135 (NOLO)</option><option value="11" data-site-code="PLNFLD" data-site-name="WashU Plainfield">WashU Plainfield (PLNFLD)</option><option value="5" data-site-code="VILLAP" data-site-name="WashU Villa Park">WashU Villa Park (VILLAP)</option><option value="9" data-site-code="WHEAT" data-site-name="WashU Wheaton">WashU Wheaton (WHEAT)</option>                                            </select><span class="select2 select2-container select2-container--bootstrap select2-container--disabled" dir="ltr" data-select2-id="4" style="width: 100%;"><span class="selection"><span class="select2-selection select2-selection--single" role="combobox" aria-haspopup="true" aria-expanded="false" tabindex="-1" aria-labelledby="select2-dashwidget-site-select-single-container"><span class="select2-selection__rendered" id="select2-dashwidget-site-select-single-container" role="textbox" aria-readonly="true"><span class="select2-selection__placeholder">Select Site</span></span><span class="select2-selection__arrow" role="presentation"><b role="presentation"></b></span></span></span><span class="dropdown-wrapper" aria-hidden="true"></span></span>
+                                        </div><!-- /dashwidget-site-select-wrapper -->
+                                                                    </div><!-- /form-group -->
+                                                        <div id="dashwidget-chart-as-default-view-wrapper" class="sbox sbox-bg sbox-edge2edge sbox-toggle-list" style="display: none;">
+                                <div class="form-group validate-queue-style">
+                                    <div class="toggle btn btn-info btn-sm" data-toggle="toggle" style="width: 92.3125px; height: 31.5px;"><input type="checkbox" id="dashwidget-chart-as-default-view" value="1" data-toggle="toggle" data-size="small" data-onstyle="info" data-offstyle="success" data-on="Chart&lt;i class='fa fa-lg fa-fw fa-spacer-left fa-chart-area'&gt;&lt;/i&gt;" data-off="Table&lt;i class='fa fa-lg fa-fw fa-spacer-left fa-table'&gt;&lt;/i&gt;" checked=""><div class="toggle-group"><label class="btn btn-info btn-sm toggle-on">Chart<i class="fa fa-lg fa-fw fa-spacer-left fa-chart-area"></i></label><label class="btn btn-success btn-sm toggle-off">Table<i class="fa fa-lg fa-fw fa-spacer-left fa-table"></i></label><span class="toggle-handle btn btn-default btn-sm"></span></div></div>
+                                    <label for="dashwidget-chart-as-default-view" class="control-label">Default View</label>
+                                </div><!-- /form-group -->
+                            </div><!-- /sbox -->
+                        </div><!-- /col -->
+                    </div><!-- /row -->
+
+                    <div id="dashwidget-preview-placeholder">
+                        <div class="dashwidget-container">
+                                                        <div class="dashwidget-loading text-center">
+                                Widget Preview
+                            </div><!-- /dashwidget-loading -->
+                        </div><!-- /dashwidget-container -->
+                    </div><!-- /dashwidget-preview-placeholder -->
+
+                    <div id="dashwidget-preview-container"></div>
+
+                </div><!-- /modal-body -->
+                <div class="modal-footer">
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <button type="button" id="dashwidget-add-form-submit" class="btn btn-success btn-block"><i class="fa fa-plus fa-lg fa-spacer-right"></i>Add Widget
+                            </button>
+                        </div><!-- /col -->
+                        <div class="col-xs-6">
+                            <button type="button" class="btn btn-default btn-block" data-dismiss="modal">Cancel
+                            </button>
+                        </div><!-- /col -->
+                    </div><!-- /row -->
+                </div><!-- /modal-footer -->
+            </form><!-- /dashwidget-add-form -->
+        </div><!-- /modal-content -->
+    </div><!-- /modal-dialog -->
+</div><!-- /dashwidget-add-modal -->
+
+
+
+
+        
+
+                
+  </div><!-- /container-fluid -->
+</div><!-- /main-column -->
+
+
+        
+                <script async="" src="//www.google-analytics.com/analytics.js"></script><script src="/dist/js/sonnyapc.js?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5"></script>
+
+                        <!-- Google Analytics Tracker -->
+            <script>
+                (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function()
+                        { (i[r].q=i[r].q||[]).push(arguments)}
+                        ,i[r].l=1*new Date();a=s.createElement(o),
+                        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+                })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+                                    ga('create', 'UA-72722062-1', 'auto');
+                    ga('send', 'pageview');
+                
+                                    ga('create', 'UA-126680447-1', 'auto', 'pwaTracker');
+                            </script>
+            <!-- // Google Analytics Tracker -->
+                    
+<script src="/js/loading-spinner.js?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5"></script>
+<script src="/js/recalculate-plan-prices.js?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5"></script>
+<script src="/js/addtohomescreen.min.js?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5"></script>
+<script src="/datatables/jquery.dataTables.min.js?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5"></script>
+<script>
+    addToHomescreen({
+        skipFirstVisit: false,
+        maxDisplayCount: 1
+    });
+</script>
+
+<script src="/js/pwa/pwaManager.js?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5"></script>
+<script>pwaManager.initPWA("BPNcICYI8kqm_BWL6N0QMQBuOb8GHCqwEeJ8GGpTjcqZayBqzxFhgimFMRp1o5cRjH-1TS24jzIyrUxeZGWvOGk", "90ffa6defae00b36deab0bed67c5cfc5", "UA-126680447-1")</script>
+<script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+<script src="/js/app/theme/userClientSelector.js "></script>
+
+
+            <script src="/js/app/dashboard/salvattore.min.js?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5"></script>
+
+                <script src="/js/app/dashboard/Chart.min.js?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5"></script>
+
+        <script src="/js/app/dashboard/Chart.StackedBar.js?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5"></script>
+
+        <script src="/js/app/dashboard/clone.js?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5"></script>
+
+        <script src="/js/app/jquery-ui.min.js?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5"></script>
+
+        <script src="/js/app/jquery.fn.sortable.js?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5"></script>
+
+        <script src="/js/app/dashboard/dashboard.js?&amp;_cb=90ffa6defae00b36deab0bed67c5cfc5"></script>
+    
+    
+
+</body></html>
