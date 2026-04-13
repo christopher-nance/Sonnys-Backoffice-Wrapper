@@ -7,9 +7,22 @@ from typing import Any, Mapping
 
 from bs4 import BeautifulSoup
 
-from .exceptions import DuplicateError
-from .models import CreateEmployeeRequest, Permission, PermissionFieldMeta
+from .exceptions import (
+    BackofficeServerError,
+    DuplicateError,
+    ValidationError,
+)
+from .models import (
+    CreateEmployeeRequest,
+    Department,
+    EmployeeCreated,
+    Permission,
+    PermissionFieldMeta,
+)
+from .passwords import generate_pos_pin
 from .sites import SiteTree
+
+_NEW_EMP_ID_RE = re.compile(r"/employee/(?:edit|permissions|compensation)/(\d+)")
 
 _EMP_ID_RE = re.compile(r"/employee/(?:edit|permissions|compensation)/(\d+)")
 _DIGITS_ONLY_RE = re.compile(r"\D")
@@ -216,3 +229,102 @@ def build_employee_step2_permissions_payload(
         if perm.id in permission.overrides:
             payload.append((f"permissions[{perm.id}][requiresOverride]", "1"))
     return payload
+
+
+def _check_create_response(resp) -> None:
+    """Raise on server errors or known failure signals in the response body."""
+    if resp.status_code >= 500:
+        raise BackofficeServerError(f"server error: HTTP {resp.status_code}")
+    text = getattr(resp, "text", "") or ""
+    lowered = text.lower()
+    if "already exists" in lowered or "already taken" in lowered:
+        raise DuplicateError("record with this email or POS User ID already exists")
+
+
+def _extract_employee_id_from_response(resp) -> int:
+    """Pull the new employee_id out of the /employee/insert response."""
+    location = resp.headers.get("Location", "") if hasattr(resp, "headers") else ""
+    url = getattr(resp, "url", "") or ""
+    for candidate in (location, url):
+        m = _NEW_EMP_ID_RE.search(candidate or "")
+        if m:
+            return int(m.group(1))
+    text = getattr(resp, "text", "") or ""
+    m = re.search(r'name="employee\[id\]"\s+value="(\d+)"', text)
+    if m:
+        return int(m.group(1))
+    raise BackofficeServerError(
+        "could not extract new employee_id from /employee/insert response"
+    )
+
+
+def create_employee(
+    *,
+    session,
+    request: CreateEmployeeRequest,
+    site_tree: SiteTree,
+    departments: list[Department],
+    pos_permissions: list[Permission],
+    pos_permission_schema: list[PermissionFieldMeta],
+    bo_permissions: list[Permission] | None = None,
+    employee_index: EmployeeIndex | None = None,
+) -> EmployeeCreated:
+    """Orchestrate the two-step employee creation flow.
+
+    Pre-flight uniqueness check → POST /employee/insert → POST /employee/permissions/update.
+    """
+    from .permissions import resolve_permission
+
+    warnings_list: list[str] = []
+
+    pos_pin = request.pos_pin if request.pos_pin is not None else generate_pos_pin()
+    resolved_request = request.model_copy(update={"pos_pin": pos_pin})
+
+    if employee_index is not None:
+        employee_index.check(
+            pos_user_id=resolved_request.pos_user_id,
+            email=resolved_request.email,
+            phone=resolved_request.phone,
+        )
+
+    pos_perm, perm_warnings = resolve_permission(request.permission, pos_permissions)
+    warnings_list.extend(perm_warnings)
+
+    resolved_sites_for_wage = site_tree.resolve_all(resolved_request.available_sites)
+    if not resolved_sites_for_wage:
+        raise ValidationError("available_sites is empty — cannot resolve wage attribution site")
+    wage_site = resolved_sites_for_wage[0]
+
+    departments_by_name = {d.name: d.id for d in departments}
+
+    step1_payload = build_employee_step1_payload(
+        resolved_request,
+        site_tree=site_tree,
+        departments_by_name=departments_by_name,
+        wage_site_id=wage_site.id,
+    )
+    resp1 = session.post("/employee/insert", data=step1_payload)
+    _check_create_response(resp1)
+    employee_id = _extract_employee_id_from_response(resp1)
+
+    step2_payload = build_employee_step2_permissions_payload(
+        permission=pos_perm,
+        permission_schema=pos_permission_schema,
+        employee_id=employee_id,
+    )
+    resp2 = session.post("/employee/permissions/update", data=step2_payload)
+    _check_create_response(resp2)
+
+    return EmployeeCreated(
+        employee_id=employee_id,
+        pos_user_id=resolved_request.pos_user_id,
+        pos_pin=pos_pin,
+        first_name=resolved_request.first_name,
+        last_name=resolved_request.last_name,
+        email=resolved_request.email,
+        permission_applied=pos_perm.name,
+        sites_granted=[s.name for s in site_tree.resolve_all(resolved_request.available_sites)],
+        departments=list(resolved_request.departments or []),
+        wage_site=wage_site.name,
+        warnings=warnings_list,
+    )
