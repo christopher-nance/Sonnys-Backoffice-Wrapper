@@ -43,21 +43,24 @@ def test_availability_helpers_work(client):
 
 
 @pytest.mark.integration
-def test_create_and_disable_employee(client, unique_suffix, writes_allowed):
+def test_create_and_disable_employee(tracked_client, unique_suffix, writes_allowed):
     """Create one throwaway employee, verify the result, then disable.
 
     Requires ``SONNYS_ALLOW_WRITES=1``. Uses a random 5-digit POS ID in a
     reserved test range to avoid colliding with real records.
+    Tracks the POS ID with the session-scoped teardown fixture as a safety
+    net in case the inline cleanup fails.
     """
     pos_id = random.randint(90_000, 99_999)
-    while not client.is_pos_user_id_available(pos_id, refresh=True):
+    while not tracked_client.is_pos_user_id_available(pos_id, refresh=True):
         pos_id = random.randint(90_000, 99_999)
     email = f"wrapper-integration-{unique_suffix}@example.invalid"
-    first_site = client.list_sites()[0].name
+    first_site = tracked_client.list_sites()[0].name
 
+    tracked_client.track(pos_id)
     created = None
     try:
-        created = client.create_employee(
+        created = tracked_client.create_employee(
             first_name="WrapperIntegration",
             last_name=f"Test{unique_suffix}",
             phone="5555550001",
@@ -73,6 +76,7 @@ def test_create_and_disable_employee(client, unique_suffix, writes_allowed):
         assert created.employee_id > 0
         assert created.permission_applied == "General User"
     finally:
-        # Always attempt cleanup even if the assertions failed partway
+        # Primary cleanup path — the tracked teardown is a safety net for
+        # the case where this finally itself fails.
         with contextlib.suppress(Exception):
-            client.disable_employee(pos_user_id=pos_id)
+            tracked_client.disable_employee(pos_user_id=pos_id)
