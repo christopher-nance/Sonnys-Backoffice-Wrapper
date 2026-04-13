@@ -1,8 +1,10 @@
-"""Permission name resolution with case-insensitive matching and General User fallback."""
+"""Permission name resolution and parsing."""
 from __future__ import annotations
 
 import warnings
-from typing import Iterable
+from typing import Iterable, Literal
+
+from bs4 import BeautifulSoup
 
 from .models import Permission
 
@@ -37,3 +39,30 @@ def resolve_permission(
         f"{_DEFAULT_FALLBACK!r} not found in tenant's permission list — "
         "cannot apply fallback. Check tenant role configuration."
     )
+
+
+def parse_permissions(
+    html: str, *, scope: Literal["pos", "backoffice"]
+) -> list[Permission]:
+    """Extract role templates from a captured permissions page.
+
+    The POS page uses `<select name="templateId">` and the Backoffice page uses
+    `<select name="template">`. Both carry option values with integer IDs.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    perms: list[Permission] = []
+    sel = soup.find("select", attrs={"name": "templateId"}) or soup.find(
+        "select", attrs={"name": "template"}
+    )
+    if sel is None:
+        return perms
+    for opt in sel.find_all("option"):
+        val = (opt.get("value") or "").strip()
+        if not val:
+            continue
+        try:
+            pid = int(val)
+        except ValueError:
+            continue
+        perms.append(Permission(id=pid, name=opt.get_text(strip=True), scope=scope))
+    return perms
