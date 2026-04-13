@@ -4511,6 +4511,222 @@ Tests should point at `employee_permissions_54.html` for `scope="pos"`. On WashU
 
 The real field is a `<select name="employee[departments][]">` (multi-select), with options `1`=Cashier, `2`=Line, `3`=Greeter, `4`=Management on WashU. The selector in the task's first-try implementation is close but not quite right — the correct selector is `select[name='employee[departments][]'] option`. Update accordingly. Expected test: `"Greeter"` is in the result with id=3.
 
+### Delta D-5.0 (new task: pre-flight uniqueness check)
+
+Insert this as a new Task 5.0 in Phase 5, executed before Task 5.1. `create_employee` must pre-flight check the caller's `pos_user_id`, `email`, and `phone` against the tenant's existing employees and raise `DuplicateError` if any collide — all three are unique per tenant (see `project_uniqueness_constraints.md`).
+
+**Files:**
+- Modify: `src/sonnys_backoffice/employees.py` (add `EmployeeIndex` helper and `_check_uniqueness`)
+- Create: `tests/unit/test_employees_uniqueness.py`
+
+**Strategy:**
+- `EmployeeIndex` is an in-memory cache lazily built from two HTTP calls:
+  1. `GET /employee?limit=10000` — parsed via `parse_employee_list` helper → yields `{pos_user_id: employee_id, phone: employee_id}` for every row (emails are NOT in the list)
+  2. `GET /user/create` — parsed via `parse_user_create_employee_options` helper → yields `{email: employee_id}` from the `user[employeeId]` dropdown's `data-email` attributes
+- `SonnysBackofficeClient._employee_index` is the cache, populated lazily on first `create_employee` call, reused for subsequent calls in the same client, refreshable via `refresh=True`
+- `_check_uniqueness(request, index)` raises `DuplicateError` with a structured message: `"pos_user_id=XXXXX already exists on employee_id=YY (first_name last_name)"`
+
+**Code sketch** for the new `EmployeeIndex` class and helpers in `employees.py`:
+
+```python
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass, field
+from typing import Any
+
+from bs4 import BeautifulSoup
+
+from .exceptions import DuplicateError
+
+_EMP_ID_RE = re.compile(r"/employee/(?:edit|permissions|compensation)/(\d+)")
+_DIGITS_ONLY_RE = re.compile(r"\D")
+
+
+@dataclass
+class EmployeeIndex:
+    by_pos_user_id: dict[int, int] = field(default_factory=dict)
+    by_email: dict[str, int] = field(default_factory=dict)
+    by_phone: dict[str, int] = field(default_factory=dict)
+
+    def check(
+        self,
+        *,
+        pos_user_id: int,
+        email: str,
+        phone: str,
+    ) -> None:
+        """Raise DuplicateError if any of the three fields collides with an existing employee."""
+        if pos_user_id in self.by_pos_user_id:
+            existing = self.by_pos_user_id[pos_user_id]
+            raise DuplicateError(
+                f"pos_user_id={pos_user_id} already exists on employee_id={existing}"
+            )
+        normalized_email = email.strip().lower()
+        if normalized_email in self.by_email:
+            existing = self.by_email[normalized_email]
+            raise DuplicateError(
+                f"email={email!r} already exists on employee_id={existing}"
+            )
+        normalized_phone = _DIGITS_ONLY_RE.sub("", phone)
+        if normalized_phone in self.by_phone:
+            existing = self.by_phone[normalized_phone]
+            raise DuplicateError(
+                f"phone={phone!r} (normalized: {normalized_phone}) already exists on employee_id={existing}"
+            )
+
+
+def parse_employee_list(html: str) -> tuple[dict[int, int], dict[str, int]]:
+    """Parse /employee?limit=... HTML. Return (pos_user_id_map, phone_map)."""
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find("table", class_="table-employees-list")
+    if table is None:
+        return {}, {}
+    pos_map: dict[int, int] = {}
+    phone_map: dict[str, int] = {}
+    for row in table.find_all("tr"):
+        cells = row.find_all("td")
+        if len(cells) < 7:
+            continue
+        # Extract employee_id from any action link in the row
+        emp_id: int | None = None
+        for a in row.find_all("a", href=True):
+            m = _EMP_ID_RE.search(a["href"])
+            if m:
+                emp_id = int(m.group(1))
+                break
+        if emp_id is None:
+            continue
+        # Column positions: first_name, last_name, site, role, pos_login_id, department, phone, wage_mode, ...
+        # The exact indices come from employee_list.html in the fixtures — verify and adjust.
+        pos_id_text = cells[4].get_text(strip=True)
+        phone_text = cells[6].get_text(strip=True)
+        if pos_id_text.isdigit():
+            pos_map[int(pos_id_text)] = emp_id
+        phone_digits = _DIGITS_ONLY_RE.sub("", phone_text)
+        if phone_digits:
+            phone_map[phone_digits] = emp_id
+    return pos_map, phone_map
+
+
+def parse_user_create_employee_options(html: str) -> dict[str, int]:
+    """Parse /user/create HTML. Return {email: employee_id} from the user[employeeId] dropdown's data-email attrs."""
+    soup = BeautifulSoup(html, "html.parser")
+    sel = soup.find("select", attrs={"name": "user[employeeId]"})
+    if sel is None:
+        return {}
+    email_map: dict[str, int] = {}
+    for opt in sel.find_all("option"):
+        val = (opt.get("value") or "").strip()
+        if not val:
+            continue
+        try:
+            emp_id = int(val)
+        except ValueError:
+            continue
+        email = (opt.get("data-email") or "").strip().lower()
+        if email:
+            email_map[email] = emp_id
+    return email_map
+
+
+def build_employee_index(
+    *,
+    employee_list_html: str,
+    user_create_html: str,
+) -> EmployeeIndex:
+    """Combine both sources into a single index."""
+    pos_map, phone_map = parse_employee_list(employee_list_html)
+    email_map = parse_user_create_employee_options(user_create_html)
+    return EmployeeIndex(
+        by_pos_user_id=pos_map,
+        by_email=email_map,
+        by_phone=phone_map,
+    )
+```
+
+**Tests** (`tests/unit/test_employees_uniqueness.py`):
+
+```python
+from pathlib import Path
+
+import pytest
+
+from sonnys_backoffice.employees import (
+    EmployeeIndex,
+    build_employee_index,
+    parse_employee_list,
+    parse_user_create_employee_options,
+)
+from sonnys_backoffice.exceptions import DuplicateError
+
+FIXTURES = Path(__file__).parent.parent / "fixtures" / "html"
+
+
+def test_parse_employee_list_extracts_pos_id_and_phone():
+    html = (FIXTURES / "employee_list.html").read_text(encoding="utf-8")
+    pos_map, phone_map = parse_employee_list(html)
+    assert len(pos_map) >= 20  # default page has 25 employees
+    # Spot-check: at least one known employee from the fixture
+    assert any(eid > 0 for eid in pos_map.values())
+    assert all(isinstance(k, int) for k in pos_map.keys())
+    assert all(phone.isdigit() for phone in phone_map.keys())
+
+
+def test_parse_user_create_builds_email_map():
+    html = (FIXTURES / "user_create.html").read_text(encoding="utf-8")
+    email_map = parse_user_create_employee_options(html)
+    assert len(email_map) > 100  # WashU has hundreds
+    assert all("@" in e for e in email_map.keys())
+    assert all(e == e.lower() for e in email_map.keys())
+
+
+def test_employee_index_check_raises_on_pos_id_collision():
+    idx = EmployeeIndex(by_pos_user_id={1234: 99}, by_email={}, by_phone={})
+    with pytest.raises(DuplicateError, match="pos_user_id=1234"):
+        idx.check(pos_user_id=1234, email="new@example.com", phone="6155551234")
+
+
+def test_employee_index_check_raises_on_email_collision():
+    idx = EmployeeIndex(by_pos_user_id={}, by_email={"taken@example.com": 42}, by_phone={})
+    with pytest.raises(DuplicateError, match="email"):
+        idx.check(pos_user_id=99999, email="Taken@Example.com", phone="6155551234")  # case-insensitive
+
+
+def test_employee_index_check_raises_on_phone_collision():
+    idx = EmployeeIndex(by_pos_user_id={}, by_email={}, by_phone={"6155551234": 17})
+    with pytest.raises(DuplicateError, match="phone"):
+        idx.check(pos_user_id=99999, email="new@example.com", phone="(615) 555-1234")  # symbol strip
+
+
+def test_employee_index_check_ok_when_all_clear():
+    idx = EmployeeIndex(by_pos_user_id={1234: 99}, by_email={"taken@example.com": 42}, by_phone={"6155551234": 17})
+    # No exception
+    idx.check(pos_user_id=5678, email="new@example.com", phone="6155559999")
+```
+
+**Orchestrator wiring (Delta D-5.3 update):** at the start of `create_employee`, after input validation and before building the step-1 payload:
+
+```python
+    # Uniqueness pre-flight
+    if client_employee_index is None:
+        list_resp = session.get("/employee?limit=10000")
+        _check_create_response(list_resp)
+        user_create_resp = session.get("/user/create")
+        _check_create_response(user_create_resp)
+        client_employee_index = build_employee_index(
+            employee_list_html=list_resp.text,
+            user_create_html=user_create_resp.text,
+        )
+    client_employee_index.check(
+        pos_user_id=resolved_request.pos_user_id,
+        email=resolved_request.email,
+        phone=resolved_request.phone,
+    )
+```
+
+The client façade (Task 8.1) caches `_employee_index` on the `SonnysBackofficeClient` instance and passes it through.
+
 ### Delta D-5.1 (Task 5.1: `build_employee_step1_payload`)
 
 Replace the field-mapping section with the authoritative mapping from `exploration_notes.md`:

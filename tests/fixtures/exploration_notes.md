@@ -211,12 +211,34 @@ Not yet captured. Will be captured by visiting `/user/permissions/<id>` for an e
 - **No CSRF tokens anywhere** — do not waste code scraping for them.
 - **Schedule fields (`wage[scheduleDay][N][startTime/endTime]`) are tolerated as empty strings** — the wrapper can omit them or send empty values.
 
+## Employee list pagination and server-side search
+
+Probed during post-exploration follow-up. Findings:
+
+- **No server-side search.** None of the query parameters `?search=`, `?q=`, `?filter=`, `?name=`, or `?posLoginId=` filter the `/employee` list. All return the same 26 rows (25 data + header).
+- **`?limit=<N>` works.** `GET /employee?limit=1000` returned 193 rows in a single response (WashU has 192 active employees). This is the paging strategy the wrapper uses for bulk lookups — one call with a large limit instead of iterating pages.
+- Other pagination attempts that did NOT work: `?page=N`, `?per_page=N`, `?perPage=N`, `?pageSize=N`.
+
+**Implication:** the uniqueness pre-flight in `create_employee` fetches `/employee?limit=10000` once per client instance and caches the result. See plan Delta D-5.0.
+
+## Uniqueness lookup sources
+
+Employee-create pre-flight uniqueness checking uses two HTTP sources to cover all three unique fields:
+
+| Field | Source | Selector |
+|---|---|---|
+| `pos_user_id` | `GET /employee?limit=10000` | Column 5 of `table.table-employees-list` rows |
+| `phone` | `GET /employee?limit=10000` | Column 7 of same table, normalized by stripping non-digits |
+| `email` | `GET /user/create` | `select[name='user[employeeId]'] option[data-email]` |
+
+Employee ID is extracted from any `/employee/(edit|permissions|compensation)/<id>` href in the row (the rows don't have `data-employee-id` attributes).
+
 ## Open questions (for Task 1.4 and beyond)
 
 1. Does `POST /employee/permissions/update` accept just `templateId` + `employeeId`, or does it require the full `permissions[]` matrix?
 2. Does `POST /employee/update` accept a minimal `{employee[id], employee[isActive]=0}` payload, or does it require the full form round-trip?
 3. What's the response shape for a successful `/employee/insert`? Is the new `employee_id` in the redirect Location, in the response body, or must we re-fetch the employee list?
 4. What's the exact URL pattern for BO user permissions — `/user/permissions/<id>` or something else?
-5. Does `/employee?search=<query>` support server-side filtering for lookups, or do we always page through the full list?
+5. ~~Does `/employee?search=<query>` support server-side filtering for lookups, or do we always page through the full list?~~ **RESOLVED:** no server-side search. Use `?limit=<big>` instead. See "Employee list pagination" section above.
 6. What does Backoffice return on a duplicate email / POS ID submission — a 200 with an error banner, a 302 back to `/employee/create`, something else?
 7. What's the session expiration signal — a 302 to `/login`, a 401, or a full login-page HTML response?
