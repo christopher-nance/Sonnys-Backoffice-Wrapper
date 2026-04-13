@@ -1,0 +1,80 @@
+site_name: Sonny's Backoffice Wrapper
+site_url: https://christopher-nance.github.io/Sonnys-Backoffice-Wrapper/
+site_description: Programmatic user management for Sonny's Carwash Controls Backoffice
+repo_url: https://github.com/christopher-nance/Sonnys-Backoffice-Wrapper
+repo_name: christopher-nance/Sonnys-Backoffice-Wrapper
+docs_dir: docs
+
+exclude_docs: |
+  superpowers/
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - content.code.copy
+    - content.code.annotate
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: false
+            show_root_heading: true
+            members_order: source
+            docstring_style: google
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quickstart: getting-started/quickstart.md
+      - Authentication & bot setup: getting-started/auth.md
+  - Guides:
+      - Creating an employee: guides/create-employee.md
+      - Creating a Backoffice user: guides/create-backoffice-user.md
+      - Disabling an employee: guides/disable-employee.md
+      - Sites, regions & districts: guides/sites-regions-districts.md
+      - Permissions & roles: guides/permissions.md
+      - Bulk operations: guides/bulk-operations.md
+      - Error handling: guides/error-handling.md
+  - Examples:
+      - Onboard a new hire: examples/onboard-new-hire.md
+      - Bulk disable from CSV: examples/bulk-disable-from-csv.md
+      - Sync from an HRIS: examples/hris-sync.md
+  - API Reference:
+      - Client: reference/client.md
+      - Models: reference/models.md
+      - Exceptions: reference/exceptions.md
+  - Troubleshooting: troubleshooting.md
+  - Changelog: changelog.md
