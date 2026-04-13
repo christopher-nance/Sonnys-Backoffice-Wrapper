@@ -8,7 +8,7 @@ from typing import Any, Mapping
 from bs4 import BeautifulSoup
 
 from .exceptions import DuplicateError
-from .models import CreateEmployeeRequest
+from .models import CreateEmployeeRequest, Permission, PermissionFieldMeta
 from .sites import SiteTree
 
 _EMP_ID_RE = re.compile(r"/employee/(?:edit|permissions|compensation)/(\d+)")
@@ -186,4 +186,33 @@ def build_employee_step1_payload(
             payload["employee[isAllSitesAllowed]"] = "0"
             payload["employee[siteIds][]"] = [s.id for s in resolved_sites]
 
+    return payload
+
+
+def build_employee_step2_permissions_payload(
+    *,
+    permission: Permission,
+    permission_schema: list[PermissionFieldMeta],
+    employee_id: int,
+    has_action_approval_authority: bool = False,
+) -> list[tuple[str, str]]:
+    """Build the `/employee/permissions/update` payload.
+
+    Symfony's form binding treats the *presence* of a checkbox field as
+    "checked = true" regardless of the value, so `hasGrantAccess` and
+    `requiresOverride` are only emitted when their respective flags are set.
+    """
+    payload: list[tuple[str, str]] = [
+        ("employeeId", str(employee_id)),
+        ("templateId", str(permission.id)),
+        ("hasActionApprovalAuthority", "1" if has_action_approval_authority else "0"),
+    ]
+    for perm in permission_schema:
+        payload.append((f"permissions[{perm.id}][id]", str(perm.id)))
+        payload.append((f"permissions[{perm.id}][label]", perm.label))
+        payload.append((f"permissions[{perm.id}][description]", perm.description))
+        if perm.id in permission.grants:
+            payload.append((f"permissions[{perm.id}][hasGrantAccess]", "1"))
+        if perm.id in permission.overrides:
+            payload.append((f"permissions[{perm.id}][requiresOverride]", "1"))
     return payload

@@ -233,3 +233,11 @@ class Permission(_BackofficeBaseModel):
     id: int
     name: str
     scope: Literal["pos", "backoffice"]
+    grants: frozenset[int] = Field(default_factory=frozenset)
+    overrides: frozenset[int] = Field(default_factory=frozenset)
+
+
+class PermissionFieldMeta(_BackofficeBaseModel):
+    id: int
+    label: str
+    description: str
