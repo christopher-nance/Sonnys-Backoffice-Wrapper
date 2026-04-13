@@ -49,3 +49,39 @@ def test_login_failure_raises_authentication_error():
         )
         with pytest.raises(AuthenticationError):
             s.login()
+
+
+def test_request_retries_once_on_session_expired():
+    s = _BackofficeSession(subdomain="washu", username="bot", password="secret")
+    with requests_mock.Mocker() as m:
+        m.get("https://washu.sonnyscontrols.com/login", text=LOGIN_HTML)
+        m.post(
+            "https://washu.sonnyscontrols.com/login_check",
+            status_code=302,
+            headers={"Location": "/"},
+        )
+        m.get("https://washu.sonnyscontrols.com/", text="<html><body>Home</body></html>")
+        m.get(
+            "https://washu.sonnyscontrols.com/employee",
+            [
+                {"text": LOGIN_HTML, "status_code": 200},
+                {"text": "<html><body>employees</body></html>", "status_code": 200},
+            ],
+        )
+        resp = s.get("/employee")
+        assert "employees" in resp.text
+
+
+def test_request_raises_after_second_expiration():
+    s = _BackofficeSession(subdomain="washu", username="bot", password="secret")
+    with requests_mock.Mocker() as m:
+        m.get("https://washu.sonnyscontrols.com/login", text=LOGIN_HTML)
+        m.post(
+            "https://washu.sonnyscontrols.com/login_check",
+            status_code=302,
+            headers={"Location": "/"},
+        )
+        m.get("https://washu.sonnyscontrols.com/", text="<html><body>Home</body></html>")
+        m.get("https://washu.sonnyscontrols.com/employee", text=LOGIN_HTML)
+        with pytest.raises(AuthenticationError, match="Re-authentication"):
+            s.get("/employee")
