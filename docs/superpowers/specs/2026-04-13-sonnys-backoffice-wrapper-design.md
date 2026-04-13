@@ -1,8 +1,10 @@
 # Sonny's Backoffice Wrapper — Milestone 1 Design
 
 **Date:** 2026-04-13
-**Status:** Approved
+**Status:** Approved — revised after Phase 1 exploration on 2026-04-13
 **Owner:** Christopher Nance
+
+> **Revision note (2026-04-13, post-exploration):** This spec was originally written before the `washu` test tenant was explored with Playwright. That exploration surfaced several deltas from the pre-exploration assumptions (wage subsystem, permission template matrix, disable via `employee[isActive]`, numeric POS credentials, Symfony stack with no CSRF tokens). The sections below have been revised in place to match what the live tenant actually serves. The authoritative source for exact form field names, URL patterns, and HTML selectors is `tests/fixtures/exploration_notes.md`.
 
 ## 1. Scope & Goals
 
@@ -200,16 +202,17 @@ class SonnysBackofficeClient:
         last_name: str,
         phone: str,                              # 9 or 10 digits after stripping symbols
         email: str,                              # Must contain @domain.tld
-        pos_user_id: str,                        # Caller-assigned POS login ID
-        pos_pin: str | None = None,              # Auto-generated 5-digit if None
-        wage_rate: Decimal | float,              # Dollars per hour
+        pos_user_id: int,                        # Caller-assigned numeric POS login ID (Backoffice stores as integer)
+        pos_pin: int | None = None,              # 5-digit numeric PIN; auto-generated if None
+        wage_rate: Decimal | float,              # Dollars per hour. Applies globally across all sites the employee can work at.
         overtime_wage_rate: Decimal | float | None = None,  # Defaults to wage_rate * 1.5
         start_date: datetime,
         available_sites: list[str] | Literal["all"],
         departments: list[str] | None = None,    # Defaults to ["Greeter"]; "Greeter" auto-added if missing
-        permission: str = "General User",        # Case-insensitive
+        permission: str = "General User",        # Case-insensitive; matched against the POS permission-template list
         emergency_contact_name: str | None = None,
         emergency_contact_phone: str | None = None,
+        adp_employee_id: str | None = None,      # Optional ADP report linkage
         requires_backoffice: bool = False,
         backoffice_username: str | None = None,  # Required if requires_backoffice=True
         backoffice_password: str | None = None,  # Auto-generated 12-char if None
@@ -218,7 +221,7 @@ class SonnysBackofficeClient:
     def disable_employee(
         self,
         *,
-        pos_user_id: str | None = None,          # Exactly one of pos_user_id / email required
+        pos_user_id: int | None = None,          # Exactly one of pos_user_id / email required
         email: str | None = None,
     ) -> EmployeeDisabled: ...
 ```
@@ -248,17 +251,18 @@ class SonnysBackofficeClient:
 ```python
 class EmployeeCreated(BaseModel):
     employee_id: int                       # Backoffice internal ID
-    pos_user_id: str
-    pos_pin: str                           # Returned regardless of who generated it
+    pos_user_id: int
+    pos_pin: int                           # Returned regardless of who generated it (5-digit numeric)
     first_name: str
     last_name: str
     email: str
     backoffice_user_id: int | None = None  # Populated only if requires_backoffice=True
     backoffice_username: str | None = None
     backoffice_password: str | None = None
-    permission_applied: str                # Actual permission set (may differ from requested if fallback fired)
+    permission_applied: str                # Actual permission template name (may differ from requested if fallback fired)
     sites_granted: list[str]
     departments: list[str]
+    wage_site: str                         # Site name to which the wage entry was booked (arbitrary tie-breaker among available_sites)
     warnings: list[str] = []
 
 class BackofficeUserCreated(BaseModel):
@@ -273,7 +277,7 @@ class BackofficeUserCreated(BaseModel):
 
 class EmployeeDisabled(BaseModel):
     employee_id: int
-    pos_user_id: str
+    pos_user_id: int
     email: str | None
     disabled_at: datetime
 ```
@@ -427,11 +431,38 @@ For the record, these decisions were made through interactive clarification and 
 - **License:** Copied verbatim from `sonnys-data-client` (Wash Associates Business Internal Use License 1.0).
 - **Docs:** MkDocs Material + mkdocstrings, deployed to GitHub Pages via `mkdocs gh-deploy`.
 
+### Additional decisions from Phase 1 exploration (2026-04-13)
+
+- **Stack:** Backoffice is a Symfony + PHP application. No CSRF tokens anywhere (login, create forms, permission forms). Session cookie is `PHPSESSID`. The `_BackofficeSession` implementation does not scrape CSRF tokens — it only manages cookies.
+- **Login endpoint:** `POST /login_check` with `_username` / `_password` fields (Symfony Security Component convention). Success redirects to `/` (home dashboard). Failure re-renders `/login`.
+- **POS credentials are numeric.** `posCredential[POSLoginID]` and `posCredential[POSLoginPassword]` are both `type=number` in the form. Public API types are `pos_user_id: int` and `pos_pin: int`.
+- **Wage applies globally.** Even though the form has a `wage[siteId]` field (required, selects exactly one site), the wage rate applies to the employee at all sites they can work at. Wages are versioned over time via the `/employee/compensation/<id>` page, each entry attached to a site for bookkeeping with `effectiveDate`. For Milestone 1, `create_employee` creates one initial wage entry and uses the first site in `available_sites` as its `wage[siteId]`. The result's `wage_site` field reports which site was used. Managing additional wage entries is deferred to modify work.
+- **Hourly only.** `wage[isHourly]=1` is hardcoded for Milestone 1. Salaried employees are out of scope; calling `create_employee` always creates an hourly wage.
+- **Permissions are template-driven, not role-picked.** The permissions page is a 30+ permission matrix, but the server applies sensible defaults when a `templateId` is set. The wrapper passes only `templateId` + `employeeId` + `hasActionApprovalAuthority` and lets the server fill the matrix. Available POS templates on WashU: Manager, Cashier, General User, General Manager, Assistant Manager, Shift Leader, CSA. Note: **no "Administrator" on the POS side** — that role exists only on the Backoffice side. The `permission` kwarg is matched against POS templates for the employee flow and against BO templates for the Backoffice user flow independently; the POS/BO permission-name symmetry rule applies only when `requires_backoffice=True`.
+- **Disable mechanism.** No dedicated disable endpoint. Disable is a `POST /employee/update` with `employee[isActive]=0`. The wrapper first tries a minimal two-field POST (id + isActive); if the tenant's Symfony configuration rejects that or wipes other fields (detected via a GET-after-POST sanity check during Phase 1.4 testing), fall back to a full-form read-modify-write.
+- **`employee[adpEmployeeId]` is optional** and exposed via the `adp_employee_id` kwarg.
+- **URL map (confirmed from exploration):**
+  - `GET /login` → login page
+  - `POST /login_check` → login submit
+  - `GET /employee` → employee list
+  - `GET /employee/create` → create form
+  - `POST /employee/insert` → create submit (step 1)
+  - `GET /employee/edit/<id>` → edit form (and the source for disable's full round-trip, if needed)
+  - `POST /employee/update` → edit submit (used for disable)
+  - `GET /employee/permissions/<id>` → permissions editor
+  - `POST /employee/permissions/update` → permissions submit (step 2 of create)
+  - `GET /employee/compensation/<id>` → wage editor (future modify work)
+  - `GET /user` → BO user list
+  - `GET /user/create` → BO user create form
+  - `POST /user/insert` → BO user submit (step 1)
+  - `GET /user/permissions/<id>` → BO user permissions editor (URL pattern to confirm in Phase 1.4)
+  - `POST /user/permissions/update` → BO user permissions submit (URL to confirm in Phase 1.4)
+
 ## 8. Risks and Mitigations
 
 **Sonny's changes Backoffice HTML structure.** The form builders read field names from HTML fixtures, so a Sonny's update could break the library silently or produce malformed payloads. **Mitigation:** integration tests against the live tenant catch it immediately. `scripts/explore.py` is committed so regenerating fixtures is a one-command job. `BackofficeServerError` includes the parse failure reason to make diagnosis fast.
 
-**Session expiration semantics unknown until exploration.** The re-auth logic hinges on correctly detecting "session expired." **Mitigation:** Step 2 of the exploration plan specifically probes this. The fallback if detection is fuzzy is to trigger re-auth on any unexpected non-200 or HTML containing a login form.
+**Session expiration semantics.** Exploration confirmed that login succeeds via `POST /login_check` with a 302 redirect to `/`, and Backoffice uses a PHPSESSID cookie. The exact expiration signal (302 → `/login` vs. 401 vs. HTML containing a login form) was not forced during Phase 1 and will be confirmed during integration testing. **Mitigation:** `_BackofficeSession` detects "HTML body contains `_username`/`_password` inputs" as a session-expired sentinel and re-authenticates transparently.
 
 **The two-step create flow has no transaction.** If step 2 (permissions POST) fails after step 1 (basic info POST) succeeded, a half-created user exists on the tenant. **Mitigation:** The library attempts a cleanup POST (disable the half-created user) on step-2 failure, and the error message clearly states whether cleanup succeeded. Documented in the error handling guide.
 

@@ -4,13 +4,15 @@
 
 **Goal:** Ship Milestone 1 of `sonnys-backoffice-wrapper` — a pip-installable Python library with `create_employee`, `disable_employee`, and `create_backoffice_user`, plus discovery helpers, tests, and a published MkDocs Material docs site.
 
-**Architecture:** Pure-`requests` HTTP client that drives Sonny's Backoffice HTML forms directly. `SonnysBackofficeClient` is a thin façade over feature modules. `_BackofficeSession` owns auth and transparent re-login. Form builders are deterministic pure functions tested against captured HTML fixtures. Pydantic v2 handles input validation and result typing. Site hierarchy (flat vs regions/districts) is auto-detected from the `/employee/create` page on first use.
+**Architecture:** Pure-`requests` HTTP client that drives Sonny's Backoffice HTML forms directly. `SonnysBackofficeClient` is a thin façade over feature modules. `_BackofficeSession` owns auth and transparent re-login (cookie-based, no CSRF). Form builders are deterministic pure functions tested against captured HTML fixtures. Pydantic v2 handles input validation and result typing. Site hierarchy (flat vs regions/districts) is auto-detected from the `/employee/create` page on first use.
 
 **Tech Stack:** Python 3.10+, requests, beautifulsoup4, pydantic 2.x, pytest, ruff, hatchling, mkdocs-material, mkdocstrings, playwright (dev-only for fixture recording).
 
 **Spec:** See `docs/superpowers/specs/2026-04-13-sonnys-backoffice-wrapper-design.md`.
 
 **Phase gate:** Phase 1 (exploration) must complete before any code in Phases 4–8 is written. Form builders depend on fixtures captured in Phase 1.
+
+**⚠ Post-exploration deltas (2026-04-13):** Phase 1 read-only exploration is complete. Fixtures are committed and `tests/fixtures/exploration_notes.md` is authoritative for URLs, form field names, and required fields. Several code examples in Tasks 2.3, 3.1, 4.3, 5.1, 5.2, 5.3, 6.1, 6.2, 7.1 were written before exploration and contain guessed field names that **do not match reality**. See the "Post-Exploration Deltas" appendix at the end of this document for the authoritative replacements. When dispatching subagents for those tasks, pass the delta text alongside the original task text — the delta overrides.
 
 **Durable rules from memory:**
 - No writes to Backoffice without explicit per-action approval. Read-only exploration is pre-approved. Any form submission requires a pause-and-confirm.
@@ -4412,3 +4414,379 @@ The docs workflow deploys to GitHub Pages automatically on push.
 **Type consistency:** `SiteTree`, `_BackofficeSession`, `CreateEmployeeRequest`, `EmployeeCreated`, etc. are referenced consistently across tasks. `resolve_permission` returns `(Permission, list[str])` in both definition and call sites. `create_linked_backoffice_user` signature in `bo_users.py` matches the call site in `employees.py`.
 
 **Deferred dependencies on exploration fixtures:** Every fixture-dependent task (Tasks 3.1, 4.1, 4.2, 4.3, 5.1, 6.1) explicitly notes that selectors and field names must be updated after Phase 1 completes, and the `test_payload_matches_recorded_fixture` test in Task 5.1 is the authoritative check that the form builder matches the real recorded POST.
+
+---
+
+## Post-Exploration Deltas (2026-04-13)
+
+This appendix lists authoritative corrections to the task code examples above, based on findings in `tests/fixtures/exploration_notes.md`. When dispatching a subagent for any task below, pass the delta **alongside** the original task text and instruct the subagent that the delta takes precedence.
+
+### General
+
+- **No CSRF tokens** anywhere in Backoffice. Delete any CSRF-scraping logic from `session.py` task code. The `_parse_login_form` function in Task 3.1 should only return the form action — no token.
+- **Session cookie:** `PHPSESSID`.
+- **Stack:** Symfony + PHP.
+- **Session-expired detection signal:** the `_looks_like_login_page` helper from Task 3.1 is correct in spirit — look for `name="_username"` and `name="_password"` in response bodies. Update the specific string from `"username"` to `"_username"` (Symfony convention).
+
+### Delta D-2.3 (Task 2.3: `CreateEmployeeRequest`)
+
+- **Type changes:**
+  - `pos_user_id: int` (was `str`). The underlying field `posCredential[POSLoginID]` is `type=number`.
+  - `pos_pin: int | None = None` (was `str | None`). The underlying field `posCredential[POSLoginPassword]` is `type=number`.
+- **Add optional kwarg:** `adp_employee_id: str | None = None` (maps to `employee[adpEmployeeId]`, text input).
+- **Remove `_validate_pos_pin` regex test** that requires "exactly 5 digits as a string". Replace with a validator that accepts either a 5-digit int or `None`, and rejects ints outside the 5-digit range (10000-99999).
+- **Tests that check `pos_pin="12345"`** must pass an int `12345` instead.
+
+### Delta D-2.2 (Task 2.2: `generate_pos_pin`)
+
+- Return type: `int` (was `str`). The generator should return a 5-digit random integer in the range 10000-99999. Update the test assertions accordingly (`isinstance(pin, int)` and `10000 <= pin <= 99999`). The existing string-based `isdigit()` test is wrong for the new signature — replace it.
+
+### Delta D-3.1 (Task 3.1: `_BackofficeSession.login`)
+
+Replace the `login()` method implementation with:
+
+```python
+def login(self) -> None:
+    """Perform login. Safe to call repeatedly."""
+    login_page = self._http.get(f"{self.base_url}/login", timeout=self._timeout)
+    login_page.raise_for_status()
+    # Symfony login form — no CSRF, just _username/_password
+    resp = self._http.post(
+        f"{self.base_url}/login_check",
+        data={
+            "_username": self._username,
+            "_password": self._password,
+        },
+        timeout=self._timeout,
+        allow_redirects=True,
+    )
+    if _looks_like_login_page(resp.text):
+        raise AuthenticationError("Login failed — credentials rejected by Backoffice")
+    if resp.status_code >= 400:
+        raise BackofficeServerError(f"Unexpected login response: HTTP {resp.status_code}")
+    self._logged_in = True
+```
+
+Delete `_parse_login_form` entirely — there's no CSRF token to extract. Update `_looks_like_login_page` to:
+
+```python
+def _looks_like_login_page(html: str) -> bool:
+    return 'name="_username"' in html and 'name="_password"' in html
+```
+
+Update `test_login_extracts_csrf_and_posts_credentials` to drop the CSRF assertion and just verify `_username`/`_password` appear in the POST body, target URL is `/login_check`.
+
+### Delta D-4.3 (Task 4.3: `parse_permissions`)
+
+The real permissions page (`/employee/permissions/<id>`) has a `templateId` select as the public-facing role picker and a hidden `permissions[N][...]` matrix of individual permissions. The wrapper's `Permission` domain model represents the *template*, not individual matrix entries.
+
+Replace the `parse_permissions` implementation with:
+
+```python
+from typing import Literal
+from bs4 import BeautifulSoup
+
+def parse_permissions(html: str, *, scope: Literal["pos", "backoffice"]) -> list[Permission]:
+    """Extract role templates from a captured /employee/permissions/<id> (or BO equivalent) page."""
+    soup = BeautifulSoup(html, "html.parser")
+    perms: list[Permission] = []
+    sel = soup.find("select", attrs={"name": "templateId"})
+    if sel is None:
+        return perms
+    for opt in sel.find_all("option"):
+        val = (opt.get("value") or "").strip()
+        if not val:
+            continue
+        try:
+            pid = int(val)
+        except ValueError:
+            continue
+        perms.append(Permission(id=pid, name=opt.get_text(strip=True), scope=scope))
+    return perms
+```
+
+Tests should point at `employee_permissions_54.html` for `scope="pos"`. On WashU, expected templates: Manager, Cashier, General User, General Manager, Assistant Manager, Shift Leader, CSA (note no Administrator on POS side).
+
+### Delta D-4.2 (Task 4.2: `parse_departments`)
+
+The real field is a `<select name="employee[departments][]">` (multi-select), with options `1`=Cashier, `2`=Line, `3`=Greeter, `4`=Management on WashU. The selector in the task's first-try implementation is close but not quite right — the correct selector is `select[name='employee[departments][]'] option`. Update accordingly. Expected test: `"Greeter"` is in the result with id=3.
+
+### Delta D-5.1 (Task 5.1: `build_employee_step1_payload`)
+
+Replace the field-mapping section with the authoritative mapping from `exploration_notes.md`:
+
+```python
+def build_employee_step1_payload(
+    request: CreateEmployeeRequest,
+    *,
+    site_tree: SiteTree,
+    departments_by_name: Mapping[str, int],
+    wage_site_id: int,            # new required arg — resolved by the orchestrator
+) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        # Personal
+        "employee[firstName]": request.first_name,
+        "employee[lastName]": request.last_name,
+        "employee[phone]": request.phone,
+        "employee[email]": request.email,
+        "employee[startDate]": request.start_date.strftime("%m/%d/%Y"),
+        # POS credentials (separate prefix, numeric)
+        "posCredential[POSLoginID]": str(request.pos_user_id),
+        "posCredential[POSLoginPassword]": str(request.pos_pin),
+        # Wage (hourly only for Milestone 1)
+        "wage[isHourly]": "1",
+        "wage[regularRate]": f"{request.wage_rate:.2f}",
+        "wage[overtimeRate]": f"{request.overtime_wage_rate:.2f}",
+        "wage[isOvertimeEligible]": "1",
+        "wage[siteId]": str(wage_site_id),
+    }
+    if request.adp_employee_id:
+        payload["employee[adpEmployeeId]"] = request.adp_employee_id
+    if request.emergency_contact_name:
+        payload["employee[emergencyContactName]"] = request.emergency_contact_name
+    if request.emergency_contact_phone:
+        payload["employee[emergencyContactPhone]"] = request.emergency_contact_phone
+
+    # Departments (array of ids)
+    dept_ids = []
+    for dept_name in request.departments or []:
+        did = departments_by_name.get(dept_name)
+        if did is not None:
+            dept_ids.append(did)
+    payload["employee[departments][]"] = dept_ids
+
+    # Site availability (hierarchy vs flat — same shape as original task code)
+    resolved_sites = site_tree.resolve_all(request.available_sites)
+    if site_tree.is_hierarchical:
+        enabled_region_ids = {s.region_id for s in resolved_sites if s.region_id}
+        enabled_district_ids = {s.district_id for s in resolved_sites if s.district_id}
+        if request.available_sites == "all":
+            payload["employee[isAllRegionsAllowed]"] = "1"
+        else:
+            payload["employee[isAllRegionsAllowed]"] = "0"
+            payload["employee[disabledRegions][]"] = [
+                r.id for r in site_tree.regions if r.id not in enabled_region_ids
+            ]
+            payload["employee[disabledDistricts][]"] = [
+                d.id for d in site_tree.districts if d.id not in enabled_district_ids
+            ]
+            enabled_site_ids = {s.id for s in resolved_sites}
+            for s in site_tree.sites:
+                payload[f"employee[sites][{s.id}][isAvailable]"] = "1" if s.id in enabled_site_ids else "0"
+                payload[f"employee[sites][{s.id}][siteId]"] = str(s.id)
+    else:
+        # Flat tenant: uncertain field shape until a flat-tenant fixture is captured.
+        # Use the spec's assumed shape as a first cut; revisit when a flat fixture exists.
+        if request.available_sites == "all":
+            payload["employee[isAllSitesAllowed]"] = "1"
+        else:
+            payload["employee[isAllSitesAllowed]"] = "0"
+            payload["employee[siteIds][]"] = [s.id for s in resolved_sites]
+
+    return payload
+```
+
+The test file must pass a `wage_site_id` fixture value and set `pos_user_id` and `pos_pin` as ints.
+
+### Delta D-5.2 (Task 5.2: `build_employee_step2_permissions_payload`)
+
+Replace entirely:
+
+```python
+def build_employee_step2_permissions_payload(
+    *,
+    permission: Permission,
+    employee_id: int,
+    has_action_approval_authority: bool = False,
+) -> dict[str, Any]:
+    """Minimal permissions POST — sets the templateId and lets the server apply defaults."""
+    return {
+        "employeeId": str(employee_id),
+        "templateId": str(permission.id),
+        "hasActionApprovalAuthority": "1" if has_action_approval_authority else "0",
+    }
+```
+
+The tests must check:
+- `"templateId"` key with the role's id (integer-as-string)
+- `"employeeId"` key with the employee's id
+- `"hasActionApprovalAuthority"` key with "0" or "1"
+
+NO `"employee[permissionId]"` — that was a pre-exploration guess.
+
+### Delta D-5.3 (Task 5.3: `create_employee` orchestrator)
+
+Before building the step-1 payload, the orchestrator must resolve the wage site:
+
+```python
+# Wage site resolution: pick the first resolvable site from the caller's request
+# (wage rate applies globally but the form requires attribution to one site).
+resolved_sites_for_wage = site_tree.resolve_all(resolved_request.available_sites)
+if not resolved_sites_for_wage:
+    raise ValidationError("available_sites is empty — cannot resolve wage attribution site")
+wage_site = resolved_sites_for_wage[0]
+```
+
+Pass `wage_site_id=wage_site.id` to `build_employee_step1_payload`. Include `wage_site.name` in the returned `EmployeeCreated.wage_site` field.
+
+Update POST URLs:
+- Step 1 target is `/employee/insert` (unchanged).
+- Step 2 target is `/employee/permissions/update` (not `/employee/<id>/permissions`).
+- New employee ID is extracted from the redirect location (typically `/employee/edit/<id>` or `/employee/permissions/<id>`); the existing regex `r"/employee/(?:edit|permissions)/(\d+)"` covers both.
+
+Add `wage_site=wage_site.name` to the `EmployeeCreated(...)` constructor call. The `EmployeeCreated` model (Task 2.5) must have a `wage_site: str` field — add it there.
+
+### Delta D-2.5 (Task 2.5: output models)
+
+Add `wage_site: str` to `EmployeeCreated`:
+
+```python
+class EmployeeCreated(_BackofficeBaseModel):
+    employee_id: int
+    pos_user_id: int
+    pos_pin: int
+    first_name: str
+    last_name: str
+    email: str
+    backoffice_user_id: int | None = None
+    backoffice_username: str | None = None
+    backoffice_password: str | None = None
+    permission_applied: str
+    sites_granted: list[str]
+    departments: list[str]
+    wage_site: str
+    warnings: list[str] = Field(default_factory=list)
+```
+
+Same for `EmployeeDisabled`:
+
+```python
+class EmployeeDisabled(_BackofficeBaseModel):
+    employee_id: int
+    pos_user_id: int
+    email: str | None = None
+    disabled_at: datetime
+```
+
+### Delta D-6.1 (Task 6.1: `find_employee_in_list_html`)
+
+The real employee list table doesn't have `data-employee-id` attributes on `<tr>`. Employee IDs must be extracted from the action links in the last column (`/employee/edit/<id>`, `/employee/permissions/<id>`, etc.).
+
+Replace the lookup implementation:
+
+```python
+import re
+from bs4 import BeautifulSoup
+
+from .exceptions import NotFoundError
+
+
+_EMP_ID_RE = re.compile(r"/employee/(?:edit|permissions|compensation)/(\d+)")
+
+
+def find_employee_in_list_html(
+    html: str,
+    *,
+    pos_user_id: int | None = None,
+    email: str | None = None,
+) -> int:
+    if not (pos_user_id or email):
+        raise ValueError("pos_user_id or email is required")
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find("table", class_="table-employees-list")
+    if table is None:
+        raise NotFoundError("employee list table not found in HTML")
+    rows = table.find_all("tr")
+    pos_user_id_str = str(pos_user_id) if pos_user_id is not None else None
+    for row in rows:
+        # Extract candidate employee_id from any action link in the row
+        emp_id: int | None = None
+        for a in row.find_all("a", href=True):
+            m = _EMP_ID_RE.search(a["href"])
+            if m:
+                emp_id = int(m.group(1))
+                break
+        if emp_id is None:
+            continue
+        cells = [c.get_text(strip=True) for c in row.find_all(["td", "th"])]
+        row_text = " | ".join(cells)
+        if pos_user_id_str and pos_user_id_str in row_text:
+            return emp_id
+        if email and email.lower() in row_text.lower():
+            return emp_id
+    raise NotFoundError(
+        f"no employee found for "
+        f"{'pos_user_id=' + str(pos_user_id) if pos_user_id else 'email=' + (email or '')}"
+    )
+```
+
+**Known limitation:** the visible list columns may not include email. If email lookup fails via the list scan, the wrapper falls back to iterating the list and fetching each `/employee/edit/<id>` to check the email field server-side — that's too slow for production and is deferred. For Milestone 1, **document that email lookup on `disable_employee` requires the email to appear in the employee list's visible columns**. If the caller has only an email and it's not in the list, they get `NotFoundError` with a hint to use `pos_user_id` instead. (Alternatively, a server-side search param `/employee?search=...` may exist — test during Task 1.4.)
+
+### Delta D-6.2 (Task 6.2: `disable_employee`)
+
+The disable endpoint is NOT `/employee/<id>/disable`. Replace the implementation body:
+
+```python
+def disable_employee(
+    *,
+    session: Any,
+    request: DisableEmployeeRequest,
+) -> EmployeeDisabled:
+    # Step 1: look up employee_id
+    list_resp = session.get("/employee")
+    _check_create_response(list_resp)
+    employee_id = find_employee_in_list_html(
+        list_resp.text,
+        pos_user_id=request.pos_user_id,
+        email=request.email,
+    )
+
+    # Step 2: try a minimal POST first
+    minimal_payload = {
+        "employee[id]": str(employee_id),
+        "employee[isActive]": "0",
+    }
+    resp = session.post("/employee/update", data=minimal_payload)
+    _check_create_response(resp)
+
+    # Step 3: sanity check — re-fetch the edit page and confirm isActive=0 and
+    # that the employee's first_name/last_name are still populated (minimal-POST
+    # did not wipe other fields). If the sanity check fails, fall back to a
+    # full round-trip (GET /employee/edit/<id>, parse every field, flip isActive,
+    # POST back). The full-roundtrip fallback is NOT implemented in the initial
+    # cut — it's a follow-up if Task 1.4 testing proves minimal POST is unsafe.
+    verify_resp = session.get(f"/employee/edit/{employee_id}")
+    if '"employee[isActive]"' in verify_resp.text and 'value="1"' in verify_resp.text:
+        raise BackofficeServerError(
+            f"disable POST accepted but employee {employee_id} is still active — "
+            "minimal-POST approach is not working on this tenant; "
+            "implement the full-round-trip fallback"
+        )
+
+    return EmployeeDisabled(
+        employee_id=employee_id,
+        pos_user_id=request.pos_user_id or 0,
+        email=request.email,
+        disabled_at=datetime.now(timezone.utc),
+    )
+```
+
+### Delta D-7.1 (Task 7.1: BO user creation)
+
+- `/user/insert` form fields confirmed: `employee[isOnSiteEmployee]`, `user[employeeId]`, `employee[firstName]`, `employee[lastName]`, `employee[email]`, `user[username]`, `user[password]`, `user[confirmPassword]`, `user[linkExistingAccount]`.
+- The step-2 permissions URL for BO users is not yet captured. Hypothesis: `GET /user/permissions/<id>` and `POST /user/permissions/update` (mirroring the employee pattern). **Confirm in Task 1.4 before writing this task.**
+- BO permissions payload follows the same minimal-`templateId` pattern as the employee side (Delta D-5.2).
+- Linked mode: set `employee[isOnSiteEmployee]=1` and `user[employeeId]=<id>`. Leave `employee[firstName]`/`employee[lastName]` empty.
+- Standalone mode: set `employee[isOnSiteEmployee]=0`, provide `employee[firstName]`, `employee[lastName]`. Leave `user[employeeId]` empty.
+
+### Delta D-1.4 (Task 1.4: reduced scope)
+
+Tasks 1.1–1.3 already captured the read-only fixtures and notes. The remaining Task 1.4 work is narrowed to these specific write experiments, each requiring explicit user approval at the moment of submission:
+
+1. **Create one exploration employee** via `/employee/insert` to capture the real response payload (including the new `employee_id`) and the redirect-to-permissions URL pattern. Record fixture: `tests/fixtures/payloads/allowed_employee_insert.json`, `tests/fixtures/html/employee_insert_response.html`.
+2. **Submit the permissions template** (`templateId` only) for that employee via `/employee/permissions/update`. Confirms whether the minimal payload is accepted. Record fixture: `tests/fixtures/payloads/allowed_employee_permissions_update.json`.
+3. **Test minimal disable** — `POST /employee/update` with only `employee[id]` + `employee[isActive]=0`. Verify via follow-up GET `/employee/edit/<id>` that: (a) `isActive` is now 0, (b) all other fields (name, wage, sites, departments) are unchanged. If they were wiped, document the failure and mark Delta D-6.2's fallback as required.
+4. **Create a linked BO user** pointing at the exploration employee, to confirm the `/user/permissions/...` URL pattern and BO template list.
+5. **Cleanup:** ensure the exploration employee is left disabled and the BO user is disabled or deleted.
+
+Each of the above requires explicit user approval at dispatch time, per the durable no-writes-without-approval rule. They produce the fixtures that unblock Phase 5's `test_payload_matches_recorded_fixture` test and the `parse_permissions` test for the BO scope.
