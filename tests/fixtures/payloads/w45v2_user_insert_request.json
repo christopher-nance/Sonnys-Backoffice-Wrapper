@@ -1,0 +1,30 @@
+{
+  "method": "POST",
+  "url": "https://washu.sonnyscontrols.com/user/insert",
+  "fields": [
+    {
+      "name": "employee[isOnSiteEmployee]",
+      "value": "1"
+    },
+    {
+      "name": "user[employeeId]",
+      "value": "488"
+    },
+    {
+      "name": "employee[email]",
+      "value": "wrapper-explore-J2K7@example.invalid"
+    },
+    {
+      "name": "user[username]",
+      "value": "wrapperJ2K7bo"
+    },
+    {
+      "name": "user[password]",
+      "value": "TestBoUserPW2!"
+    },
+    {
+      "name": "user[confirmPassword]",
+      "value": "TestBoUserPW2!"
+    }
+  ]
+}

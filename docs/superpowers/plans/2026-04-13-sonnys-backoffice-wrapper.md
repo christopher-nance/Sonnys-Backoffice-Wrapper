@@ -5255,13 +5255,44 @@ def _parse_edit_form_into_payload(
 
 ...at the top of the element loop, right after the `drop_fields` check.
 
-### Delta D-7.1 (Task 7.1: BO user creation)
+### Delta D-7.1 (Task 7.1: BO user creation) — UPDATED after Phase 1.4 Writes 4/5
 
-- `/user/insert` form fields confirmed: `employee[isOnSiteEmployee]`, `user[employeeId]`, `employee[firstName]`, `employee[lastName]`, `employee[email]`, `user[username]`, `user[password]`, `user[confirmPassword]`, `user[linkExistingAccount]`.
-- The step-2 permissions URL for BO users is not yet captured. Hypothesis: `GET /user/permissions/<id>` and `POST /user/permissions/update` (mirroring the employee pattern). **Confirm in Task 1.4 before writing this task.**
-- BO permissions payload follows the same minimal-`templateId` pattern as the employee side (Delta D-5.2).
-- Linked mode: set `employee[isOnSiteEmployee]=1` and `user[employeeId]=<id>`. Leave `employee[firstName]`/`employee[lastName]` empty.
-- Standalone mode: set `employee[isOnSiteEmployee]=0`, provide `employee[firstName]`, `employee[lastName]`. Leave `user[employeeId]` empty.
+**What works (verified in Phase 1.4):**
+
+- **`POST /user/insert`** creates a BO user in both linked and standalone modes. Field layout confirmed.
+  - Linked mode: `employee[isOnSiteEmployee]=1`, `user[employeeId]=<employee_id>`, `employee[email]=<linked employee's email>`, `user[username]`, `user[password]`, `user[confirmPassword]`
+  - Standalone mode: `employee[isOnSiteEmployee]` omitted OR set to `0`, `employee[firstName]`, `employee[lastName]`, `employee[email]`, `user[username]`, `user[password]`, `user[confirmPassword]`
+  - **Critical constraint:** linked mode requires the linked employee to be currently ACTIVE. Linking to a disabled employee returns "Unable to save the user information. Please make sure that the related employee is active and try again."
+  - Success redirect: `HTTP 302 → /user/permissions/<new_user_id>?userIsNew=1`. Extract `user_id` from this location header.
+- **`GET /user/permissions/<id>`** returns the BO permissions page ONLY if the user's linked employee is currently active (or the user is standalone). If the linked employee is disabled, the URL redirects to `/user` with no way to view the page.
+
+**What is deferred for Milestone 1:**
+
+- **BO permission template assignment via the library is deferred to a later milestone.** Phase 1.4 exploration confirmed the form structure (`userId`, `userIsNew`, `template` select, site fields, 105 `perms[N][token]`/`perms[N][isEnabled]` entries), parsed the template `data-permissions-set` token lists from `/user/permissions/<id>`, and drove the full UI through Playwright. The server accepted the POST and applied 14 of General User's grants to a fresh BO user — but rejected the site portion with `"Accessible Sites requires no less than 1 valid selection."` because the site inheritance from the linked employee doesn't cleanly round-trip through the form parser. The bootstrap-toggle semantics for `disabledRegions[]` / `isAllSitesAllowedByDistrict[N]` in the BO permissions form differ from the employee edit form in ways that aren't fully understood yet.
+- **`create_backoffice_user` in Milestone 1** will:
+  1. Create the user via `POST /user/insert` (both modes work)
+  2. Return a `BackofficeUserCreated` result with `permission_applied=None` and a prominent warning: `"Backoffice user created successfully. Permissions must be assigned manually via the Backoffice UI (click the shield icon next to the user in the /user list). Automated permission assignment is tracked for Milestone 2."`
+  3. NOT attempt the `/user/permissions/update` POST
+- **The docs must prominently note** this limitation on the `create_backoffice_user` guide page and in the README.
+- **Milestone 2 scope** (to add): full BO permission template assignment, including a site-inheritance resolver that correctly round-trips the linked employee's site state. The captured fixtures (`w45v3_user_permissions_page_*.html`, `allowed_bo_user_permissions_browser_captured.json`) provide the raw material.
+
+**What this means for the `EmployeeCreated` model when `requires_backoffice=True`:**
+
+- `backoffice_user_id` is populated with the newly-created BO user id
+- `backoffice_username` is populated
+- `backoffice_password` is populated (caller or auto-generated)
+- `permission_applied` may be `None` for the BO portion — the POS side still gets permissions normally
+- `warnings` contains a message about the BO permission assignment being manual
+
+**Confirmed BO data (recorded from WashU for fixture reference, tenant-specific):**
+
+- `/bo-permission-template/list` is a proper admin page listing all defined BO templates with their admin-edit links.
+- BO templates on WashU: Administrator (`admin`/1), Manager (`manager`/2), General User (`user`/3), General Manager (42), Shift Leader (43).
+- **Only Administrator, Manager, and General User are universal across all Sonny's subdomains** (user-confirmed during Phase 1.4).
+- BO permission tokens are STRINGS like `employee.write`, `report.salesOverview`, `category.list` — ~105 total on WashU — NOT numeric IDs like POS.
+- Template grant sets are encoded as `data-permissions-set="token1,token2,..."` on the `<option>` elements of the `template` select on `/user/permissions/<id>`.
+- Form action for BO permission updates: `POST /user/permissions/update`
+- Critical field: the select is `name="template"` (NOT `templateId` — that's the POS side).
 
 ### Delta D-1.4 (Task 1.4: reduced scope)
 

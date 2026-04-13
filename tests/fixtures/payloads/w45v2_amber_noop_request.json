@@ -1,0 +1,512 @@
+{
+  "fields": [
+    {
+      "name": "userId",
+      "value": "2944451"
+    },
+    {
+      "name": "userIsNew",
+      "value": ""
+    },
+    {
+      "name": "isAllRegionsAllowed",
+      "value": "on"
+    },
+    {
+      "name": "isAllDistrictsAllowedByRegion[]",
+      "value": "1"
+    },
+    {
+      "name": "isAllSitesAllowedByDistrict[1]",
+      "value": "on"
+    },
+    {
+      "name": "isAllDistrictsAllowedByRegion[]",
+      "value": "2"
+    },
+    {
+      "name": "isAllSitesAllowedByDistrict[2]",
+      "value": "on"
+    },
+    {
+      "name": "template",
+      "value": ""
+    },
+    {
+      "name": "perms[0][token]",
+      "value": "category.list"
+    },
+    {
+      "name": "perms[0][isEnabled]",
+      "value": "1"
+    },
+    {
+      "name": "perms[1][token]",
+      "value": "category.write"
+    },
+    {
+      "name": "perms[2][token]",
+      "value": "commission.list"
+    },
+    {
+      "name": "perms[2][isEnabled]",
+      "value": "1"
+    },
+    {
+      "name": "perms[3][token]",
+      "value": "commission.write"
+    },
+    {
+      "name": "perms[4][token]",
+      "value": "customer.list"
+    },
+    {
+      "name": "perms[4][isEnabled]",
+      "value": "1"
+    },
+    {
+      "name": "perms[5][token]",
+      "value": "customer.write"
+    },
+    {
+      "name": "perms[6][token]",
+      "value": "district.list"
+    },
+    {
+      "name": "perms[7][token]",
+      "value": "district.write"
+    },
+    {
+      "name": "perms[8][token]",
+      "value": "ecommApi.all"
+    },
+    {
+      "name": "perms[9][token]",
+      "value": "ecommManage.all"
+    },
+    {
+      "name": "perms[10][token]",
+      "value": "employee.list"
+    },
+    {
+      "name": "perms[10][isEnabled]",
+      "value": "1"
+    },
+    {
+      "name": "perms[11][token]",
+      "value": "employee.timesheet"
+    },
+    {
+      "name": "perms[12][token]",
+      "value": "employee.uac"
+    },
+    {
+      "name": "perms[13][token]",
+      "value": "employee.wage.all"
+    },
+    {
+      "name": "perms[14][token]",
+      "value": "employee.write"
+    },
+    {
+      "name": "perms[15][token]",
+      "value": "houseAccount.list"
+    },
+    {
+      "name": "perms[15][isEnabled]",
+      "value": "1"
+    },
+    {
+      "name": "perms[16][token]",
+      "value": "houseAccount.write"
+    },
+    {
+      "name": "perms[17][token]",
+      "value": "incident.list"
+    },
+    {
+      "name": "perms[18][token]",
+      "value": "incident.write"
+    },
+    {
+      "name": "perms[19][token]",
+      "value": "item.addOn.list"
+    },
+    {
+      "name": "perms[19][isEnabled]",
+      "value": "1"
+    },
+    {
+      "name": "perms[20][token]",
+      "value": "item.addOn.write"
+    },
+    {
+      "name": "perms[21][token]",
+      "value": "item.detail.list"
+    },
+    {
+      "name": "perms[21][isEnabled]",
+      "value": "1"
+    },
+    {
+      "name": "perms[22][token]",
+      "value": "item.detail.write"
+    },
+    {
+      "name": "perms[23][token]",
+      "value": "item.merchandise.list"
+    },
+    {
+      "name": "perms[23][isEnabled]",
+      "value": "1"
+    },
+    {
+      "name": "perms[24][token]",
+      "value": "item.merchandise.write"
+    },
+    {
+      "name": "perms[25][token]",
+      "value": "item.service.list"
+    },
+    {
+      "name": "perms[25][isEnabled]",
+      "value": "1"
+    },
+    {
+      "name": "perms[26][token]",
+      "value": "item.service.write"
+    },
+    {
+      "name": "perms[27][token]",
+      "value": "item.vacuum.list"
+    },
+    {
+      "name": "perms[28][token]",
+      "value": "item.vacuum.write"
+    },
+    {
+      "name": "perms[29][token]",
+      "value": "item.wash.list"
+    },
+    {
+      "name": "perms[29][isEnabled]",
+      "value": "1"
+    },
+    {
+      "name": "perms[30][token]",
+      "value": "item.wash.write"
+    },
+    {
+      "name": "perms[31][token]",
+      "value": "loyalty.list"
+    },
+    {
+      "name": "perms[32][token]",
+      "value": "loyalty.write"
+    },
+    {
+      "name": "perms[33][token]",
+      "value": "part.alert"
+    },
+    {
+      "name": "perms[34][token]",
+      "value": "part.list"
+    },
+    {
+      "name": "perms[35][token]",
+      "value": "part.write"
+    },
+    {
+      "name": "perms[36][token]",
+      "value": "posConfig.buttons.all"
+    },
+    {
+      "name": "perms[37][token]",
+      "value": "posConfig.receipt.all"
+    },
+    {
+      "name": "perms[38][token]",
+      "value": "prepaid.list"
+    },
+    {
+      "name": "perms[38][isEnabled]",
+      "value": "1"
+    },
+    {
+      "name": "perms[39][token]",
+      "value": "prepaid.write"
+    },
+    {
+      "name": "perms[40][token]",
+      "value": "promotion.list"
+    },
+    {
+      "name": "perms[40][isEnabled]",
+      "value": "1"
+    },
+    {
+      "name": "perms[41][token]",
+      "value": "promotion.write"
+    },
+    {
+      "name": "perms[42][token]",
+      "value": "quivio.gamification.rewardCatalog.read"
+    },
+    {
+      "name": "perms[43][token]",
+      "value": "quivio.gamification.rewardCatalog.write"
+    },
+    {
+      "name": "perms[44][token]",
+      "value": "quivio.gamification.rewardPoints.list"
+    },
+    {
+      "name": "perms[45][token]",
+      "value": "quivio.gamification.rewardPoints.write"
+    },
+    {
+      "name": "perms[46][token]",
+      "value": "quivio.presentation.list"
+    },
+    {
+      "name": "perms[47][token]",
+      "value": "quivio.presentation.read"
+    },
+    {
+      "name": "perms[48][token]",
+      "value": "quivio.presentation.write"
+    },
+    {
+      "name": "perms[49][token]",
+      "value": "quivio.voiceRecording.siteSettings.read"
+    },
+    {
+      "name": "perms[50][token]",
+      "value": "quivio.voiceRecording.siteSettings.write"
+    },
+    {
+      "name": "perms[51][token]",
+      "value": "reconciliation.daily.audit"
+    },
+    {
+      "name": "perms[52][token]",
+      "value": "reconciliation.daily.reconcile"
+    },
+    {
+      "name": "perms[53][token]",
+      "value": "reconciliation.session.all"
+    },
+    {
+      "name": "perms[54][token]",
+      "value": "recurring.terms.agreement.read"
+    },
+    {
+      "name": "perms[55][token]",
+      "value": "recurring.terms.agreement.write"
+    },
+    {
+      "name": "perms[56][token]",
+      "value": "region.list"
+    },
+    {
+      "name": "perms[57][token]",
+      "value": "region.write"
+    },
+    {
+      "name": "perms[58][token]",
+      "value": "report.all"
+    },
+    {
+      "name": "perms[59][token]",
+      "value": "report.currentMembershipValue"
+    },
+    {
+      "name": "perms[60][token]",
+      "value": "report.dailyComparison"
+    },
+    {
+      "name": "perms[61][token]",
+      "value": "report.employeeCommissions"
+    },
+    {
+      "name": "perms[62][token]",
+      "value": "report.employeeTimesheets"
+    },
+    {
+      "name": "perms[63][token]",
+      "value": "report.generalLedger"
+    },
+    {
+      "name": "perms[64][token]",
+      "value": "report.generalLedgerV2"
+    },
+    {
+      "name": "perms[65][token]",
+      "value": "report.grossDailyDepartmentLaborCosts"
+    },
+    {
+      "name": "perms[66][token]",
+      "value": "report.grossDailyLaborCosts"
+    },
+    {
+      "name": "perms[67][token]",
+      "value": "report.grossHourlyLaborCosts"
+    },
+    {
+      "name": "perms[68][token]",
+      "value": "report.hourlyComparison"
+    },
+    {
+      "name": "perms[69][token]",
+      "value": "report.lineItemSales"
+    },
+    {
+      "name": "perms[70][token]",
+      "value": "report.monthlyComparison"
+    },
+    {
+      "name": "perms[71][token]",
+      "value": "report.netDailyDepartmentLaborCosts"
+    },
+    {
+      "name": "perms[72][token]",
+      "value": "report.netDailyLaborCosts"
+    },
+    {
+      "name": "perms[73][token]",
+      "value": "report.netHourlyLaborCosts"
+    },
+    {
+      "name": "perms[74][token]",
+      "value": "report.overviewComparison"
+    },
+    {
+      "name": "perms[75][token]",
+      "value": "report.recurringProfitability"
+    },
+    {
+      "name": "perms[76][token]",
+      "value": "report.recurringRedemptionRevenueShare"
+    },
+    {
+      "name": "perms[77][token]",
+      "value": "report.safTransactionSummary"
+    },
+    {
+      "name": "perms[78][token]",
+      "value": "report.salesDetail"
+    },
+    {
+      "name": "perms[79][token]",
+      "value": "report.salesOverview"
+    },
+    {
+      "name": "perms[80][token]",
+      "value": "report.salesOverviewV2"
+    },
+    {
+      "name": "perms[81][token]",
+      "value": "siteConfig.all"
+    },
+    {
+      "name": "perms[82][token]",
+      "value": "siteConfig.emailReport.all"
+    },
+    {
+      "name": "perms[83][token]",
+      "value": "smart_stop.event.list"
+    },
+    {
+      "name": "perms[84][token]",
+      "value": "smart_stop.event.read"
+    },
+    {
+      "name": "perms[85][token]",
+      "value": "smart_stop.event.write"
+    },
+    {
+      "name": "perms[86][token]",
+      "value": "smcc.alerts.subscribers.read"
+    },
+    {
+      "name": "perms[87][token]",
+      "value": "smcc.alerts.subscribers.write"
+    },
+    {
+      "name": "perms[88][token]",
+      "value": "sms.marketing.list"
+    },
+    {
+      "name": "perms[89][token]",
+      "value": "sms.marketing.write"
+    },
+    {
+      "name": "perms[90][token]",
+      "value": "sms.singleCode"
+    },
+    {
+      "name": "perms[91][token]",
+      "value": "stc.alerts.subscribers.read"
+    },
+    {
+      "name": "perms[92][token]",
+      "value": "stc.alerts.subscribers.write"
+    },
+    {
+      "name": "perms[93][token]",
+      "value": "support.webHook.all"
+    },
+    {
+      "name": "perms[94][token]",
+      "value": "support.webHook.read"
+    },
+    {
+      "name": "perms[95][token]",
+      "value": "support.webHook.write"
+    },
+    {
+      "name": "perms[96][token]",
+      "value": "vehicle.list"
+    },
+    {
+      "name": "perms[96][isEnabled]",
+      "value": "1"
+    },
+    {
+      "name": "perms[97][token]",
+      "value": "vehicle.write"
+    },
+    {
+      "name": "perms[97][isEnabled]",
+      "value": "1"
+    },
+    {
+      "name": "perms[98][token]",
+      "value": "callcenter.user.all"
+    },
+    {
+      "name": "perms[99][token]",
+      "value": "dashboard.all"
+    },
+    {
+      "name": "perms[100][token]",
+      "value": "dataApi.all"
+    },
+    {
+      "name": "perms[101][token]",
+      "value": "fuelPump.all"
+    },
+    {
+      "name": "perms[102][token]",
+      "value": "globalSettings.all"
+    },
+    {
+      "name": "perms[103][token]",
+      "value": "tunnel.admin.complete"
+    },
+    {
+      "name": "perms[104][token]",
+      "value": "user.all"
+    }
+  ]
+}
