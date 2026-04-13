@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from typing import Any, Mapping
 
 from bs4 import BeautifulSoup
@@ -16,7 +17,9 @@ from .exceptions import (
 from .models import (
     CreateEmployeeRequest,
     Department,
+    DisableEmployeeRequest,
     EmployeeCreated,
+    EmployeeDisabled,
     Permission,
     PermissionFieldMeta,
 )
@@ -399,4 +402,124 @@ def create_employee(
         departments=list(resolved_request.departments or []),
         wage_site=wage_site.name,
         warnings=warnings_list,
+    )
+
+
+_TEXTUAL_INPUT_TYPES = frozenset(
+    {"text", "hidden", "number", "email", "tel", "password", "search", "url", "date", "time"}
+)
+
+
+def _parse_edit_form_into_payload(
+    html: str,
+    *,
+    drop_fields: set[str],
+) -> list[tuple[str, str]]:
+    """Parse an `/employee/edit/<id>` form into POST field tuples.
+
+    - Text/hidden/number/email/tel/password inputs are always included with their
+      current value (empty string if no value).
+    - Checkboxes and radios are included only if currently checked.
+    - Select single: include the currently-selected option (or the first non-empty
+      option if none is selected).
+    - Select multiple: include every selected option.
+    - Textareas are included with their current text content.
+    - Inputs carrying the `disabled` attribute are skipped (browsers don't submit
+      disabled fields).
+    - Fields in `drop_fields` are always excluded.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    form = soup.find("form", action=re.compile(r"/employee/update"))
+    if form is None:
+        raise BackofficeServerError("could not locate /employee/update form on edit page")
+
+    out: list[tuple[str, str]] = []
+    for el in form.find_all(["input", "select", "textarea"]):
+        name = el.get("name")
+        if not name or name in drop_fields:
+            continue
+        if el.get("disabled") is not None:
+            continue
+        if el.name == "input":
+            t = (el.get("type") or "text").lower()
+            if t in _TEXTUAL_INPUT_TYPES:
+                out.append((name, el.get("value") or ""))
+            elif t == "checkbox":
+                if el.has_attr("checked"):
+                    out.append((name, el.get("value") or "on"))
+            elif t == "radio":
+                if el.has_attr("checked"):
+                    out.append((name, el.get("value") or ""))
+            elif t in ("submit", "button", "reset", "image", "file"):
+                continue
+            else:
+                out.append((name, el.get("value") or ""))
+        elif el.name == "select":
+            if el.has_attr("multiple"):
+                for opt in el.find_all("option"):
+                    if opt.has_attr("selected"):
+                        out.append((name, opt.get("value") or ""))
+            else:
+                sel_opt = next(
+                    (o for o in el.find_all("option") if o.has_attr("selected")),
+                    None,
+                )
+                if sel_opt is None:
+                    sel_opt = next(
+                        (o for o in el.find_all("option") if (o.get("value") or "").strip()),
+                        None,
+                    )
+                if sel_opt is not None:
+                    out.append((name, sel_opt.get("value") or ""))
+        elif el.name == "textarea":
+            out.append((name, el.get_text()))
+    return out
+
+
+def disable_employee(
+    *,
+    session,
+    request: DisableEmployeeRequest,
+) -> EmployeeDisabled:
+    """Disable an existing employee via the full-form round-trip.
+
+    Symfony's form binding treats the *presence* of `employee[isActive]` as
+    "checked = true" regardless of value, so the only reliable disable is to
+    POST every other form field unchanged and omit `isActive` entirely.
+    """
+    list_resp = session.get("/employee?limit=10000&active=all")
+    _check_create_response(list_resp)
+    employee_id = find_employee_in_list_html(
+        list_resp.text,
+        pos_user_id=request.pos_user_id,
+        email=request.email,
+    )
+
+    edit_resp = session.get(f"/employee/edit/{employee_id}")
+    _check_create_response(edit_resp)
+    payload = _parse_edit_form_into_payload(
+        edit_resp.text, drop_fields={"employee[isActive]"}
+    )
+    if not any(name == "employee[id]" for name, _ in payload):
+        payload.append(("employee[id]", str(employee_id)))
+
+    update_resp = session.post("/employee/update", data=payload, allow_redirects=False)
+    _check_create_response(update_resp)
+
+    verify_resp = session.get(f"/employee/edit/{employee_id}")
+    soup = BeautifulSoup(verify_resp.text, "html.parser")
+    active_input = soup.find("input", attrs={"name": "employee[isActive]"})
+    still_active = active_input is not None and active_input.has_attr("checked")
+    if still_active:
+        raise BackofficeServerError(
+            f"disable POST accepted but employee {employee_id} is still active — "
+            "full-form round-trip did not take effect"
+        )
+
+    resolved_pos_user_id = request.pos_user_id if request.pos_user_id is not None else 0
+    return EmployeeDisabled(
+        employee_id=employee_id,
+        pos_user_id=resolved_pos_user_id,
+        email=request.email,
+        disabled_at=datetime.now(timezone.utc),
     )
