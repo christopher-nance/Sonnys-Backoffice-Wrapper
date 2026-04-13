@@ -56,6 +56,22 @@ class SonnysBackofficeClient:
         timeout: float = 30.0,
         user_agent: str | None = None,
     ) -> None:
+        """Create a new client for a single Sonny's Backoffice tenant.
+
+        Login is deferred until the first request that needs the session
+        (lazy). Use as a context manager to guarantee session cleanup:
+
+            with SonnysBackofficeClient(...) as client:
+                ...
+
+        Args:
+            subdomain: Tenant subdomain, e.g. ``"washu"`` for
+                ``https://washu.sonnyscontrols.com``.
+            username: Backoffice bot user username.
+            password: Backoffice bot user password.
+            timeout: Per-request HTTP timeout in seconds. Defaults to 30.
+            user_agent: Optional custom User-Agent header.
+        """
         self._session = _BackofficeSession(
             subdomain=subdomain,
             username=username,
@@ -78,14 +94,40 @@ class SonnysBackofficeClient:
         self.close()
 
     def close(self) -> None:
+        """Close the underlying HTTP session.
+
+        Called automatically by ``__exit__`` when used as a context manager.
+        """
         self._session.close()
 
     def list_sites(self, *, refresh: bool = False) -> list[Site]:
+        """List all sites the bot user can see on the tenant.
+
+        The result is cached on the client after the first call. Pass
+        ``refresh=True`` to re-fetch.
+
+        Args:
+            refresh: If True, bypass the cache and re-fetch.
+
+        Returns:
+            list[Site]: Every site visible to the bot user. On a hierarchical
+            tenant the returned ``Site`` objects carry ``district_id`` and
+            ``region_id``; on a flat tenant those fields are ``None``.
+        """
         self._ensure_site_tree(refresh=refresh)
         assert self._site_tree is not None
         return list(self._site_tree.sites)
 
     def list_departments(self, *, refresh: bool = False) -> list[Department]:
+        """List the department options configured on the tenant.
+
+        Args:
+            refresh: If True, bypass the cache and re-fetch.
+
+        Returns:
+            list[Department]: Every department option, e.g. Cashier, Greeter,
+            Line, Management.
+        """
         self._ensure_departments(refresh=refresh)
         assert self._departments is not None
         return list(self._departments)
@@ -96,6 +138,26 @@ class SonnysBackofficeClient:
         scope: Literal["pos", "backoffice"],
         refresh: bool = False,
     ) -> list[Permission]:
+        """List the role templates available on the tenant for a given scope.
+
+        POS templates come from ``/employee/permissions/<id>`` on an existing
+        employee; Backoffice templates come from ``/user/permissions/<id>``
+        on an existing BO user. Both lookups are cached per scope.
+
+        Args:
+            scope: ``"pos"`` for POS employee templates, ``"backoffice"`` for
+                Backoffice user templates.
+            refresh: If True, bypass the cache and re-fetch.
+
+        Returns:
+            list[Permission]: Every template on the tenant for the requested
+            scope. POS templates carry ``grants`` and ``overrides`` ID sets;
+            Backoffice templates are name-only in Milestone 1.
+
+        Raises:
+            NotFoundError: If the tenant has no existing records from which to
+                extract templates (e.g., an empty tenant with no employees).
+        """
         if scope == "pos":
             self._ensure_pos_permissions(refresh=refresh)
             assert self._pos_permissions is not None
@@ -155,6 +217,68 @@ class SonnysBackofficeClient:
         backoffice_username: str | None = None,
         backoffice_password: str | None = None,
     ) -> EmployeeCreated:
+        """Create a new POS employee, optionally with a linked Backoffice user.
+
+        The call goes through a two-step flow:
+
+        1. ``POST /employee/insert`` with personal, wage, department, and site
+           fields.
+        2. ``POST /employee/permissions/update`` with the full permission
+           matrix for the resolved template.
+
+        If ``requires_backoffice=True``, a third step creates the linked BO
+        user via ``POST /user/insert``. Note that in Milestone 1 the BO user's
+        permission template is **not** applied automatically and must be
+        assigned manually via the Backoffice UI — see the
+        ``Creating a Backoffice user`` guide.
+
+        Args:
+            first_name: Employee first name. Leading/trailing whitespace is stripped.
+            last_name: Employee last name.
+            phone: Phone number. 9 or 10 digits after non-digit characters
+                are stripped.
+            email: Email address. Must contain a valid ``@domain.tld``.
+            pos_user_id: Caller-assigned unique POS login ID. Must be unique
+                per tenant. Pre-flight with ``is_pos_user_id_available``.
+            wage_rate: Hourly wage in dollars. Prefer ``Decimal`` to avoid
+                floating-point drift.
+            start_date: Employment start date.
+            available_sites: List of site *names* or the literal ``"all"``.
+                Unknown names raise ``LookupError`` before any HTTP call.
+            permission: POS template name. Matched case-insensitively; unknown
+                names fall back to ``"General User"`` with a warning.
+            pos_pin: 5-digit POS PIN integer (10000-99999). If ``None``, a
+                random PIN is generated. The final value is always returned
+                in the result.
+            overtime_wage_rate: Overtime hourly wage. Defaults to
+                ``wage_rate * 1.5``.
+            departments: Department names. ``"Greeter"`` is always auto-added
+                if omitted — see the guide for why.
+            adp_employee_id: ADP payroll employee ID, if applicable.
+            emergency_contact_name: Optional emergency contact name.
+            emergency_contact_phone: Optional emergency contact phone (same
+                validation as ``phone``).
+            requires_backoffice: If True, also creates a linked BO user.
+            backoffice_username: BO username. Required when
+                ``requires_backoffice=True``.
+            backoffice_password: BO password. If ``None``, a 12-character
+                random password is generated.
+
+        Returns:
+            EmployeeCreated: The created record including the auto-generated
+            POS PIN, resolved permission, wage attribution site, and any
+            warnings (permission fallbacks, BO M1 deferral, etc.).
+
+        Raises:
+            ValidationError: If any input fails validation or Backoffice
+                rejects the form.
+            DuplicateError: If pos_user_id, email, or phone already exists on
+                the tenant (pre-flight or server-side).
+            AuthenticationError: If login or re-authentication fails.
+            BackofficeServerError: If Backoffice returns an unexpected
+                response (HTTP 5xx, unparseable HTML, etc.).
+            LookupError: If ``available_sites`` contains an unknown site name.
+        """
         self._ensure_site_tree()
         self._ensure_departments()
         self._ensure_pos_permissions()
@@ -206,6 +330,36 @@ class SonnysBackofficeClient:
         pos_user_id: int | None = None,
         email: str | None = None,
     ) -> EmployeeDisabled:
+        """Disable an employee looked up by POS User ID or email.
+
+        Disable uses a full-form round-trip: fetch the employee list to
+        resolve the internal employee_id, GET the edit form, parse every
+        field, re-POST with ``employee[isActive]`` **omitted** (Symfony binds
+        checkbox presence as true regardless of value), and re-GET to verify
+        the change took effect.
+
+        Exactly one of ``pos_user_id`` or ``email`` is required.
+
+        Args:
+            pos_user_id: POS User ID to look up.
+            email: Email to look up. Note: the employee list page does not
+                usually contain an email column, so email lookup may fail
+                with ``NotFoundError`` even when the employee exists.
+                Prefer ``pos_user_id`` when possible.
+
+        Returns:
+            EmployeeDisabled: The internal employee_id, echoed lookup key,
+            and the UTC timestamp of the disable.
+
+        Raises:
+            ValidationError: If neither or both lookup keys are provided.
+            NotFoundError: If no employee matches the lookup key.
+            BackofficeServerError: If the disable POST is accepted but the
+                verification GET shows the employee is still active (the
+                full-form round-trip didn't take effect — usually means the
+                form structure has changed).
+            AuthenticationError: If login or re-authentication fails.
+        """
         req = DisableEmployeeRequest(pos_user_id=pos_user_id, email=email)
         result = _disable_employee(session=self._session, request=req)
         # Invalidate caches that may now be stale
@@ -226,6 +380,52 @@ class SonnysBackofficeClient:
         last_name: str | None = None,
         available_sites: list[str] | Literal["all"] = "all",
     ) -> BackofficeUserCreated:
+        """Create a Backoffice user — standalone or linked to an employee.
+
+        In **linked mode** the user inherits site access from the employee
+        (pass ``link_to_employee_pos_user_id`` or ``link_to_employee_email``).
+        The linked employee must currently be active.
+
+        In **standalone mode** the user gets its own profile (pass
+        ``first_name`` and ``last_name``, no link fields).
+
+        !!! warning "Milestone 1 limitation"
+            The account is created successfully but the permission template is
+            **not** assigned automatically. Click the shield icon next to the
+            new user in the Backoffice ``/user`` list, pick a template, and
+            save. A reminder is included in the returned ``warnings`` list.
+
+        Args:
+            username: New BO username. Must match the pattern
+                ``[A-Za-z][\\w]{2,63}``.
+            email: New user email.
+            permission: BO template name for documentation and future use.
+                Currently stored in the result but not applied to the server.
+            password: BO password. If ``None``, a 12-character random
+                password is generated and returned in the result.
+            link_to_employee_pos_user_id: Link mode — look up the employee by
+                POS User ID.
+            link_to_employee_email: Link mode — look up the employee by email.
+            first_name: Standalone mode — first name.
+            last_name: Standalone mode — last name.
+            available_sites: Documented in the result but not applied in M1
+                BO-permission path. Defaults to ``"all"``.
+
+        Returns:
+            BackofficeUserCreated: The new user record, including the
+            auto-generated password and a warning about the M1 deferral.
+
+        Raises:
+            ValidationError: If neither linked nor standalone mode fields are
+                provided (or both are provided).
+            NotFoundError: In linked mode, if the linked employee cannot be
+                resolved.
+            DuplicateError: If the username or email already exists.
+            BackofficeServerError: If Backoffice rejects the insert (e.g.,
+                linked employee is inactive) or returns an unexpected
+                response.
+            AuthenticationError: If login or re-authentication fails.
+        """
         self._ensure_site_tree()
         self._ensure_bo_permissions()
 
