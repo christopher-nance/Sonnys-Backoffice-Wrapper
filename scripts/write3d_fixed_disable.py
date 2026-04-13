@@ -11,6 +11,7 @@ Since employee 485 is already disabled, a successful POST with no-op
 semantics should land on /employee (success redirect), not
 /employee/edit/485?actionXfer=... (failure/no-op redirect).
 """
+
 from __future__ import annotations
 
 import json
@@ -18,7 +19,6 @@ import os
 import re
 import sys
 from pathlib import Path
-from urllib.parse import parse_qsl
 
 import requests
 from bs4 import BeautifulSoup
@@ -88,7 +88,18 @@ def parse_edit_form_v2(
             continue
         if el.name == "input":
             t = (el.get("type") or "text").lower()
-            if t in ("text", "hidden", "number", "email", "tel", "password", "search", "url", "date", "time"):
+            if t in (
+                "text",
+                "hidden",
+                "number",
+                "email",
+                "tel",
+                "password",
+                "search",
+                "url",
+                "date",
+                "time",
+            ):
                 value = el.get("value") or ""
                 if not value:
                     # FALLBACK to data-value (pickadate and similar widgets)
@@ -112,7 +123,9 @@ def parse_edit_form_v2(
             else:
                 sel_opt = next((o for o in el.find_all("option") if o.has_attr("selected")), None)
                 if sel_opt is None:
-                    sel_opt = next((o for o in el.find_all("option") if (o.get("value") or "").strip()), None)
+                    sel_opt = next(
+                        (o for o in el.find_all("option") if (o.get("value") or "").strip()), None
+                    )
                 if sel_opt is not None:
                     out.append((name, sel_opt.get("value") or ""))
         elif el.name == "textarea":
@@ -136,9 +149,7 @@ def main() -> int:
     r_edit.raise_for_status()
 
     # Parse with fixes
-    payload = parse_edit_form_v2(
-        r_edit.text, drop_fields={"employee[isActive]"}
-    )
+    payload = parse_edit_form_v2(r_edit.text, drop_fields={"employee[isActive]"})
     print(f"\nparsed {len(payload)} fields (expected ~17 after fixes)")
 
     # Show the parsed payload
@@ -159,7 +170,7 @@ def main() -> int:
     )
 
     # POST
-    print(f"\nPOST /employee/update")
+    print("\nPOST /employee/update")
     r_post = session.post(
         f"{BASE_URL}/employee/update",
         data=payload,

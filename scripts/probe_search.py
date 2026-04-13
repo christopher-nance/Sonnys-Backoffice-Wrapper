@@ -1,4 +1,5 @@
 """Probe whether /employee supports a server-side search query param."""
+
 from __future__ import annotations
 
 import os
@@ -47,8 +48,8 @@ def main() -> int:
         page.goto(f"{base_url}/employee", wait_until="domcontentloaded")
         page.wait_for_timeout(800)
         baseline = page.content()
-        base_rows = baseline.count('<tr')
-        print(f'[baseline] /employee has approx {base_rows} <tr tags')
+        base_rows = baseline.count("<tr")
+        print(f"[baseline] /employee has approx {base_rows} <tr tags")
 
         # Known: employee "aaliyah roylance" with pos_user_id=7217 exists per list
         # Test various query-param patterns
@@ -67,7 +68,7 @@ def main() -> int:
                 page.goto(url, wait_until="domcontentloaded")
                 page.wait_for_timeout(500)
                 html = page.content()
-                row_count = html.count('<tr')
+                row_count = html.count("<tr")
                 # Look for expected value in the response
                 has_aaliyah = "aaliyah" in html.lower()
                 has_7217 = "7217" in html
@@ -82,13 +83,17 @@ def main() -> int:
         # Also try clicking any search input on the list page if one exists
         print("\n[probe] looking for search input on /employee page...")
         page.goto(f"{base_url}/employee", wait_until="domcontentloaded")
-        inputs = page.locator("input[type='search'], input[placeholder*='earch'], input[name*='earch']")
+        inputs = page.locator(
+            "input[type='search'], input[placeholder*='earch'], input[name*='earch']"
+        )
         cnt = inputs.count()
         print(f"  found {cnt} search-like inputs on /employee")
         if cnt > 0:
             for i in range(cnt):
                 el = inputs.nth(i)
-                attrs = el.evaluate("el => ({name: el.name, id: el.id, placeholder: el.placeholder, type: el.type})")
+                attrs = el.evaluate(
+                    "el => ({name: el.name, id: el.id, placeholder: el.placeholder, type: el.type})"
+                )
                 print(f"  input[{i}] {attrs}")
 
         browser.close()

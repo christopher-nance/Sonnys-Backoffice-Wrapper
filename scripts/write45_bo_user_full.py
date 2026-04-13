@@ -9,6 +9,7 @@ Sequence (all on one session):
 6. Verify BO user in /user list with Access set
 7. POST /employee/update → disable the linked employee as cleanup
 """
+
 from __future__ import annotations
 
 import json
@@ -125,9 +126,12 @@ def create_employee(session: requests.Session) -> int:
         raise SystemExit(1)
     emp_id = int(m.group(1))
     print(f"  [SUCCESS] employee_id = {emp_id}")
-    save_payload("w45f_employee_insert_request", {
-        "fields": [{"name": k, "value": v} for k, v in payload],
-    })
+    save_payload(
+        "w45f_employee_insert_request",
+        {
+            "fields": [{"name": k, "value": v} for k, v in payload],
+        },
+    )
     return emp_id
 
 
@@ -137,7 +141,7 @@ def preflight(session: requests.Session) -> None:
     r = session.get(f"{BASE_URL}/employee?limit=10000&active=all")
     soup = BeautifulSoup(r.text, "html.parser")
     tbl = soup.find("table", class_="table-employees-list")
-    for row in (tbl.find_all("tr") if tbl else []):
+    for row in tbl.find_all("tr") if tbl else []:
         cells = row.find_all("td")
         if len(cells) < 7:
             continue
@@ -171,27 +175,35 @@ def create_bo_user(session: requests.Session, linked_employee_id: int) -> int:
         ("user[password]", BO_PASSWORD),
         ("user[confirmPassword]", BO_PASSWORD),
     ]
-    save_payload("w45f_user_insert_request", {
-        "method": "POST",
-        "url": f"{BASE_URL}/user/insert",
-        "fields": [{"name": k, "value": v} for k, v in payload],
-    })
+    save_payload(
+        "w45f_user_insert_request",
+        {
+            "method": "POST",
+            "url": f"{BASE_URL}/user/insert",
+            "fields": [{"name": k, "value": v} for k, v in payload],
+        },
+    )
     r = session.post(f"{BASE_URL}/user/insert", data=payload, allow_redirects=False)
     save_html("w45f_user_insert_response", r.text)
-    save_payload("w45f_user_insert_response", {
-        "status_code": r.status_code,
-        "headers": dict(r.headers),
-        "body_length": len(r.text),
-    })
+    save_payload(
+        "w45f_user_insert_response",
+        {
+            "status_code": r.status_code,
+            "headers": dict(r.headers),
+            "body_length": len(r.text),
+        },
+    )
     loc = r.headers.get("Location", "")
     print(f"  HTTP {r.status_code}, Location: {loc}")
     # Check for failure: redirect back to /user/create with actionXfer
     if "actionXfer" in loc and "/user/create" in loc:
-        print(f"  [FAIL] failure redirect")
+        print("  [FAIL] failure redirect")
         # Fetch the landed page for error messages
         follow = session.get(f"{BASE_URL}{loc}")
         soup = BeautifulSoup(follow.text, "html.parser")
-        for alert in soup.find_all(class_=lambda c: c and "alert" in (c if isinstance(c, list) else [c])):
+        for alert in soup.find_all(
+            class_=lambda c: c and "alert" in (c if isinstance(c, list) else [c])
+        ):
             print(f"  error: {alert.get_text(strip=True)[:200]}")
         raise SystemExit(1)
     # Try patterns
@@ -215,14 +227,24 @@ def parse_templates_and_schema(html: str) -> tuple[list[dict], list[dict]]:
                 tid = int(val)
             except ValueError:
                 continue
-            grants = [int(x) for x in (opt.get("data-permissions-set") or "").split(",") if x.strip().isdigit()]
-            overrides = [int(x) for x in (opt.get("data-manager-override-permissions-set") or "").split(",") if x.strip().isdigit()]
-            templates.append({
-                "id": tid,
-                "name": opt.get_text(strip=True),
-                "grants": grants,
-                "overrides": overrides,
-            })
+            grants = [
+                int(x)
+                for x in (opt.get("data-permissions-set") or "").split(",")
+                if x.strip().isdigit()
+            ]
+            overrides = [
+                int(x)
+                for x in (opt.get("data-manager-override-permissions-set") or "").split(",")
+                if x.strip().isdigit()
+            ]
+            templates.append(
+                {
+                    "id": tid,
+                    "name": opt.get_text(strip=True),
+                    "grants": grants,
+                    "overrides": overrides,
+                }
+            )
 
     schema: dict[int, dict[str, str]] = {}
     for inp in soup.find_all("input", attrs={"name": re.compile(r"permissions\[\d+\]\[id\]")}):
@@ -257,7 +279,11 @@ def detect_user_key_and_action(html: str) -> tuple[str, str]:
 
 def fetch_bo_permissions_page(session: requests.Session, user_id: int) -> str:
     print(f"\n[step 4] GET BO permissions page for user {user_id}")
-    for path in [f"/user/permissions/{user_id}", f"/user/{user_id}/permissions", f"/user/edit/{user_id}"]:
+    for path in [
+        f"/user/permissions/{user_id}",
+        f"/user/{user_id}/permissions",
+        f"/user/edit/{user_id}",
+    ]:
         r = session.get(f"{BASE_URL}{path}")
         if r.status_code == 200 and "templateId" in r.text:
             print(f"  found at {path}")
@@ -271,7 +297,9 @@ def assign_bo_permissions(session: requests.Session, user_id: int, html: str) ->
     templates, schema = parse_templates_and_schema(html)
     print(f"  {len(templates)} BO templates, {len(schema)} permission entries")
     for t in templates:
-        print(f"    [{t['id']}] {t['name']!r} grants={len(t['grants'])} overrides={len(t['overrides'])}")
+        print(
+            f"    [{t['id']}] {t['name']!r} grants={len(t['grants'])} overrides={len(t['overrides'])}"
+        )
     target = next((t for t in templates if t["name"].lower() == TARGET_BO_TEMPLATE.lower()), None)
     if target is None:
         raise SystemExit(f"template {TARGET_BO_TEMPLATE!r} not found")
@@ -295,19 +323,25 @@ def assign_bo_permissions(session: requests.Session, user_id: int, html: str) ->
         if pid in overrides:
             payload.append((f"permissions[{pid}][requiresOverride]", "1"))
 
-    save_payload("w45f_user_permissions_request", {
-        "method": "POST",
-        "url": f"{BASE_URL}{action}" if action.startswith("/") else action,
-        "fields": [{"name": k, "value": v} for k, v in payload],
-    })
+    save_payload(
+        "w45f_user_permissions_request",
+        {
+            "method": "POST",
+            "url": f"{BASE_URL}{action}" if action.startswith("/") else action,
+            "fields": [{"name": k, "value": v} for k, v in payload],
+        },
+    )
     url = f"{BASE_URL}{action}" if action.startswith("/") else action
     r = session.post(url, data=payload, allow_redirects=False)
     save_html("w45f_user_permissions_response", r.text)
-    save_payload("w45f_user_permissions_response", {
-        "status_code": r.status_code,
-        "headers": dict(r.headers),
-        "body_length": len(r.text),
-    })
+    save_payload(
+        "w45f_user_permissions_response",
+        {
+            "status_code": r.status_code,
+            "headers": dict(r.headers),
+            "body_length": len(r.text),
+        },
+    )
     print(f"  HTTP {r.status_code}, Location: {r.headers.get('Location', '(none)')}")
 
 
@@ -337,7 +371,18 @@ def parse_edit_form_for_update(html: str, *, drop_fields: set[str]) -> list[tupl
             continue
         if el.name == "input":
             t = (el.get("type") or "text").lower()
-            if t in ("text", "hidden", "number", "email", "tel", "password", "search", "url", "date", "time"):
+            if t in (
+                "text",
+                "hidden",
+                "number",
+                "email",
+                "tel",
+                "password",
+                "search",
+                "url",
+                "date",
+                "time",
+            ):
                 value = el.get("value") or ""
                 if not value:
                     value = el.get("data-value") or ""
@@ -360,7 +405,9 @@ def parse_edit_form_for_update(html: str, *, drop_fields: set[str]) -> list[tupl
             else:
                 sel_opt = next((o for o in el.find_all("option") if o.has_attr("selected")), None)
                 if sel_opt is None:
-                    sel_opt = next((o for o in el.find_all("option") if (o.get("value") or "").strip()), None)
+                    sel_opt = next(
+                        (o for o in el.find_all("option") if (o.get("value") or "").strip()), None
+                    )
                 if sel_opt is not None:
                     out.append((name, sel_opt.get("value") or ""))
         elif el.name == "textarea":
@@ -382,7 +429,7 @@ def disable_employee(session: requests.Session, emp_id: int) -> None:
 
 def main() -> int:
     print("=" * 66)
-    print(f"WRITE 1''''+4+5: create active employee + linked BO user + BO perms")
+    print("WRITE 1''''+4+5: create active employee + linked BO user + BO perms")
     print("=" * 66)
 
     session = login_and_session()

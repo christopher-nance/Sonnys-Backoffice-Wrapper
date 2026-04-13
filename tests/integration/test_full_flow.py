@@ -5,8 +5,10 @@ Run with:
 
 Write-mutating tests also need ``SONNYS_ALLOW_WRITES=1``.
 """
+
 from __future__ import annotations
 
+import contextlib
 import random
 from datetime import datetime
 from decimal import Decimal
@@ -72,7 +74,5 @@ def test_create_and_disable_employee(client, unique_suffix, writes_allowed):
         assert created.permission_applied == "General User"
     finally:
         # Always attempt cleanup even if the assertions failed partway
-        try:
+        with contextlib.suppress(Exception):
             client.disable_employee(pos_user_id=pos_id)
-        except Exception:
-            pass

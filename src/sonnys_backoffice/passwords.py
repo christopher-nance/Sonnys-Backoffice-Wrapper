@@ -1,4 +1,5 @@
 """Password and PIN generators for newly-created users."""
+
 from __future__ import annotations
 
 import secrets

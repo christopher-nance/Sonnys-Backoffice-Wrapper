@@ -16,6 +16,7 @@ Flow:
 8. Verify BO user in /user list
 9. Disable employee (cleanup). BO user stays (no BO disable function in M1).
 """
+
 from __future__ import annotations
 
 import json
@@ -98,7 +99,7 @@ def preflight(session: requests.Session) -> None:
     r = session.get(f"{BASE_URL}/employee?limit=10000&active=all")
     soup = BeautifulSoup(r.text, "html.parser")
     tbl = soup.find("table", class_="table-employees-list")
-    for row in (tbl.find_all("tr") if tbl else []):
+    for row in tbl.find_all("tr") if tbl else []:
         cells = row.find_all("td")
         if len(cells) < 7:
             continue
@@ -113,7 +114,7 @@ def preflight(session: requests.Session) -> None:
         for opt in sel.find_all("option"):
             e = (opt.get("data-email") or "").strip().lower()
             if e == EMP_FIELDS["email"].lower():
-                raise SystemExit(f"[COLLISION] email")
+                raise SystemExit("[COLLISION] email")
     r = session.get(f"{BASE_URL}/user?limit=10000&active=all")
     if BO_USERNAME.lower() in r.text.lower():
         raise SystemExit(f"[COLLISION] username {BO_USERNAME}")
@@ -150,7 +151,9 @@ def build_create_employee_payload() -> list[tuple[str, str]]:
 
 def create_employee(session: requests.Session) -> int:
     print("\n[step 2] CREATE active employee")
-    r = session.post(f"{BASE_URL}/employee/insert", data=build_create_employee_payload(), allow_redirects=False)
+    r = session.post(
+        f"{BASE_URL}/employee/insert", data=build_create_employee_payload(), allow_redirects=False
+    )
     loc = r.headers.get("Location", "")
     m = re.search(r"/employee/(?:edit|permissions|compensation)/(\d+)", loc)
     if not m:
@@ -170,18 +173,24 @@ def create_bo_user(session: requests.Session, linked_emp_id: int) -> int:
         ("user[password]", BO_PASSWORD),
         ("user[confirmPassword]", BO_PASSWORD),
     ]
-    save_payload("w45v2_user_insert_request", {
-        "method": "POST",
-        "url": f"{BASE_URL}/user/insert",
-        "fields": [{"name": k, "value": v} for k, v in payload],
-    })
+    save_payload(
+        "w45v2_user_insert_request",
+        {
+            "method": "POST",
+            "url": f"{BASE_URL}/user/insert",
+            "fields": [{"name": k, "value": v} for k, v in payload],
+        },
+    )
     r = session.post(f"{BASE_URL}/user/insert", data=payload, allow_redirects=False)
     save_html("w45v2_user_insert_response", r.text)
-    save_payload("w45v2_user_insert_response", {
-        "status_code": r.status_code,
-        "headers": dict(r.headers),
-        "body_length": len(r.text),
-    })
+    save_payload(
+        "w45v2_user_insert_response",
+        {
+            "status_code": r.status_code,
+            "headers": dict(r.headers),
+            "body_length": len(r.text),
+        },
+    )
     loc = r.headers.get("Location", "")
     print(f"  HTTP {r.status_code}, Location: {loc}")
     m = re.search(r"/user/permissions/(\d+)", loc)
@@ -211,11 +220,13 @@ def parse_bo_permissions_page(html: str) -> dict:
                 continue
             tokens_raw = (opt.get("data-permissions-set") or "").strip()
             tokens = [t.strip() for t in tokens_raw.split(",") if t.strip()]
-            result["templates"].append({
-                "id": tid,
-                "name": opt.get_text(strip=True),
-                "grant_tokens": tokens,
-            })
+            result["templates"].append(
+                {
+                    "id": tid,
+                    "name": opt.get_text(strip=True),
+                    "grant_tokens": tokens,
+                }
+            )
 
     # Perms schema (tokens in order)
     for inp in soup.find_all("input", attrs={"name": re.compile(r"perms\[\d+\]\[token\]")}):
@@ -260,12 +271,17 @@ def build_bo_permissions_payload(
             continue
         t = (inp.get("type") or "text").lower()
         # Only include the site-related non-perms fields
-        if name not in (
-            "isAllRegionsAllowed",
-            "disabledRegions[]",
-            "disabledDistricts[]",
-            "siteIds[]",
-        ) and not name.startswith("isAllSitesAllowedByDistrict[") and not name.startswith("isAllDistrictsAllowedByRegion"):
+        if (
+            name
+            not in (
+                "isAllRegionsAllowed",
+                "disabledRegions[]",
+                "disabledDistricts[]",
+                "siteIds[]",
+            )
+            and not name.startswith("isAllSitesAllowedByDistrict[")
+            and not name.startswith("isAllDistrictsAllowedByRegion")
+        ):
             continue
         if t == "checkbox":
             if inp.has_attr("checked"):
@@ -298,7 +314,9 @@ def assign_bo_permissions(session: requests.Session, user_id: int) -> None:
     for t in parsed["templates"]:
         print(f"    [{t['id']}] {t['name']!r} grants {len(t['grant_tokens'])} tokens")
 
-    target = next((t for t in parsed["templates"] if t["name"].lower() == TARGET_BO_TEMPLATE.lower()), None)
+    target = next(
+        (t for t in parsed["templates"] if t["name"].lower() == TARGET_BO_TEMPLATE.lower()), None
+    )
     if target is None:
         raise SystemExit(f"[FAIL] template {TARGET_BO_TEMPLATE!r} not found")
     print(f"  target: id={target['id']} name={target['name']!r} grants={target['grant_tokens']}")
@@ -309,11 +327,14 @@ def assign_bo_permissions(session: requests.Session, user_id: int) -> None:
         perms_schema=parsed["perms_schema"],
         existing_html=r.text,
     )
-    save_payload("w45v2_user_permissions_request", {
-        "method": "POST",
-        "url": f"{BASE_URL}/user/permissions/update",
-        "fields": [{"name": k, "value": v} for k, v in payload],
-    })
+    save_payload(
+        "w45v2_user_permissions_request",
+        {
+            "method": "POST",
+            "url": f"{BASE_URL}/user/permissions/update",
+            "fields": [{"name": k, "value": v} for k, v in payload],
+        },
+    )
     print(f"  posting {len(payload)} fields")
 
     r_post = session.post(
@@ -322,11 +343,14 @@ def assign_bo_permissions(session: requests.Session, user_id: int) -> None:
         allow_redirects=False,
     )
     save_html("w45v2_user_permissions_response", r_post.text)
-    save_payload("w45v2_user_permissions_response", {
-        "status_code": r_post.status_code,
-        "headers": dict(r_post.headers),
-        "body_length": len(r_post.text),
-    })
+    save_payload(
+        "w45v2_user_permissions_response",
+        {
+            "status_code": r_post.status_code,
+            "headers": dict(r_post.headers),
+            "body_length": len(r_post.text),
+        },
+    )
     print(f"  HTTP {r_post.status_code}, Location: {r_post.headers.get('Location', '(none)')}")
 
 
@@ -340,8 +364,14 @@ def verify_bo_user(session: requests.Session, user_id: int) -> None:
     soup = BeautifulSoup(r.text, "html.parser")
     sel = soup.find("select", attrs={"name": "template"})
     selected = sel.find("option", selected=True) if sel else None
-    print(f"  current template selected: {selected.get('value') if selected else None!r} ({selected.get_text(strip=True) if selected else ''})")
-    checked = [inp for inp in soup.find_all("input", attrs={"name": re.compile(r"perms\[\d+\]\[isEnabled\]")}) if inp.has_attr("checked")]
+    print(
+        f"  current template selected: {selected.get('value') if selected else None!r} ({selected.get_text(strip=True) if selected else ''})"
+    )
+    checked = [
+        inp
+        for inp in soup.find_all("input", attrs={"name": re.compile(r"perms\[\d+\]\[isEnabled\]")})
+        if inp.has_attr("checked")
+    ]
     print(f"  checked perms: {len(checked)}")
 
 
@@ -359,7 +389,18 @@ def parse_edit_form_for_update(html: str, *, drop_fields: set[str]) -> list[tupl
             continue
         if el.name == "input":
             t = (el.get("type") or "text").lower()
-            if t in ("text", "hidden", "number", "email", "tel", "password", "search", "url", "date", "time"):
+            if t in (
+                "text",
+                "hidden",
+                "number",
+                "email",
+                "tel",
+                "password",
+                "search",
+                "url",
+                "date",
+                "time",
+            ):
                 value = el.get("value") or ""
                 if not value:
                     value = el.get("data-value") or ""
@@ -382,7 +423,9 @@ def parse_edit_form_for_update(html: str, *, drop_fields: set[str]) -> list[tupl
             else:
                 sel_opt = next((o for o in el.find_all("option") if o.has_attr("selected")), None)
                 if sel_opt is None:
-                    sel_opt = next((o for o in el.find_all("option") if (o.get("value") or "").strip()), None)
+                    sel_opt = next(
+                        (o for o in el.find_all("option") if (o.get("value") or "").strip()), None
+                    )
                 if sel_opt is not None:
                     out.append((name, sel_opt.get("value") or ""))
         elif el.name == "textarea":
@@ -400,7 +443,7 @@ def disable_employee(session: requests.Session, emp_id: int) -> None:
 
 def main() -> int:
     print("=" * 66)
-    print(f"WRITE 4+5 v2: active employee + linked BO user + BO permissions")
+    print("WRITE 4+5 v2: active employee + linked BO user + BO permissions")
     print("=" * 66)
     session = login_and_session()
     preflight(session)

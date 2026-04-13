@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock
 
@@ -56,9 +56,6 @@ def test_parse_edit_form_skips_disabled_inputs():
     html = _edit_before_disable_html()
     payload = _parse_edit_form_into_payload(html, drop_fields={"employee[isActive]"})
     # Sites with hidden disabled siteId inputs should NOT be submitted.
-    # This form has several site rows whose hidden siteId inputs carry disabled="".
-    # Verify at least one site that should be disabled is absent.
-    names = set(n for n, _ in payload)
     # No disabled inputs means the output count is smaller than a blind parse would give
     assert len(payload) < 500
 
@@ -74,9 +71,7 @@ def test_parse_edit_form_preserves_checked_checkboxes():
 
 def test_parse_edit_form_raises_when_no_form():
     with pytest.raises(BackofficeServerError, match="/employee/update"):
-        _parse_edit_form_into_payload(
-            "<html><body>nothing</body></html>", drop_fields=set()
-        )
+        _parse_edit_form_into_payload("<html><body>nothing</body></html>", drop_fields=set())
 
 
 def test_disable_employee_full_round_trip():

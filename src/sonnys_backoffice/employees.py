@@ -1,10 +1,12 @@
 """create_employee / disable_employee orchestration and form builders."""
+
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Mapping
+from typing import Any
 
 from bs4 import BeautifulSoup
 
@@ -56,9 +58,7 @@ class EmployeeIndex:
         normalized_email = email.strip().lower()
         if normalized_email in self.by_email:
             existing = self.by_email[normalized_email]
-            raise DuplicateError(
-                f"email={email!r} already exists on employee_id={existing}"
-            )
+            raise DuplicateError(f"email={email!r} already exists on employee_id={existing}")
         normalized_phone = _DIGITS_ONLY_RE.sub("", phone)
         if normalized_phone in self.by_phone:
             existing = self.by_phone[normalized_phone]
@@ -200,7 +200,9 @@ def build_employee_step1_payload(
         "employee[email]": request.email,
         "employee[startDate]": request.start_date.strftime("%m/%d/%Y"),
         "posCredential[POSLoginID]": str(request.pos_user_id),
-        "posCredential[POSLoginPassword]": str(request.pos_pin) if request.pos_pin is not None else "",
+        "posCredential[POSLoginPassword]": str(request.pos_pin)
+        if request.pos_pin is not None
+        else "",
         "wage[isHourly]": "1",
         "wage[regularRate]": f"{request.wage_rate:.2f}",
         "wage[overtimeRate]": f"{request.overtime_wage_rate:.2f}",
@@ -302,9 +304,7 @@ def _extract_employee_id_from_response(resp) -> int:
     m = re.search(r'name="employee\[id\]"\s+value="(\d+)"', text)
     if m:
         return int(m.group(1))
-    raise BackofficeServerError(
-        "could not extract new employee_id from /employee/insert response"
-    )
+    raise BackofficeServerError("could not extract new employee_id from /employee/insert response")
 
 
 def create_employee(
@@ -369,9 +369,7 @@ def create_employee(
     if resolved_request.requires_backoffice:
         from .bo_users import create_linked_backoffice_user
 
-        bo_perm, bo_warnings = resolve_permission(
-            resolved_request.permission, bo_permissions or []
-        )
+        bo_perm, bo_warnings = resolve_permission(resolved_request.permission, bo_permissions or [])
         warnings_list.extend(bo_warnings)
         bo_result = create_linked_backoffice_user(
             session=session,
@@ -497,9 +495,7 @@ def disable_employee(
 
     edit_resp = session.get(f"/employee/edit/{employee_id}")
     _check_create_response(edit_resp)
-    payload = _parse_edit_form_into_payload(
-        edit_resp.text, drop_fields={"employee[isActive]"}
-    )
+    payload = _parse_edit_form_into_payload(edit_resp.text, drop_fields={"employee[isActive]"})
     if not any(name == "employee[id]" for name, _ in payload):
         payload.append(("employee[id]", str(employee_id)))
 

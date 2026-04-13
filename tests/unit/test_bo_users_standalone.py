@@ -184,7 +184,9 @@ def test_linked_raises_if_employee_inactive():
     err_resp.status_code = 200
     err_resp.headers = {}
     err_resp.url = ""
-    err_resp.text = "<html>please make sure that the related employee is active and try again</html>"
+    err_resp.text = (
+        "<html>please make sure that the related employee is active and try again</html>"
+    )
     session.post.return_value = err_resp
 
     perm = Permission(id=1, name="Administrator", scope="backoffice")

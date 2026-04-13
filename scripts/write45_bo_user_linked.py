@@ -17,6 +17,7 @@ Safety: the BO user is linked to employee 486 which is already disabled.
 The BO user itself will remain on the tenant (no BO disable function in
 Milestone 1 scope).
 """
+
 from __future__ import annotations
 
 import json
@@ -80,8 +81,6 @@ def preflight_username(session: requests.Session) -> None:
     r = session.get(f"{BASE_URL}/user?limit=10000&active=all")
     r.raise_for_status()
     save_html("w45_user_list_preflight", r.text)
-    # Try to find a table of users and scan for BO_USERNAME
-    soup = BeautifulSoup(r.text, "html.parser")
     # Look for the username anywhere in the page
     if BO_USERNAME.lower() in r.text.lower():
         print(f"  [COLLISION] {BO_USERNAME!r} appears in /user listing")
@@ -99,18 +98,24 @@ def create_bo_user(session: requests.Session) -> int:
         ("user[password]", BO_PASSWORD),
         ("user[confirmPassword]", BO_PASSWORD),
     ]
-    save_payload("w45_user_insert_request", {
-        "method": "POST",
-        "url": f"{BASE_URL}/user/insert",
-        "fields": [{"name": k, "value": v} for k, v in payload],
-    })
+    save_payload(
+        "w45_user_insert_request",
+        {
+            "method": "POST",
+            "url": f"{BASE_URL}/user/insert",
+            "fields": [{"name": k, "value": v} for k, v in payload],
+        },
+    )
     r = session.post(f"{BASE_URL}/user/insert", data=payload, allow_redirects=False)
     save_html("w45_user_insert_response", r.text)
-    save_payload("w45_user_insert_response", {
-        "status_code": r.status_code,
-        "headers": dict(r.headers),
-        "body_length": len(r.text),
-    })
+    save_payload(
+        "w45_user_insert_response",
+        {
+            "status_code": r.status_code,
+            "headers": dict(r.headers),
+            "body_length": len(r.text),
+        },
+    )
     print(f"  HTTP {r.status_code}, Location: {r.headers.get('Location', '(none)')}")
     print(f"  body preview: {r.text[:300]}")
 
@@ -188,12 +193,14 @@ def parse_templates_and_schema(html: str) -> tuple[list[dict], list[dict]]:
             overrides_raw = (opt.get("data-manager-override-permissions-set") or "").strip()
             grants = [int(x) for x in grants_raw.split(",") if x.strip().isdigit()]
             overrides = [int(x) for x in overrides_raw.split(",") if x.strip().isdigit()]
-            templates.append({
-                "id": tid,
-                "name": opt.get_text(strip=True),
-                "grants": grants,
-                "overrides": overrides,
-            })
+            templates.append(
+                {
+                    "id": tid,
+                    "name": opt.get_text(strip=True),
+                    "grants": grants,
+                    "overrides": overrides,
+                }
+            )
 
     schema: dict[int, dict[str, str]] = {}
     for inp in soup.find_all("input", attrs={"name": re.compile(r"permissions\[\d+\]\[id\]")}):
@@ -258,11 +265,13 @@ def detect_user_key_and_action(html: str) -> tuple[str, str]:
 
 
 def assign_bo_permissions(session: requests.Session, user_id: int, html: str) -> None:
-    print(f"\n[step 4] Parse templates + assign permissions")
+    print("\n[step 4] Parse templates + assign permissions")
     templates, schema = parse_templates_and_schema(html)
     print(f"  parsed {len(templates)} BO templates, {len(schema)} permission metadata entries")
     for t in templates:
-        print(f"    [{t['id']}] {t['name']!r} grants={len(t['grants'])} overrides={len(t['overrides'])}")
+        print(
+            f"    [{t['id']}] {t['name']!r} grants={len(t['grants'])} overrides={len(t['overrides'])}"
+        )
 
     target = next((t for t in templates if t["name"].lower() == TARGET_TEMPLATE_NAME.lower()), None)
     if target is None:
@@ -276,20 +285,26 @@ def assign_bo_permissions(session: requests.Session, user_id: int, html: str) ->
     payload = build_permissions_payload(
         user_id=user_id, template=target, schema=schema, user_key=user_key
     )
-    save_payload("w45_user_permissions_request", {
-        "method": "POST",
-        "url": f"{BASE_URL}{form_action}" if form_action.startswith("/") else form_action,
-        "fields": [{"name": k, "value": v} for k, v in payload],
-    })
+    save_payload(
+        "w45_user_permissions_request",
+        {
+            "method": "POST",
+            "url": f"{BASE_URL}{form_action}" if form_action.startswith("/") else form_action,
+            "fields": [{"name": k, "value": v} for k, v in payload],
+        },
+    )
 
     url = f"{BASE_URL}{form_action}" if form_action.startswith("/") else form_action
     r = session.post(url, data=payload, allow_redirects=False)
     save_html("w45_user_permissions_response", r.text)
-    save_payload("w45_user_permissions_response", {
-        "status_code": r.status_code,
-        "headers": dict(r.headers),
-        "body_length": len(r.text),
-    })
+    save_payload(
+        "w45_user_permissions_response",
+        {
+            "status_code": r.status_code,
+            "headers": dict(r.headers),
+            "body_length": len(r.text),
+        },
+    )
     print(f"  HTTP {r.status_code}, Location: {r.headers.get('Location', '(none)')}")
 
 

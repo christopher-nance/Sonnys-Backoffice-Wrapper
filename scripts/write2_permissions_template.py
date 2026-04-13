@@ -8,6 +8,7 @@ Captures the request payload and the response, then verifies by GETing
 the permissions page and checking that templateId is selected and some
 permissions[N] entries are now checked.
 """
+
 from __future__ import annotations
 
 import json
@@ -55,7 +56,9 @@ def _count_checked_permissions(html: str) -> int:
     if form is None:
         return 0
     count = 0
-    for inp in form.find_all("input", attrs={"name": re.compile(r"permissions\[\d+\]\[hasGrantAccess\]")}):
+    for inp in form.find_all(
+        "input", attrs={"name": re.compile(r"permissions\[\d+\]\[hasGrantAccess\]")}
+    ):
         if inp.has_attr("checked"):
             count += 1
     return count
@@ -87,14 +90,16 @@ def main() -> int:
     print(f"\n[before] GET /employee/permissions/{EMPLOYEE_ID}")
     r = session.get(f"{BASE_URL}/employee/permissions/{EMPLOYEE_ID}")
     r.raise_for_status()
-    (FIXTURES_HTML / f"employee_permissions_{EMPLOYEE_ID}_before.html").write_text(r.text, encoding="utf-8")
+    (FIXTURES_HTML / f"employee_permissions_{EMPLOYEE_ID}_before.html").write_text(
+        r.text, encoding="utf-8"
+    )
     before_template = _current_template(r.text)
     before_checked = _count_checked_permissions(r.text)
     print(f"  current templateId: {before_template}")
     print(f"  checked permissions: {before_checked}")
 
     # Minimal POST
-    print(f"\n[write] POST /employee/permissions/update")
+    print("\n[write] POST /employee/permissions/update")
     payload = [
         ("employeeId", str(EMPLOYEE_ID)),
         ("templateId", str(TEMPLATE_ID)),
@@ -147,7 +152,7 @@ def main() -> int:
     print(f"  checked permissions: {after_checked}")
 
     # Also check the employee list for "Access" column
-    print(f"\n[verify] GET /employee?posUserId=99002&active=all")
+    print("\n[verify] GET /employee?posUserId=99002&active=all")
     r = session.get(f"{BASE_URL}/employee?posUserId=99002&active=all")
     soup = BeautifulSoup(r.text, "html.parser")
     tbl = soup.find("table", class_="table-employees-list")
@@ -169,10 +174,14 @@ def main() -> int:
         return 0
     elif after_template and "3" in str(after_template) and after_checked == 0:
         print(f"PARTIAL: template {TEMPLATE_ID} is selected but no permissions are checked.")
-        print("  Either the template has no defaults (unlikely) or the server needs the full matrix.")
+        print(
+            "  Either the template has no defaults (unlikely) or the server needs the full matrix."
+        )
         return 1
     else:
-        print(f"FAIL: templateId did not change. before={before_template!r} after={after_template!r}")
+        print(
+            f"FAIL: templateId did not change. before={before_template!r} after={after_template!r}"
+        )
         return 2
 
 

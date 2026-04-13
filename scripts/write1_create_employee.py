@@ -15,6 +15,7 @@ Safety:
 Usage:
     SONNYS_BOT_PASSWORD='...' python scripts/write1_create_employee.py
 """
+
 from __future__ import annotations
 
 import json
@@ -22,7 +23,6 @@ import os
 import re
 import sys
 from pathlib import Path
-from urllib.parse import parse_qsl
 
 import requests
 from bs4 import BeautifulSoup
@@ -240,7 +240,7 @@ def _submit_and_capture(session: requests.Session, payload: list[tuple[str, str]
         print(f"  employee_id sentinel -> {sentinel.relative_to(REPO_ROOT)}")
     else:
         print(f"\n  [WARN] could not extract employee_id from Location={location!r}")
-        if r.status_code == 200 and 'has-error' in r.text:
+        if r.status_code == 200 and "has-error" in r.text:
             print("  response body contains form errors — likely a validation failure")
 
 

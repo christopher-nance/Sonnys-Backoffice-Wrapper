@@ -4,6 +4,7 @@ Sonny's Backoffice runs on Symfony + PHP. Login has no CSRF token — just an
 HTML form that POSTs `_username` and `_password` to `/login_check`. The session
 cookie is `PHPSESSID`.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -50,9 +51,7 @@ class _BackofficeSession:
         if _looks_like_login_page(resp.text):
             raise AuthenticationError("Login failed — credentials rejected by Backoffice")
         if resp.status_code >= 400:
-            raise BackofficeServerError(
-                f"Unexpected login response: HTTP {resp.status_code}"
-            )
+            raise BackofficeServerError(f"Unexpected login response: HTTP {resp.status_code}")
         self._logged_in = True
 
     def get(self, path: str, **kwargs: Any) -> requests.Response:

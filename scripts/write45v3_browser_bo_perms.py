@@ -8,6 +8,7 @@ Creates employee Q3R4 (99006) + BO user wrapperQ3R4bo linked to it, drives
 the permissions page UI to select General User, clicks save, captures the
 outgoing POST body, then verifies and cleans up.
 """
+
 from __future__ import annotations
 
 import json
@@ -87,14 +88,14 @@ def preflight(session: requests.Session) -> None:
     r = session.get(f"{BASE_URL}/employee?limit=10000&active=all")
     soup = BeautifulSoup(r.text, "html.parser")
     tbl = soup.find("table", class_="table-employees-list")
-    for row in (tbl.find_all("tr") if tbl else []):
+    for row in tbl.find_all("tr") if tbl else []:
         cells = row.find_all("td")
         if len(cells) < 7:
             continue
         if cells[4].get_text(strip=True) == EMP_FIELDS["pos_user_id"]:
-            raise SystemExit(f"[collision] pos")
+            raise SystemExit("[collision] pos")
         if re.sub(r"\D", "", cells[6].get_text(strip=True)) == EMP_FIELDS["phone"]:
-            raise SystemExit(f"[collision] phone")
+            raise SystemExit("[collision] phone")
     r = session.get(f"{BASE_URL}/user/create")
     soup = BeautifulSoup(r.text, "html.parser")
     sel = soup.find("select", attrs={"name": "user[employeeId]"})
@@ -172,19 +173,23 @@ def drive_bo_permissions_via_browser(cookies: dict, user_id: int) -> list[dict]:
 
     def on_request(req: Request) -> None:
         if req.method.upper() == "POST" and "/user/permissions/update" in req.url:
-            captured.append({
-                "method": req.method,
-                "url": req.url,
-                "post_data": req.post_data,
-                "headers": {k: v for k, v in req.headers.items() if k.lower() != "cookie"},
-            })
+            captured.append(
+                {
+                    "method": req.method,
+                    "url": req.url,
+                    "post_data": req.post_data,
+                    "headers": {k: v for k, v in req.headers.items() if k.lower() != "cookie"},
+                }
+            )
             print(f"  [captured] POST {req.url} ({len(req.post_data or '')} bytes)")
 
     with sync_playwright() as p:
         b = p.chromium.launch(headless=True)
         ctx = b.new_context(user_agent="SonnysBackofficeWrapper/0.1-w45v3-browser")
         for k, v in cookies.items():
-            ctx.add_cookies([{"name": k, "value": v, "domain": "washu.sonnyscontrols.com", "path": "/"}])
+            ctx.add_cookies(
+                [{"name": k, "value": v, "domain": "washu.sonnyscontrols.com", "path": "/"}]
+            )
         page = ctx.new_page()
         page.on("request", on_request)
 
@@ -236,7 +241,18 @@ def parse_edit_form_for_update(html: str, *, drop_fields: set[str]) -> list[tupl
             continue
         if el.name == "input":
             t = (el.get("type") or "text").lower()
-            if t in ("text", "hidden", "number", "email", "tel", "password", "search", "url", "date", "time"):
+            if t in (
+                "text",
+                "hidden",
+                "number",
+                "email",
+                "tel",
+                "password",
+                "search",
+                "url",
+                "date",
+                "time",
+            ):
                 value = el.get("value") or ""
                 if not value:
                     value = el.get("data-value") or ""
@@ -259,7 +275,9 @@ def parse_edit_form_for_update(html: str, *, drop_fields: set[str]) -> list[tupl
             else:
                 sel_opt = next((o for o in el.find_all("option") if o.has_attr("selected")), None)
                 if sel_opt is None:
-                    sel_opt = next((o for o in el.find_all("option") if (o.get("value") or "").strip()), None)
+                    sel_opt = next(
+                        (o for o in el.find_all("option") if (o.get("value") or "").strip()), None
+                    )
                 if sel_opt is not None:
                     out.append((name, sel_opt.get("value") or ""))
         elif el.name == "textarea":

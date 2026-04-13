@@ -14,6 +14,7 @@ One fresh disposable employee (suffix E5F7), one script, one result:
 
 All captured fixtures land in tests/fixtures/ for unit-test replay in Phase 5+.
 """
+
 from __future__ import annotations
 
 import json
@@ -21,7 +22,6 @@ import os
 import re
 import sys
 from pathlib import Path
-from urllib.parse import parse_qsl
 
 import requests
 from bs4 import BeautifulSoup
@@ -139,7 +139,7 @@ def preflight_uniqueness(session: requests.Session) -> None:
     if target_email in emails:
         print(f"  [COLLISION] email {target_email} already exists")
         raise SystemExit(1)
-    print(f"  all three clean")
+    print("  all three clean")
 
 
 # ---------- step 2: create employee ----------
@@ -176,23 +176,29 @@ def build_create_payload() -> list[tuple[str, str]]:
 def create_employee(session: requests.Session) -> int:
     print("\n[step 2] CREATE employee via /employee/insert")
     payload = build_create_payload()
-    save_payload("e2e_create_employee_request", {
-        "method": "POST",
-        "url": f"{BASE_URL}/employee/insert",
-        "fields": [{"name": k, "value": v} for k, v in payload],
-    })
+    save_payload(
+        "e2e_create_employee_request",
+        {
+            "method": "POST",
+            "url": f"{BASE_URL}/employee/insert",
+            "fields": [{"name": k, "value": v} for k, v in payload],
+        },
+    )
     r = session.post(f"{BASE_URL}/employee/insert", data=payload, allow_redirects=False)
     save_html("e2e_create_employee_response", r.text)
-    save_payload("e2e_create_employee_response", {
-        "status_code": r.status_code,
-        "headers": dict(r.headers),
-        "body_length": len(r.text),
-    })
+    save_payload(
+        "e2e_create_employee_response",
+        {
+            "status_code": r.status_code,
+            "headers": dict(r.headers),
+            "body_length": len(r.text),
+        },
+    )
     loc = r.headers.get("Location", "")
     print(f"  HTTP {r.status_code}, Location: {loc}")
     m = re.search(r"/employee/(?:edit|permissions|compensation)/(\d+)", loc)
     if not m:
-        print(f"  [FAIL] could not extract employee_id")
+        print("  [FAIL] could not extract employee_id")
         raise SystemExit(1)
     emp_id = int(m.group(1))
     print(f"  [SUCCESS] new employee_id = {emp_id}")
@@ -210,7 +216,9 @@ def verify_sites(session: requests.Session, emp_id: int) -> None:
     form = soup.find("form", action=re.compile(r"/employee/update"))
     unchecked_available = []
     checked_not_available = []
-    for inp in form.find_all("input", attrs={"name": re.compile(r"employee\[sites\]\[\d+\]\[isAvailable\]")}):
+    for inp in form.find_all(
+        "input", attrs={"name": re.compile(r"employee\[sites\]\[\d+\]\[isAvailable\]")}
+    ):
         m = re.search(r"\[sites\]\[(\d+)\]", inp.get("name", ""))
         if not m:
             continue
@@ -222,7 +230,7 @@ def verify_sites(session: requests.Session, emp_id: int) -> None:
     print(f"  AVAILABLE: {sorted(unchecked_available)}")
     print(f"  NOT available: {sorted(checked_not_available)}")
     if sorted(unchecked_available) == sorted(ENABLED_SITE_IDS):
-        print(f"  [SUCCESS] sites match intent")
+        print("  [SUCCESS] sites match intent")
     else:
         print(f"  [FAIL] expected {sorted(ENABLED_SITE_IDS)}, got {sorted(unchecked_available)}")
         raise SystemExit(1)
@@ -250,12 +258,14 @@ def parse_templates_and_schema(html: str) -> tuple[list[dict], list[dict]]:
             overrides_raw = (opt.get("data-manager-override-permissions-set") or "").strip()
             grants = [int(x) for x in grants_raw.split(",") if x.strip().isdigit()]
             overrides = [int(x) for x in overrides_raw.split(",") if x.strip().isdigit()]
-            templates.append({
-                "id": tid,
-                "name": opt.get_text(strip=True),
-                "grants": grants,
-                "overrides": overrides,
-            })
+            templates.append(
+                {
+                    "id": tid,
+                    "name": opt.get_text(strip=True),
+                    "grants": grants,
+                    "overrides": overrides,
+                }
+            )
 
     schema: dict[int, dict[str, str]] = {}
     for inp in soup.find_all("input", attrs={"name": re.compile(r"permissions\[\d+\]\[id\]")}):
@@ -313,27 +323,33 @@ def assign_permissions(session: requests.Session, emp_id: int) -> None:
     if target is None:
         print(f"  [FAIL] template {TARGET_TEMPLATE_NAME!r} not found")
         raise SystemExit(1)
-    print(f"  template: id={target['id']} name={target['name']!r} grants={target['grants']} overrides={target['overrides']}")
-
-    payload = build_permissions_payload(
-        employee_id=emp_id, template=target, schema=schema
+    print(
+        f"  template: id={target['id']} name={target['name']!r} grants={target['grants']} overrides={target['overrides']}"
     )
-    save_payload("e2e_permissions_request", {
-        "method": "POST",
-        "url": f"{BASE_URL}/employee/permissions/update",
-        "fields": [{"name": k, "value": v} for k, v in payload],
-    })
+
+    payload = build_permissions_payload(employee_id=emp_id, template=target, schema=schema)
+    save_payload(
+        "e2e_permissions_request",
+        {
+            "method": "POST",
+            "url": f"{BASE_URL}/employee/permissions/update",
+            "fields": [{"name": k, "value": v} for k, v in payload],
+        },
+    )
     r_post = session.post(
         f"{BASE_URL}/employee/permissions/update",
         data=payload,
         allow_redirects=False,
     )
     save_html("e2e_permissions_response", r_post.text)
-    save_payload("e2e_permissions_response", {
-        "status_code": r_post.status_code,
-        "headers": dict(r_post.headers),
-        "body_length": len(r_post.text),
-    })
+    save_payload(
+        "e2e_permissions_response",
+        {
+            "status_code": r_post.status_code,
+            "headers": dict(r_post.headers),
+            "body_length": len(r_post.text),
+        },
+    )
     print(f"  HTTP {r_post.status_code}, Location: {r_post.headers.get('Location', '(none)')}")
 
 
@@ -383,7 +399,18 @@ def parse_edit_form_for_update(
             continue
         if el.name == "input":
             t = (el.get("type") or "text").lower()
-            if t in ("text", "hidden", "number", "email", "tel", "password", "search", "url", "date", "time"):
+            if t in (
+                "text",
+                "hidden",
+                "number",
+                "email",
+                "tel",
+                "password",
+                "search",
+                "url",
+                "date",
+                "time",
+            ):
                 value = el.get("value") or ""
                 if not value:
                     value = el.get("data-value") or ""
@@ -406,7 +433,9 @@ def parse_edit_form_for_update(
             else:
                 sel_opt = next((o for o in el.find_all("option") if o.has_attr("selected")), None)
                 if sel_opt is None:
-                    sel_opt = next((o for o in el.find_all("option") if (o.get("value") or "").strip()), None)
+                    sel_opt = next(
+                        (o for o in el.find_all("option") if (o.get("value") or "").strip()), None
+                    )
                 if sel_opt is not None:
                     out.append((name, sel_opt.get("value") or ""))
         elif el.name == "textarea":
@@ -420,18 +449,24 @@ def disable_employee(session: requests.Session, emp_id: int) -> None:
     save_html(f"e2e_employee_edit_{emp_id}_before_disable", r.text)
     payload = parse_edit_form_for_update(r.text, drop_fields={"employee[isActive]"})
     print(f"  parsed {len(payload)} fields")
-    save_payload("e2e_disable_request", {
-        "method": "POST",
-        "url": f"{BASE_URL}/employee/update",
-        "fields": [{"name": k, "value": v} for k, v in payload],
-    })
+    save_payload(
+        "e2e_disable_request",
+        {
+            "method": "POST",
+            "url": f"{BASE_URL}/employee/update",
+            "fields": [{"name": k, "value": v} for k, v in payload],
+        },
+    )
     r_post = session.post(f"{BASE_URL}/employee/update", data=payload, allow_redirects=False)
     save_html("e2e_disable_response", r_post.text)
-    save_payload("e2e_disable_response", {
-        "status_code": r_post.status_code,
-        "headers": dict(r_post.headers),
-        "body_length": len(r_post.text),
-    })
+    save_payload(
+        "e2e_disable_response",
+        {
+            "status_code": r_post.status_code,
+            "headers": dict(r_post.headers),
+            "body_length": len(r_post.text),
+        },
+    )
     loc = r_post.headers.get("Location", "")
     print(f"  HTTP {r_post.status_code}, Location: {loc}")
     if loc != "/employee":

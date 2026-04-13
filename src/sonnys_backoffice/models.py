@@ -1,4 +1,5 @@
 """Pydantic v2 models for inputs, outputs, and domain objects."""
+
 from __future__ import annotations
 
 import re
@@ -91,7 +92,7 @@ class CreateEmployeeRequest(_BackofficeBaseModel):
         return v
 
     @model_validator(mode="after")
-    def _check_wage_and_backoffice(self) -> "CreateEmployeeRequest":
+    def _check_wage_and_backoffice(self) -> CreateEmployeeRequest:
         if self.overtime_wage_rate is None:
             object.__setattr__(
                 self,
@@ -120,7 +121,7 @@ class DisableEmployeeRequest(_BackofficeBaseModel):
         return v.strip()
 
     @model_validator(mode="after")
-    def _check_exactly_one(self) -> "DisableEmployeeRequest":
+    def _check_exactly_one(self) -> DisableEmployeeRequest:
         provided = [x for x in (self.pos_user_id, self.email) if x is not None]
         if len(provided) != 1:
             raise ValueError("exactly one of pos_user_id or email is required")
@@ -155,13 +156,11 @@ class CreateBackofficeUserRequest(_BackofficeBaseModel):
         return v.strip()
 
     @model_validator(mode="after")
-    def _check_link_or_standalone(self) -> "CreateBackofficeUserRequest":
+    def _check_link_or_standalone(self) -> CreateBackofficeUserRequest:
         has_link = bool(self.link_to_employee_pos_user_id or self.link_to_employee_email)
         has_standalone = bool(self.first_name or self.last_name)
         if has_link and has_standalone:
-            raise ValueError(
-                "provide either link_to_employee_* or first_name+last_name — not both"
-            )
+            raise ValueError("provide either link_to_employee_* or first_name+last_name — not both")
         if not has_link and not has_standalone:
             raise ValueError(
                 "provide either link_to_employee_pos_user_id / link_to_employee_email or first_name+last_name"

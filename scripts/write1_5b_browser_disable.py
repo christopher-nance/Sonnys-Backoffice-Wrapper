@@ -7,6 +7,7 @@ through so the disable actually happens.
 This bypasses the Symfony checkbox-value guessing game by using the form's own
 JavaScript to build the payload.
 """
+
 from __future__ import annotations
 
 import json
@@ -110,7 +111,9 @@ def main() -> int:
         # Find the save button — look for any type=submit in the form
         try:
             with page.expect_navigation(wait_until="domcontentloaded", timeout=15000):
-                page.click("form[action='/employee/update'] button[type='submit'], button.btn-success[type='submit']")
+                page.click(
+                    "form[action='/employee/update'] button[type='submit'], button.btn-success[type='submit']"
+                )
             print(f"  landed on: {page.url}")
         except Exception as exc:
             print(f"  [WARN] navigation waited but failed: {exc}")
@@ -121,13 +124,16 @@ def main() -> int:
         if captured_payloads:
             outp = FIXTURES_PAYLOADS / "allowed_employee_update_browser_disable.json"
             outp.write_text(json.dumps(captured_payloads, indent=2), encoding="utf-8")
-            print(f"\n[capture] saved {len(captured_payloads)} payload(s) -> {outp.relative_to(REPO_ROOT)}")
+            print(
+                f"\n[capture] saved {len(captured_payloads)} payload(s) -> {outp.relative_to(REPO_ROOT)}"
+            )
             # Show a summary of the first one
             first = captured_payloads[0]
             post_data = first.get("post_data") or ""
             print(f"\n  payload length: {len(post_data)} bytes")
             # Parse as form-urlencoded and show keys
             from urllib.parse import parse_qsl
+
             pairs = parse_qsl(post_data, keep_blank_values=True)
             print(f"  field count: {len(pairs)}")
             # Show isActive presence

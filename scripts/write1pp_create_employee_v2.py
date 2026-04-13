@@ -14,6 +14,7 @@ Differences from write1_create_employee.py:
 Usage:
     SONNYS_BOT_PASSWORD='...' python scripts/write1pp_create_employee_v2.py
 """
+
 from __future__ import annotations
 
 import json
@@ -222,15 +223,25 @@ def _verify_sites(session: requests.Session, emp_id: int) -> None:
     if all_regions_allowed:
         print(f"  isAllRegionsAllowed: checked={all_regions_allowed.has_attr('checked')}")
 
-    disabled_regions = [int(i.get("value")) for i in form.find_all("input", attrs={"name": "employee[disabledRegions][]"}) if i.has_attr("checked")]
-    disabled_districts = [int(i.get("value")) for i in form.find_all("input", attrs={"name": "employee[disabledDistricts][]"}) if i.has_attr("checked")]
+    disabled_regions = [
+        int(i.get("value"))
+        for i in form.find_all("input", attrs={"name": "employee[disabledRegions][]"})
+        if i.has_attr("checked")
+    ]
+    disabled_districts = [
+        int(i.get("value"))
+        for i in form.find_all("input", attrs={"name": "employee[disabledDistricts][]"})
+        if i.has_attr("checked")
+    ]
     print(f"  disabledRegions (checked): {disabled_regions}")
     print(f"  disabledDistricts (checked): {disabled_districts}")
 
     # For sites, the edit form renders each site's isAvailable — checked means "No (not available)"
     checked_not_available = []
     unchecked_available = []
-    for inp in form.find_all("input", attrs={"name": re.compile(r"employee\[sites\]\[\d+\]\[isAvailable\]")}):
+    for inp in form.find_all(
+        "input", attrs={"name": re.compile(r"employee\[sites\]\[\d+\]\[isAvailable\]")}
+    ):
         name = inp.get("name")
         m = re.search(r"\[sites\]\[(\d+)\]", name)
         if not m:

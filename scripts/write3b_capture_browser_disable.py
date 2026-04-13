@@ -7,6 +7,7 @@ the isActive toggle off and saves.
 Compares the captured browser payload with the parsed-and-reposted
 payload from Write 3 to find what's missing.
 """
+
 from __future__ import annotations
 
 import json
@@ -66,7 +67,7 @@ def main() -> int:
         page.fill("input[name='_password']", password)
         page.click("button[type='submit'], input[type='submit']")
         page.wait_for_url(lambda u: "/login" not in u, timeout=15000)
-        print(f"[login] ok")
+        print("[login] ok")
 
         # Navigate to edit
         print(f"[nav] /employee/edit/{EMPLOYEE_ID}")

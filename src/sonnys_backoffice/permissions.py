@@ -1,9 +1,11 @@
 """Permission name resolution and parsing."""
+
 from __future__ import annotations
 
 import re
 import warnings
-from typing import Iterable, Literal
+from collections.abc import Iterable
+from typing import Literal
 
 from bs4 import BeautifulSoup
 
@@ -29,8 +31,7 @@ def resolve_permission(
             return perm, []
 
     fallback_msg = (
-        f"permission {requested!r} not found in tenant, "
-        f"falling back to {_DEFAULT_FALLBACK!r}"
+        f"permission {requested!r} not found in tenant, falling back to {_DEFAULT_FALLBACK!r}"
     )
     warnings.warn(fallback_msg, stacklevel=2)
     for perm in available_list:
@@ -68,12 +69,8 @@ def parse_permissions_and_schema(
                 continue
             grants_raw = opt.get("data-permissions-set", "") or ""
             overrides_raw = opt.get("data-manager-override-permissions-set", "") or ""
-            grants = frozenset(
-                int(x) for x in grants_raw.split(",") if x.strip().isdigit()
-            )
-            overrides = frozenset(
-                int(x) for x in overrides_raw.split(",") if x.strip().isdigit()
-            )
+            grants = frozenset(int(x) for x in grants_raw.split(",") if x.strip().isdigit())
+            overrides = frozenset(int(x) for x in overrides_raw.split(",") if x.strip().isdigit())
             templates.append(
                 Permission(
                     id=tid,
@@ -104,9 +101,7 @@ def parse_permissions_and_schema(
     return templates, ordered_schema
 
 
-def parse_permissions(
-    html: str, *, scope: Literal["pos", "backoffice"]
-) -> list[Permission]:
+def parse_permissions(html: str, *, scope: Literal["pos", "backoffice"]) -> list[Permission]:
     """Return only the role templates. Convenience wrapper around parse_permissions_and_schema."""
     templates, _ = parse_permissions_and_schema(html, scope=scope)
     return templates

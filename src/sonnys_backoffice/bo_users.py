@@ -6,6 +6,7 @@ icon in the Backoffice UI to assign a template after creation. The linked mode
 additionally requires the linked employee to be currently ACTIVE; linking to a
 disabled employee returns a server-side error.
 """
+
 from __future__ import annotations
 
 import re
@@ -50,9 +51,7 @@ def _check_bo_insert_response(resp) -> None:
     if "already exists" in lowered or "already taken" in lowered:
         raise DuplicateError("BO user with this username or email already exists")
     if "related employee is active" in lowered:
-        raise BackofficeServerError(
-            "linked BO user creation requires the employee to be active"
-        )
+        raise BackofficeServerError("linked BO user creation requires the employee to be active")
 
 
 def create_linked_backoffice_user(

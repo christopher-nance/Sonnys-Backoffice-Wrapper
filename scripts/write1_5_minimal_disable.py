@@ -14,6 +14,7 @@ Captures:
 Usage:
     SONNYS_BOT_PASSWORD='...' python scripts/write1_5_minimal_disable.py
 """
+
 from __future__ import annotations
 
 import json
@@ -111,7 +112,7 @@ def main() -> int:
         print(f"    {k:<40} = {v!r}")
 
     # 2. Minimal POST
-    print(f"\n[write] POST /employee/update with minimal payload")
+    print("\n[write] POST /employee/update with minimal payload")
     minimal_payload = [
         ("employee[id]", str(EMPLOYEE_ID)),
         ("employee[isActive]", "0"),

@@ -15,6 +15,7 @@ Integration tests are excluded from the default pytest run via the
 ``-m 'not integration'`` addopt in pyproject.toml. Run them explicitly with
 ``pytest -m integration``.
 """
+
 from __future__ import annotations
 
 import os

@@ -1,4 +1,5 @@
 """Public SonnysBackofficeClient façade."""
+
 from __future__ import annotations
 
 import re
@@ -14,9 +15,12 @@ from .departments import parse_departments
 from .employees import (
     EmployeeIndex,
     build_employee_index,
+)
+from .employees import (
     create_employee as _create_employee,
+)
+from .employees import (
     disable_employee as _disable_employee,
-    find_employee_in_list_html,
 )
 from .exceptions import NotFoundError
 from .models import (
@@ -87,7 +91,7 @@ class SonnysBackofficeClient:
         self._employee_index: EmployeeIndex | None = None
         self._employee_list_html: str | None = None
 
-    def __enter__(self) -> "SonnysBackofficeClient":
+    def __enter__(self) -> SonnysBackofficeClient:
         return self
 
     def __exit__(self, *exc) -> None:
@@ -167,9 +171,7 @@ class SonnysBackofficeClient:
             assert self._bo_permissions is not None
             return list(self._bo_permissions)
 
-    def is_pos_user_id_available(
-        self, pos_user_id: int, *, refresh: bool = False
-    ) -> bool:
+    def is_pos_user_id_available(self, pos_user_id: int, *, refresh: bool = False) -> bool:
         """Return True if no existing employee uses this POS User ID.
 
         The check uses a cached per-tenant employee index built lazily from
@@ -533,21 +535,17 @@ class SonnysBackofficeClient:
         if pos_user_id is not None:
             try:
                 pid = int(pos_user_id)
-            except ValueError:
+            except ValueError as exc:
                 raise NotFoundError(
                     f"link_to_employee_pos_user_id={pos_user_id!r} is not an integer"
-                )
+                ) from exc
             emp_id = self._employee_index.by_pos_user_id.get(pid)
             if emp_id is None:
-                raise NotFoundError(
-                    f"no employee found with pos_user_id={pid} for BO user linking"
-                )
+                raise NotFoundError(f"no employee found with pos_user_id={pid} for BO user linking")
             return emp_id
         if email is not None:
             emp_id = self._employee_index.by_email.get(email.strip().lower())
             if emp_id is None:
-                raise NotFoundError(
-                    f"no employee found with email={email!r} for BO user linking"
-                )
+                raise NotFoundError(f"no employee found with email={email!r} for BO user linking")
             return emp_id
         raise ValueError("link_to_employee_pos_user_id or link_to_employee_email required")

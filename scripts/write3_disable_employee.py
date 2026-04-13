@@ -7,6 +7,7 @@ Replicates the Delta D-6.2 approach the library will ship with:
 4. POST /employee/update
 5. GET /employee/edit/485 and verify isActive is now unchecked, other fields preserved
 """
+
 from __future__ import annotations
 
 import json
@@ -93,8 +94,16 @@ def parse_edit_form_into_payload(
         if el.name == "input":
             t = (el.get("type") or "text").lower()
             if t in (
-                "text", "hidden", "number", "email", "tel", "password",
-                "search", "url", "date", "time",
+                "text",
+                "hidden",
+                "number",
+                "email",
+                "tel",
+                "password",
+                "search",
+                "url",
+                "date",
+                "time",
             ):
                 out.append((name, el.get("value") or ""))
             elif t == "checkbox":
@@ -169,10 +178,8 @@ def main() -> int:
         print(f"    {k:<40} = {v!r}")
 
     # Parse the form into a payload, dropping employee[isActive]
-    print(f"\n[step 2] parse form into payload (dropping employee[isActive])")
-    payload = parse_edit_form_into_payload(
-        r_before.text, drop_fields={"employee[isActive]"}
-    )
+    print("\n[step 2] parse form into payload (dropping employee[isActive])")
+    payload = parse_edit_form_into_payload(r_before.text, drop_fields={"employee[isActive]"})
     print(f"  parsed {len(payload)} fields")
     # Save for fixture use
     (FIXTURES_PAYLOADS / "allowed_employee_update_full_disable_request.json").write_text(
@@ -188,7 +195,7 @@ def main() -> int:
     )
 
     # POST
-    print(f"\n[step 3] POST /employee/update")
+    print("\n[step 3] POST /employee/update")
     r_post = session.post(
         f"{BASE_URL}/employee/update",
         data=payload,

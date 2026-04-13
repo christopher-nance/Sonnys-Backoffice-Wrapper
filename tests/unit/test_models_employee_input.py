@@ -87,7 +87,9 @@ def test_overtime_defaults_to_time_and_a_half():
 
 
 def test_overtime_honors_explicit_value():
-    req = CreateEmployeeRequest(**_valid_kwargs(wage_rate=Decimal("10.00"), overtime_wage_rate=Decimal("20.00")))
+    req = CreateEmployeeRequest(
+        **_valid_kwargs(wage_rate=Decimal("10.00"), overtime_wage_rate=Decimal("20.00"))
+    )
     assert req.overtime_wage_rate == Decimal("20.00")
 
 

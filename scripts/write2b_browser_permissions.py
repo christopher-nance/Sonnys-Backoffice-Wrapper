@@ -2,6 +2,7 @@
 save, and capture the real browser-sent POST payload along with any AJAX calls made
 when the template is selected.
 """
+
 from __future__ import annotations
 
 import json
@@ -9,7 +10,7 @@ import os
 import sys
 from pathlib import Path
 
-from playwright.sync_api import Request, Route, sync_playwright
+from playwright.sync_api import Request, sync_playwright
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 FIXTURES_HTML = REPO_ROOT / "tests" / "fixtures" / "html"
@@ -46,7 +47,9 @@ def main() -> int:
                     "method": req.method,
                     "url": req.url,
                     "post_data": req.post_data,
-                    "headers": {k: v for k, v in req.headers.items() if k.lower() not in ("cookie",)},
+                    "headers": {
+                        k: v for k, v in req.headers.items() if k.lower() not in ("cookie",)
+                    },
                 }
             )
 
@@ -62,7 +65,7 @@ def main() -> int:
         page.fill("input[name='_password']", password)
         page.click("button[type='submit'], input[type='submit']")
         page.wait_for_url(lambda u: "/login" not in u, timeout=15000)
-        print(f"[login] ok")
+        print("[login] ok")
 
         # Navigate to permissions page
         print(f"[nav] /employee/permissions/{EMPLOYEE_ID}")
@@ -80,9 +83,9 @@ def main() -> int:
             print(f"    {req['method']:<6} {req['url']}")
 
         # Save the page state after selection (shows what JS applied client-side)
-        Path(FIXTURES_HTML / f"employee_permissions_{EMPLOYEE_ID}_after_template_select.html").write_text(
-            page.content(), encoding="utf-8"
-        )
+        Path(
+            FIXTURES_HTML / f"employee_permissions_{EMPLOYEE_ID}_after_template_select.html"
+        ).write_text(page.content(), encoding="utf-8")
         # Count how many permissions checkboxes are now checked client-side
         checked_count = page.evaluate(
             """() => {
@@ -107,9 +110,10 @@ def main() -> int:
             outp.write_text(json.dumps(captured_posts, indent=2), encoding="utf-8")
             print(f"\n[captured] {len(captured_posts)} POST(s) to /employee/permissions/update")
             from urllib.parse import parse_qsl
+
             for i, cap in enumerate(captured_posts):
                 post_data = cap.get("post_data") or ""
-                print(f"\n  POST {i+1}: {len(post_data)} bytes")
+                print(f"\n  POST {i + 1}: {len(post_data)} bytes")
                 pairs = parse_qsl(post_data, keep_blank_values=True)
                 print(f"  {len(pairs)} fields")
                 # Show the key structure
@@ -125,7 +129,9 @@ def main() -> int:
                 for k, v in perm_pairs[:10]:
                     print(f"      {k} = {v!r}")
         else:
-            print("\n[WARN] no POSTs captured — form may have submitted outside the intercepted scope")
+            print(
+                "\n[WARN] no POSTs captured — form may have submitted outside the intercepted scope"
+            )
 
         # Verify
         print("\n[verify] GET /employee/permissions/485")
@@ -145,6 +151,7 @@ def main() -> int:
         page.goto(f"{BASE_URL}/employee?posUserId=99002&active=all", wait_until="domcontentloaded")
         page.wait_for_timeout(500)
         from bs4 import BeautifulSoup
+
         soup = BeautifulSoup(page.content(), "html.parser")
         tbl = soup.find("table", class_="table-employees-list")
         if tbl:

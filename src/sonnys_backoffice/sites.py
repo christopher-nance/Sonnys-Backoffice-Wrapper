@@ -1,4 +1,5 @@
 """Site/region/district tree parser and resolver."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -63,9 +64,7 @@ def _parse_hierarchical(soup) -> SiteTree:
         district_id = int(district_input["data-district-id"])
         region_id = int(district_input["data-region-id"])
         label_el = soup.select_one(f'label[for="boac-permission-district-{district_id}"]')
-        district_name = (
-            _extract_label_name(label_el) if label_el else f"District {district_id}"
-        )
+        district_name = _extract_label_name(label_el) if label_el else f"District {district_id}"
         districts.append(District(id=district_id, name=district_name, region_id=region_id))
 
     for site_input in soup.select("input.boac-permission-site-option"):
@@ -79,13 +78,9 @@ def _parse_hierarchical(soup) -> SiteTree:
                 region_id = match.region_id
         label_el = soup.select_one(f'label[for="boac-permission-site-{site_id}"]')
         site_name = _extract_label_name(label_el) if label_el else f"Site {site_id}"
-        sites.append(
-            Site(id=site_id, name=site_name, district_id=district_id, region_id=region_id)
-        )
+        sites.append(Site(id=site_id, name=site_name, district_id=district_id, region_id=region_id))
 
-    return SiteTree(
-        is_hierarchical=True, regions=regions, districts=districts, sites=sites
-    )
+    return SiteTree(is_hierarchical=True, regions=regions, districts=districts, sites=sites)
 
 
 def _parse_flat(soup) -> SiteTree:

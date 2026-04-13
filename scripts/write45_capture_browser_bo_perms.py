@@ -7,6 +7,7 @@ actual state is NOT modified.
 Uses Amber Booth (2944451) as the reference user since her permissions
 page is known to work.
 """
+
 from __future__ import annotations
 
 import json
@@ -63,7 +64,9 @@ def main() -> int:
                     "headers": {k: v for k, v in req.headers.items() if k.lower() != "cookie"},
                 }
             )
-            print(f"  [ON_REQUEST_CAPTURED] {req.method} {req.url} ({len(req.post_data or '')} bytes)")
+            print(
+                f"  [ON_REQUEST_CAPTURED] {req.method} {req.url} ({len(req.post_data or '')} bytes)"
+            )
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
@@ -112,6 +115,7 @@ def main() -> int:
     print(f"\n{len(post_data)} bytes")
 
     from urllib.parse import parse_qsl
+
     pairs = parse_qsl(post_data, keep_blank_values=True)
     print(f"{len(pairs)} fields")
     print("\nfirst 30 fields (non-perms):")

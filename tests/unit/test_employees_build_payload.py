@@ -33,6 +33,7 @@ def _flat_tree() -> SiteTree:
 
 def _hierarchical_tree() -> SiteTree:
     from sonnys_backoffice.models import District, Region
+
     return SiteTree(
         is_hierarchical=True,
         regions=[Region(id=1, name="Global"), Region(id=2, name="WashU Illinois")],

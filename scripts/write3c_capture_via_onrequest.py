@@ -4,6 +4,7 @@ Strategy: use the same approach that worked in Write 2b (capturing the
 permissions POST). Open /employee/edit/485, click save (even though
 nothing changed), and capture the POST that goes out.
 """
+
 from __future__ import annotations
 
 import json
@@ -36,7 +37,9 @@ def main() -> int:
                     "method": req.method,
                     "url": req.url,
                     "post_data": req.post_data,
-                    "headers": {k: v for k, v in req.headers.items() if k.lower() not in ("cookie",)},
+                    "headers": {
+                        k: v for k, v in req.headers.items() if k.lower() not in ("cookie",)
+                    },
                 }
             )
             print(f"  [CAPTURED] {req.method} {req.url} ({len(req.post_data or '')} bytes)")
@@ -62,9 +65,7 @@ def main() -> int:
         print("[save] clicking submit")
         try:
             with page.expect_navigation(wait_until="domcontentloaded", timeout=15000):
-                page.click(
-                    "form[action='/employee/update'] button[type='submit']"
-                )
+                page.click("form[action='/employee/update'] button[type='submit']")
             print(f"  landed: {page.url}")
         except Exception as exc:
             print(f"  [warn] {exc}")
@@ -93,7 +94,7 @@ def main() -> int:
         write3_pairs = [(f["name"], f["value"]) for f in write3["fields"]]
         write3_keys = {k for k, _ in write3_pairs}
         browser_keys = {k for k, _ in pairs}
-        print(f"\n=== DIFF ===")
+        print("\n=== DIFF ===")
         print(f"write3 keys: {len(write3_keys)}")
         print(f"browser keys: {len(browser_keys)}")
         missing_from_write3 = browser_keys - write3_keys

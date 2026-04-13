@@ -1,5 +1,4 @@
 from datetime import datetime
-from decimal import Decimal
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -83,9 +82,7 @@ def test_list_permissions_pos_fetches_existing_employee_permissions_page():
 
 def test_list_permissions_bo_fetches_existing_user_permissions_page():
     mock_session = MagicMock()
-    user_list_html = (
-        '<html><a href="/user/permissions/2944451">edit</a></html>'
-    )
+    user_list_html = '<html><a href="/user/permissions/2944451">edit</a></html>'
     perms_html = (FIXTURES / "w45f_user_permissions_2944451.html").read_text(encoding="utf-8")
 
     def get_side_effect(path, *args, **kwargs):
@@ -190,10 +187,9 @@ def test_disable_employee_invalidates_employee_index():
     # and since 7217 is in that list we can disable it
     import sonnys_backoffice.client as client_module
 
-    with patch.object(
-        client_module, "_disable_employee"
-    ) as mocked:
+    with patch.object(client_module, "_disable_employee") as mocked:
         from sonnys_backoffice.models import EmployeeDisabled
+
         mocked.return_value = EmployeeDisabled(
             employee_id=54,
             pos_user_id=7217,

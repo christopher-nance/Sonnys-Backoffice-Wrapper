@@ -3,6 +3,7 @@
 Usage:
     SONNYS_BOT_PASSWORD='...' python scripts/capture_permissions.py --employee-id 54
 """
+
 from __future__ import annotations
 
 import argparse

@@ -19,6 +19,7 @@ Scope tags for --allow-write:
     user_permissions           submit step-2 permissions for that BO user
     employee_disable           disable/terminate the exploration employee
 """
+
 from __future__ import annotations
 
 import argparse
@@ -149,21 +150,25 @@ def login(page, base_url: str, username: str, password: str) -> bool:
     save_html("login_page", page.content())
 
     # Find username and password inputs — generic selectors
-    username_input = page.locator("input[name='username'], input[type='text'][name*='user'], input#username").first
+    username_input = page.locator(
+        "input[name='username'], input[type='text'][name*='user'], input#username"
+    ).first
     password_input = page.locator("input[name='password'], input[type='password']").first
 
     username_input.fill(username)
     password_input.fill(password)
 
     # Submit — try common patterns
-    submit = page.locator("button[type='submit'], input[type='submit'], button:has-text('Log')").first
+    submit = page.locator(
+        "button[type='submit'], input[type='submit'], button:has-text('Log')"
+    ).first
     print("[auth] submitting credentials")
     submit.click()
     # Wait for navigation away from /login
-    try:
+    import contextlib
+
+    with contextlib.suppress(Exception):
         page.wait_for_url(lambda u: "/login" not in u, timeout=15000)
-    except Exception:
-        pass
     page.wait_for_timeout(1000)
 
     if "/login" in page.url:
@@ -187,7 +192,9 @@ def main() -> int:
         help="Allow specific write tags through the safety filter (repeatable)",
     )
     parser.add_argument("--headed", action="store_true", help="Show the browser window")
-    parser.add_argument("--skip-user-create", action="store_true", help="Skip /user/create captures")
+    parser.add_argument(
+        "--skip-user-create", action="store_true", help="Skip /user/create captures"
+    )
     args = parser.parse_args()
 
     password = os.environ.get("SONNYS_BOT_PASSWORD")
