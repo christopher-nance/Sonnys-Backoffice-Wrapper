@@ -169,3 +169,67 @@ class CreateBackofficeUserRequest(_BackofficeBaseModel):
         if has_standalone and not (self.first_name and self.last_name):
             raise ValueError("standalone BO user requires both first_name and last_name")
         return self
+
+
+class EmployeeCreated(_BackofficeBaseModel):
+    employee_id: int
+    pos_user_id: int
+    pos_pin: int
+    first_name: str
+    last_name: str
+    email: str
+    backoffice_user_id: int | None = None
+    backoffice_username: str | None = None
+    backoffice_password: str | None = None
+    permission_applied: str
+    sites_granted: list[str]
+    departments: list[str]
+    wage_site: str
+    warnings: list[str] = Field(default_factory=list)
+
+
+class BackofficeUserCreated(_BackofficeBaseModel):
+    user_id: int
+    username: str
+    password: str
+    email: str
+    linked_employee_id: int | None = None
+    permission_applied: str
+    sites_granted: list[str]
+    warnings: list[str] = Field(default_factory=list)
+
+
+class EmployeeDisabled(_BackofficeBaseModel):
+    employee_id: int
+    pos_user_id: int
+    email: str | None = None
+    disabled_at: datetime
+
+
+class Region(_BackofficeBaseModel):
+    id: int
+    name: str
+
+
+class District(_BackofficeBaseModel):
+    id: int
+    name: str
+    region_id: int | None = None
+
+
+class Site(_BackofficeBaseModel):
+    id: int
+    name: str
+    district_id: int | None = None
+    region_id: int | None = None
+
+
+class Department(_BackofficeBaseModel):
+    id: int
+    name: str
+
+
+class Permission(_BackofficeBaseModel):
+    id: int
+    name: str
+    scope: Literal["pos", "backoffice"]
