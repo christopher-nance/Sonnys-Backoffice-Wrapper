@@ -4513,6 +4513,72 @@ Tests should point at `employee_permissions_54.html` for `scope="pos"`. On WashU
 
 The real field is a `<select name="employee[departments][]">` (multi-select), with options `1`=Cashier, `2`=Line, `3`=Greeter, `4`=Management on WashU. The selector in the task's first-try implementation is close but not quite right — the correct selector is `select[name='employee[departments][]'] option`. Update accordingly. Expected test: `"Greeter"` is in the result with id=3.
 
+### Delta D-8.2 (new task: public availability-check helpers on the client)
+
+Insert this as a new Task 8.2 in Phase 8, after the façade exists. These are small convenience methods exposed on `SonnysBackofficeClient` that callers use to pre-check uniqueness *before* building a `CreateEmployeeRequest` — typically to implement a "try preferred ID, generate a random one if taken" onboarding flow.
+
+**Files:**
+- Modify: `src/sonnys_backoffice/client.py` (add 3 methods)
+- Create: `tests/unit/test_client_availability.py`
+
+**Public API additions:**
+
+```python
+class SonnysBackofficeClient:
+    # ... existing methods ...
+
+    def is_pos_user_id_available(self, pos_user_id: int, *, refresh: bool = False) -> bool:
+        """Return True if no active or disabled employee on this tenant currently uses this POS User ID.
+
+        Uses the cached employee index built from /employee?limit=10000&active=all.
+        Pass refresh=True to re-fetch the index before checking.
+        """
+        self._ensure_employee_index(refresh=refresh)
+        return pos_user_id not in self._employee_index.by_pos_user_id
+
+    def is_email_available(self, email: str, *, refresh: bool = False) -> bool:
+        """Return True if no employee on this tenant currently uses this email."""
+        self._ensure_employee_index(refresh=refresh)
+        return email.strip().lower() not in self._employee_index.by_email
+
+    def is_phone_available(self, phone: str, *, refresh: bool = False) -> bool:
+        """Return True if no employee on this tenant currently uses this phone number.
+
+        The phone argument is normalized by stripping all non-digit characters before comparison.
+        """
+        import re as _re
+        self._ensure_employee_index(refresh=refresh)
+        normalized = _re.sub(r"\D", "", phone)
+        return normalized not in self._employee_index.by_phone
+```
+
+`_ensure_employee_index` is the same helper that `create_employee` uses for its pre-flight uniqueness check (Delta D-5.0) — the index is built lazily on first use, cached on the client instance, and reusable.
+
+**Example usage** (the onboarding flow the user described):
+
+```python
+import random
+
+def find_free_pos_id(client: SonnysBackofficeClient, preferred: int | None = None) -> int:
+    """Return preferred if free, else a random 5-digit alternative."""
+    if preferred is not None and client.is_pos_user_id_available(preferred):
+        return preferred
+    for _ in range(100):
+        candidate = random.randint(10000, 99999)
+        if client.is_pos_user_id_available(candidate):
+            return candidate
+    raise RuntimeError("could not find a free POS User ID after 100 attempts")
+```
+
+**Tests** should cover:
+- Returns True when the index doesn't contain the value
+- Returns True after `refresh=True` refetches the index
+- Returns False when the value is in the index (both active and disabled employees — the index includes both via `active=all`)
+- Phone normalization: `is_phone_available("(615) 555-1234")` compares against `"6155551234"` internally
+- Email comparison is case-insensitive
+
+**Note on staleness:** the cache is populated on first use and reused for subsequent calls. If a caller is running a long-lived client that needs to check-then-act atomically (avoid races), they should pass `refresh=True` before the final `create_employee` call. Document this tradeoff in the guide.
+
 ### Delta D-5.0 (new task: pre-flight uniqueness check)
 
 Insert this as a new Task 5.0 in Phase 5, executed before Task 5.1. `create_employee` must pre-flight check the caller's `pos_user_id`, `email`, and `phone` against the tenant's existing employees and raise `DuplicateError` if any collide — all three are unique per tenant (see `project_uniqueness_constraints.md`).
@@ -4523,7 +4589,7 @@ Insert this as a new Task 5.0 in Phase 5, executed before Task 5.1. `create_empl
 
 **Strategy:**
 - `EmployeeIndex` is an in-memory cache lazily built from two HTTP calls:
-  1. `GET /employee?limit=10000` — parsed via `parse_employee_list` helper → yields `{pos_user_id: employee_id, phone: employee_id}` for every row (emails are NOT in the list)
+  1. `GET /employee?limit=10000&active=all` — parsed via `parse_employee_list` helper → yields `{pos_user_id: employee_id, phone: employee_id}` for every row (emails are NOT in the list)
   2. `GET /user/create` — parsed via `parse_user_create_employee_options` helper → yields `{email: employee_id}` from the `user[employeeId]` dropdown's `data-email` attributes
 - `SonnysBackofficeClient._employee_index` is the cache, populated lazily on first `create_employee` call, reused for subsequent calls in the same client, refreshable via `refresh=True`
 - `_check_uniqueness(request, index)` raises `DuplicateError` with a structured message: `"pos_user_id=XXXXX already exists on employee_id=YY (first_name last_name)"`
