@@ -208,8 +208,8 @@ class SonnysBackofficeClient:
         overtime_wage_rate: Decimal | float | None = None,  # Defaults to wage_rate * 1.5
         start_date: datetime,
         available_sites: list[str] | Literal["all"],
+        permission: str,                         # REQUIRED. Case-insensitive name of a POS permission template. Unknown names fall back to "General User" with a warning; omission raises a pydantic ValidationError.
         departments: list[str] | None = None,    # Defaults to ["Greeter"]; "Greeter" auto-added if missing
-        permission: str = "General User",        # Case-insensitive; matched against the POS permission-template list
         emergency_contact_name: str | None = None,
         emergency_contact_phone: str | None = None,
         adp_employee_id: str | None = None,      # Optional ADP report linkage
@@ -439,6 +439,7 @@ For the record, these decisions were made through interactive clarification and 
 - **Wage applies globally.** Even though the form has a `wage[siteId]` field (required, selects exactly one site), the wage rate applies to the employee at all sites they can work at. Wages are versioned over time via the `/employee/compensation/<id>` page, each entry attached to a site for bookkeeping with `effectiveDate`. For Milestone 1, `create_employee` creates one initial wage entry and uses the first site in `available_sites` as its `wage[siteId]`. The result's `wage_site` field reports which site was used. Managing additional wage entries is deferred to modify work.
 - **Hourly only.** `wage[isHourly]=1` is hardcoded for Milestone 1. Salaried employees are out of scope; calling `create_employee` always creates an hourly wage.
 - **Permissions are template-driven, not role-picked.** The permissions page is a 30+ permission matrix, but the server applies sensible defaults when a `templateId` is set. The wrapper passes only `templateId` + `employeeId` + `hasActionApprovalAuthority` and lets the server fill the matrix. Available POS templates on WashU: Manager, Cashier, General User, General Manager, Assistant Manager, Shift Leader, CSA. Note: **no "Administrator" on the POS side** — that role exists only on the Backoffice side. The `permission` kwarg is matched against POS templates for the employee flow and against BO templates for the Backoffice user flow independently; the POS/BO permission-name symmetry rule applies only when `requires_backoffice=True`.
+- **`permission` is a required kwarg on `create_employee` and `create_backoffice_user`.** Callers must always name a role explicitly. Creating a user with no permission template at all leaves the account in an unusable state (Access = None) — confirmed during Phase 1 exploration when the employee record was visible in the list with no permissions set. Unknown names still fall back to "General User" with a warning (that rule is unchanged); the change is that *omitting* the kwarg now raises a pydantic ValidationError instead of defaulting silently.
 - **Disable mechanism.** No dedicated disable endpoint. Disable is a `POST /employee/update` with `employee[isActive]=0`. The wrapper first tries a minimal two-field POST (id + isActive); if the tenant's Symfony configuration rejects that or wipes other fields (detected via a GET-after-POST sanity check during Phase 1.4 testing), fall back to a full-form read-modify-write.
 - **`employee[adpEmployeeId]` is optional** and exposed via the `adp_employee_id` kwarg.
 - **URL map (confirmed from exploration):**

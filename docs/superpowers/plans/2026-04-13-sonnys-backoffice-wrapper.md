@@ -4436,6 +4436,8 @@ This appendix lists authoritative corrections to the task code examples above, b
 - **Add optional kwarg:** `adp_employee_id: str | None = None` (maps to `employee[adpEmployeeId]`, text input).
 - **Remove `_validate_pos_pin` regex test** that requires "exactly 5 digits as a string". Replace with a validator that accepts either a 5-digit int or `None`, and rejects ints outside the 5-digit range (10000-99999).
 - **Tests that check `pos_pin="12345"`** must pass an int `12345` instead.
+- **`permission: str` is now required (no default).** Remove the `= "General User"` default. The field becomes a plain `permission: str` declaration in `CreateEmployeeRequest`. The existing test `test_departments_defaults_to_greeter` and similar should NOT be replicated for permission — permission omission must raise `pydantic.ValidationError`. Update any call-site test fixture that previously relied on the default to pass `permission="General User"` explicitly. The "unknown name fallback" logic in `_resolve_permission` is unchanged.
+- **Same change applies to `CreateBackofficeUserRequest`:** `permission: str` is required, no default.
 
 ### Delta D-2.2 (Task 2.2: `generate_pos_pin`)
 
