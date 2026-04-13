@@ -1,0 +1,74 @@
+{
+  "method": "POST",
+  "url": "https://washu.sonnyscontrols.com/employee/update",
+  "fields": [
+    {
+      "name": "employee[id]",
+      "value": "486"
+    },
+    {
+      "name": "posCredential[id]",
+      "value": "429"
+    },
+    {
+      "name": "employee[firstName]",
+      "value": "WrapperExplore"
+    },
+    {
+      "name": "employee[lastName]",
+      "value": "DeleteMe-E5F7"
+    },
+    {
+      "name": "employee[phone]",
+      "value": "5555550003"
+    },
+    {
+      "name": "employee[email]",
+      "value": "wrapper-explore-E5F7@example.invalid"
+    },
+    {
+      "name": "employee[departments][]",
+      "value": "3"
+    },
+    {
+      "name": "employee[startDate]",
+      "value": "04/13/2026"
+    },
+    {
+      "name": "employee[sites][17][siteId]",
+      "value": "17"
+    },
+    {
+      "name": "employee[sites][18][siteId]",
+      "value": "18"
+    },
+    {
+      "name": "employee[sites][19][siteId]",
+      "value": "19"
+    },
+    {
+      "name": "employee[disabledRegions][]",
+      "value": "2"
+    },
+    {
+      "name": "posCredential[POSLoginID]",
+      "value": "99003"
+    },
+    {
+      "name": "posCredential[POSLoginPassword]",
+      "value": "99997"
+    },
+    {
+      "name": "employee[emergencyContactName]",
+      "value": ""
+    },
+    {
+      "name": "employee[emergencyContactPhone]",
+      "value": ""
+    },
+    {
+      "name": "employee[adpEmployeeId]",
+      "value": ""
+    }
+  ]
+}

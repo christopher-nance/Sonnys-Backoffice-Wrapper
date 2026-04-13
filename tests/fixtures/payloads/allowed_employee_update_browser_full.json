@@ -1,0 +1,17 @@
+[
+  {
+    "method": "POST",
+    "url": "https://washu.sonnyscontrols.com/employee/update",
+    "post_data": "employee%5Bid%5D=485&posCredential%5Bid%5D=428&employee%5BfirstName%5D=WrapperExplore&employee%5BlastName%5D=DeleteMe-B2D8&employee%5Bphone%5D=5555550002&employee%5Bemail%5D=wrapper-explore-B2D8%40example.invalid&employee%5Bdepartments%5D%5B%5D=3&employee%5BstartDate%5D=04%2F13%2F2026&employee%5Bsites%5D%5B17%5D%5BsiteId%5D=17&employee%5Bsites%5D%5B18%5D%5BsiteId%5D=18&employee%5Bsites%5D%5B19%5D%5BsiteId%5D=19&employee%5BdisabledRegions%5D%5B%5D=2&posCredential%5BPOSLoginID%5D=99002&posCredential%5BPOSLoginPassword%5D=99998&employee%5BemergencyContactName%5D=&employee%5BemergencyContactPhone%5D=&employee%5BadpEmployeeId%5D=",
+    "headers": {
+      "content-type": "application/x-www-form-urlencoded",
+      "origin": "https://washu.sonnyscontrols.com",
+      "referer": "https://washu.sonnyscontrols.com/employee/edit/485",
+      "upgrade-insecure-requests": "1",
+      "user-agent": "SonnysBackofficeWrapper/0.1-write3c",
+      "sec-ch-ua": "\"Not:A-Brand\";v=\"99\", \"HeadlessChrome\";v=\"145\", \"Chromium\";v=\"145\"",
+      "sec-ch-ua-mobile": "?0",
+      "sec-ch-ua-platform": "\"Windows\""
+    }
+  }
+]

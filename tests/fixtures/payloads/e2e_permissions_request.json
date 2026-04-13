@@ -1,0 +1,430 @@
+{
+  "method": "POST",
+  "url": "https://washu.sonnyscontrols.com/employee/permissions/update",
+  "fields": [
+    {
+      "name": "employeeId",
+      "value": "486"
+    },
+    {
+      "name": "templateId",
+      "value": "3"
+    },
+    {
+      "name": "hasActionApprovalAuthority",
+      "value": "0"
+    },
+    {
+      "name": "permissions[1][id]",
+      "value": "1"
+    },
+    {
+      "name": "permissions[1][label]",
+      "value": "Action Approval Authority"
+    },
+    {
+      "name": "permissions[1][description]",
+      "value": "When Granted this user has access to all POS features and can approve any Action for users requiring approval."
+    },
+    {
+      "name": "permissions[2][id]",
+      "value": "2"
+    },
+    {
+      "name": "permissions[2][label]",
+      "value": "Return Transaction"
+    },
+    {
+      "name": "permissions[2][description]",
+      "value": "The permission to return or refund a transaction."
+    },
+    {
+      "name": "permissions[3][id]",
+      "value": "3"
+    },
+    {
+      "name": "permissions[3][label]",
+      "value": "Paid In"
+    },
+    {
+      "name": "permissions[3][description]",
+      "value": "The permission to create a transaction with a paid in item."
+    },
+    {
+      "name": "permissions[4][id]",
+      "value": "4"
+    },
+    {
+      "name": "permissions[4][label]",
+      "value": "Paid Out"
+    },
+    {
+      "name": "permissions[4][description]",
+      "value": "The permission to create a transaction with a paid out item."
+    },
+    {
+      "name": "permissions[5][id]",
+      "value": "5"
+    },
+    {
+      "name": "permissions[5][label]",
+      "value": "Open Cash Drawer"
+    },
+    {
+      "name": "permissions[5][description]",
+      "value": "The permission to open the cash drawer."
+    },
+    {
+      "name": "permissions[6][id]",
+      "value": "6"
+    },
+    {
+      "name": "permissions[6][label]",
+      "value": "Tax Exempt"
+    },
+    {
+      "name": "permissions[6][description]",
+      "value": "The permission to toggle tax exempt on transactions."
+    },
+    {
+      "name": "permissions[7][id]",
+      "value": "7"
+    },
+    {
+      "name": "permissions[7][label]",
+      "value": "Price Change"
+    },
+    {
+      "name": "permissions[7][description]",
+      "value": "The permission to change item prices in a transaction."
+    },
+    {
+      "name": "permissions[8][id]",
+      "value": "8"
+    },
+    {
+      "name": "permissions[8][label]",
+      "value": "Comp Sale"
+    },
+    {
+      "name": "permissions[8][description]",
+      "value": "The permission to comp a transaction."
+    },
+    {
+      "name": "permissions[9][id]",
+      "value": "9"
+    },
+    {
+      "name": "permissions[9][label]",
+      "value": "Prompt For Price"
+    },
+    {
+      "name": "permissions[9][description]",
+      "value": "The permission to apply a price to selected items with no price."
+    },
+    {
+      "name": "permissions[10][id]",
+      "value": "10"
+    },
+    {
+      "name": "permissions[10][label]",
+      "value": "Customer Add"
+    },
+    {
+      "name": "permissions[10][description]",
+      "value": "The permission to add a customer."
+    },
+    {
+      "name": "permissions[11][id]",
+      "value": "11"
+    },
+    {
+      "name": "permissions[11][label]",
+      "value": "Customer Edit"
+    },
+    {
+      "name": "permissions[11][description]",
+      "value": "The permission to edit a customer."
+    },
+    {
+      "name": "permissions[12][id]",
+      "value": "12"
+    },
+    {
+      "name": "permissions[12][label]",
+      "value": "Vehicle Add"
+    },
+    {
+      "name": "permissions[12][description]",
+      "value": "The permission to add a vehicle."
+    },
+    {
+      "name": "permissions[13][id]",
+      "value": "13"
+    },
+    {
+      "name": "permissions[13][label]",
+      "value": "Vehicle Edit"
+    },
+    {
+      "name": "permissions[13][description]",
+      "value": "The permission to edit a vehicle."
+    },
+    {
+      "name": "permissions[14][id]",
+      "value": "14"
+    },
+    {
+      "name": "permissions[14][label]",
+      "value": "Item Add"
+    },
+    {
+      "name": "permissions[14][description]",
+      "value": "The permission to add an item."
+    },
+    {
+      "name": "permissions[15][id]",
+      "value": "15"
+    },
+    {
+      "name": "permissions[15][label]",
+      "value": "Item Edit"
+    },
+    {
+      "name": "permissions[15][description]",
+      "value": "The permission to edit an item."
+    },
+    {
+      "name": "permissions[16][id]",
+      "value": "16"
+    },
+    {
+      "name": "permissions[16][label]",
+      "value": "Gift Card Add"
+    },
+    {
+      "name": "permissions[16][description]",
+      "value": "The permission to add a gift card."
+    },
+    {
+      "name": "permissions[17][id]",
+      "value": "17"
+    },
+    {
+      "name": "permissions[17][label]",
+      "value": "Gift Card Edit"
+    },
+    {
+      "name": "permissions[17][description]",
+      "value": "The permission to edit a gift card."
+    },
+    {
+      "name": "permissions[18][id]",
+      "value": "18"
+    },
+    {
+      "name": "permissions[18][label]",
+      "value": "House Account Add"
+    },
+    {
+      "name": "permissions[18][description]",
+      "value": "The permission to add a house account."
+    },
+    {
+      "name": "permissions[19][id]",
+      "value": "19"
+    },
+    {
+      "name": "permissions[19][label]",
+      "value": "House Account Edit"
+    },
+    {
+      "name": "permissions[19][description]",
+      "value": "The permission to edit a house account."
+    },
+    {
+      "name": "permissions[20][id]",
+      "value": "20"
+    },
+    {
+      "name": "permissions[20][label]",
+      "value": "Wash Book Add"
+    },
+    {
+      "name": "permissions[20][description]",
+      "value": "The permission to add a wash book."
+    },
+    {
+      "name": "permissions[21][id]",
+      "value": "21"
+    },
+    {
+      "name": "permissions[21][label]",
+      "value": "Wash Book Edit"
+    },
+    {
+      "name": "permissions[21][description]",
+      "value": "The permission to edit a wash book."
+    },
+    {
+      "name": "permissions[22][id]",
+      "value": "22"
+    },
+    {
+      "name": "permissions[22][label]",
+      "value": "Time Clock"
+    },
+    {
+      "name": "permissions[22][description]",
+      "value": "The permission to clock in or out employees."
+    },
+    {
+      "name": "permissions[22][hasGrantAccess]",
+      "value": "1"
+    },
+    {
+      "name": "permissions[23][id]",
+      "value": "23"
+    },
+    {
+      "name": "permissions[23][label]",
+      "value": "Reports"
+    },
+    {
+      "name": "permissions[23][description]",
+      "value": "The permission to run reports."
+    },
+    {
+      "name": "permissions[24][id]",
+      "value": "24"
+    },
+    {
+      "name": "permissions[24][label]",
+      "value": "Back Office Internet"
+    },
+    {
+      "name": "permissions[24][description]",
+      "value": "The permission to launch the browser with back office."
+    },
+    {
+      "name": "permissions[25][id]",
+      "value": "25"
+    },
+    {
+      "name": "permissions[25][label]",
+      "value": "Login"
+    },
+    {
+      "name": "permissions[25][description]",
+      "value": "The permission to login to the main POS interface."
+    },
+    {
+      "name": "permissions[26][id]",
+      "value": "26"
+    },
+    {
+      "name": "permissions[26][label]",
+      "value": "Cash Drop"
+    },
+    {
+      "name": "permissions[26][description]",
+      "value": "The permission to perform a session cashdrop on POS."
+    },
+    {
+      "name": "permissions[27][id]",
+      "value": "27"
+    },
+    {
+      "name": "permissions[27][label]",
+      "value": "Panel External"
+    },
+    {
+      "name": "permissions[27][description]",
+      "value": "The permission to view the external POS panel on POS."
+    },
+    {
+      "name": "permissions[28][id]",
+      "value": "28"
+    },
+    {
+      "name": "permissions[28][label]",
+      "value": "Rewash Transaction"
+    },
+    {
+      "name": "permissions[28][description]",
+      "value": "The permission to rewash a transaction."
+    },
+    {
+      "name": "permissions[29][id]",
+      "value": "29"
+    },
+    {
+      "name": "permissions[29][label]",
+      "value": "Rewash Transaction With Code"
+    },
+    {
+      "name": "permissions[29][description]",
+      "value": "The permission to generate 1 time use code for a rewash transaction."
+    },
+    {
+      "name": "permissions[30][id]",
+      "value": "30"
+    },
+    {
+      "name": "permissions[30][label]",
+      "value": "Dollar Discount"
+    },
+    {
+      "name": "permissions[30][description]",
+      "value": "The permission to apply a dollar discount."
+    },
+    {
+      "name": "permissions[31][id]",
+      "value": "31"
+    },
+    {
+      "name": "permissions[31][label]",
+      "value": "Percent discount"
+    },
+    {
+      "name": "permissions[31][description]",
+      "value": "The permission to apply a percent discount."
+    },
+    {
+      "name": "permissions[32][id]",
+      "value": "32"
+    },
+    {
+      "name": "permissions[32][label]",
+      "value": "Instant Promotion"
+    },
+    {
+      "name": "permissions[32][description]",
+      "value": "The permission to apply an instant promotion."
+    },
+    {
+      "name": "permissions[33][id]",
+      "value": "33"
+    },
+    {
+      "name": "permissions[33][label]",
+      "value": "Open Refund"
+    },
+    {
+      "name": "permissions[33][description]",
+      "value": "The permission to create an open refund."
+    },
+    {
+      "name": "permissions[34][id]",
+      "value": "34"
+    },
+    {
+      "name": "permissions[34][label]",
+      "value": "SPS Admin"
+    },
+    {
+      "name": "permissions[34][description]",
+      "value": "The permission to activate, cancel, and change tags, plans and updates credit card information."
+    }
+  ]
+}

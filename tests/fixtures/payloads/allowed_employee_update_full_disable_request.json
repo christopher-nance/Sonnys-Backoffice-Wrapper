@@ -1,0 +1,138 @@
+{
+  "method": "POST",
+  "url": "https://washu.sonnyscontrols.com/employee/update",
+  "fields": [
+    {
+      "name": "employee[id]",
+      "value": "485"
+    },
+    {
+      "name": "posCredential[id]",
+      "value": "428"
+    },
+    {
+      "name": "employee[firstName]",
+      "value": "WrapperExplore"
+    },
+    {
+      "name": "employee[lastName]",
+      "value": "DeleteMe-B2D8"
+    },
+    {
+      "name": "employee[phone]",
+      "value": "5555550002"
+    },
+    {
+      "name": "employee[email]",
+      "value": "wrapper-explore-B2D8@example.invalid"
+    },
+    {
+      "name": "employee[departments][]",
+      "value": "3"
+    },
+    {
+      "name": "employee[startDate]",
+      "value": ""
+    },
+    {
+      "name": "employee[sites][17][siteId]",
+      "value": "17"
+    },
+    {
+      "name": "employee[sites][18][siteId]",
+      "value": "18"
+    },
+    {
+      "name": "employee[sites][19][siteId]",
+      "value": "19"
+    },
+    {
+      "name": "employee[sites][20][isAvailable]",
+      "value": "20"
+    },
+    {
+      "name": "employee[disabledRegions][]",
+      "value": "2"
+    },
+    {
+      "name": "employee[sites][1][isAvailable]",
+      "value": "1"
+    },
+    {
+      "name": "employee[sites][2][isAvailable]",
+      "value": "2"
+    },
+    {
+      "name": "employee[sites][4][isAvailable]",
+      "value": "4"
+    },
+    {
+      "name": "employee[sites][5][isAvailable]",
+      "value": "5"
+    },
+    {
+      "name": "employee[sites][6][isAvailable]",
+      "value": "6"
+    },
+    {
+      "name": "employee[sites][7][isAvailable]",
+      "value": "7"
+    },
+    {
+      "name": "employee[sites][8][isAvailable]",
+      "value": "8"
+    },
+    {
+      "name": "employee[sites][9][isAvailable]",
+      "value": "9"
+    },
+    {
+      "name": "employee[sites][10][isAvailable]",
+      "value": "10"
+    },
+    {
+      "name": "employee[sites][11][isAvailable]",
+      "value": "11"
+    },
+    {
+      "name": "employee[sites][12][isAvailable]",
+      "value": "12"
+    },
+    {
+      "name": "employee[sites][13][isAvailable]",
+      "value": "13"
+    },
+    {
+      "name": "employee[sites][14][isAvailable]",
+      "value": "14"
+    },
+    {
+      "name": "employee[sites][15][isAvailable]",
+      "value": "15"
+    },
+    {
+      "name": "employee[sites][16][isAvailable]",
+      "value": "16"
+    },
+    {
+      "name": "posCredential[POSLoginID]",
+      "value": "99002"
+    },
+    {
+      "name": "posCredential[POSLoginPassword]",
+      "value": "99998"
+    },
+    {
+      "name": "employee[emergencyContactName]",
+      "value": ""
+    },
+    {
+      "name": "employee[emergencyContactPhone]",
+      "value": ""
+    },
+    {
+      "name": "employee[adpEmployeeId]",
+      "value": ""
+    }
+  ]
+}

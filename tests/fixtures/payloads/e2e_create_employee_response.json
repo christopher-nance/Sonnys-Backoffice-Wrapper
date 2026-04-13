@@ -1,0 +1,18 @@
+{
+  "status_code": 302,
+  "headers": {
+    "Date": "Mon, 13 Apr 2026 18:33:25 GMT",
+    "Content-Type": "text/html; charset=UTF-8",
+    "Transfer-Encoding": "chunked",
+    "Connection": "keep-alive",
+    "Server": "Sonnys Controls",
+    "Cache-Control": "max-age=0, must-revalidate, no-cache, no-store, private",
+    "Pragma": "no-cache",
+    "Expires": "Mon, 13 Apr 2026 18:33:25 GMT",
+    "Strict-Transport-Security": "max-age=15768000",
+    "X-Content-Type-Options": "nosniff",
+    "Vary": "User-Agent",
+    "Location": "/employee/permissions/486"
+  },
+  "body_length": 346
+}
