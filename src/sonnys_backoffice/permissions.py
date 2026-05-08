@@ -3,15 +3,13 @@
 from __future__ import annotations
 
 import re
-import warnings
 from collections.abc import Iterable
 from typing import Literal
 
 from bs4 import BeautifulSoup
 
+from .exceptions import NotFoundError
 from .models import Permission, PermissionFieldMeta
-
-_DEFAULT_FALLBACK = "General User"
 
 
 def resolve_permission(
@@ -20,9 +18,9 @@ def resolve_permission(
 ) -> tuple[Permission, list[str]]:
     """Resolve a permission name against the tenant's available list.
 
-    Returns (matched_permission, warnings_list). Matching is case-insensitive.
-    Unknown names fall back to "General User" with a warning. Raises ValueError
-    if "General User" is not present in the available list (tenant misconfig).
+    Returns ``(matched_permission, warnings_list)``. Matching is
+    case-insensitive. Raises ``NotFoundError`` listing the available
+    templates when the requested name doesn't match any.
     """
     available_list = list(available)
     target = requested.strip().lower()
@@ -30,16 +28,10 @@ def resolve_permission(
         if perm.name.lower() == target:
             return perm, []
 
-    fallback_msg = (
-        f"permission {requested!r} not found in tenant, falling back to {_DEFAULT_FALLBACK!r}"
-    )
-    warnings.warn(fallback_msg, stacklevel=2)
-    for perm in available_list:
-        if perm.name.lower() == _DEFAULT_FALLBACK.lower():
-            return perm, [fallback_msg]
-    raise ValueError(
-        f"{_DEFAULT_FALLBACK!r} not found in tenant's permission list — "
-        "cannot apply fallback. Check tenant role configuration."
+    available_names = [p.name for p in available_list]
+    raise NotFoundError(
+        f"permission template {requested!r} not found on this tenant. "
+        f"Available templates: {available_names}"
     )
 
 

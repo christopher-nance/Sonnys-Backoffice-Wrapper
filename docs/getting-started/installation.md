@@ -14,7 +14,7 @@ pip install git+https://github.com/christopher-nance/Sonnys-Backoffice-Wrapper.g
 For production use, pin to a tag:
 
 ```bash
-pip install git+https://github.com/christopher-nance/Sonnys-Backoffice-Wrapper.git@v0.1.0
+pip install git+https://github.com/christopher-nance/Sonnys-Backoffice-Wrapper.git@v0.2.0
 ```
 
 ## Verify

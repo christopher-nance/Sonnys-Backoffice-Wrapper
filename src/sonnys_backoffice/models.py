@@ -128,6 +128,86 @@ class DisableEmployeeRequest(_BackofficeBaseModel):
         return self
 
 
+class ModifyEmployeeRequest(_BackofficeBaseModel):
+    pos_user_id: int | None = None
+    email: str | None = None
+
+    first_name: str | None = None
+    last_name: str | None = None
+    phone: str | None = None
+    new_email: str | None = None
+    departments: list[str] | None = None
+    available_sites: list[str] | Literal["all"] | None = None
+    adp_employee_id: str | None = None
+    emergency_contact_name: str | None = None
+    emergency_contact_phone: str | None = None
+
+    wage_rate: Decimal | None = None
+    overtime_wage_rate: Decimal | None = None
+
+    permission: str | None = None
+
+    @field_validator("available_sites", mode="before")
+    @classmethod
+    def _validate_sites(cls, v):
+        if v is None or v == "all":
+            return v
+        if isinstance(v, list) and len(v) == 0:
+            raise ValueError("available_sites must contain at least one site name (or be 'all')")
+        return v
+
+    @field_validator("phone", "emergency_contact_phone", mode="before")
+    @classmethod
+    def _normalize_phone(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        stripped = _PHONE_SYMBOL_RE.sub("", v)
+        if len(stripped) not in (9, 10):
+            raise ValueError("phone must be 9 or 10 digits after symbols are stripped")
+        return stripped
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def _validate_lookup_email(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        if not _EMAIL_RE.match(v.strip()):
+            raise ValueError(f"email must contain a valid @domain.tld: {v!r}")
+        return v.strip()
+
+    @field_validator("new_email", mode="before")
+    @classmethod
+    def _validate_new_email(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        if not _EMAIL_RE.match(v.strip()):
+            raise ValueError(f"email must contain a valid @domain.tld: {v!r}")
+        return v.strip()
+
+    @model_validator(mode="after")
+    def _check_lookup_and_changes(self) -> ModifyEmployeeRequest:
+        provided = [x for x in (self.pos_user_id, self.email) if x is not None]
+        if len(provided) != 1:
+            raise ValueError("exactly one of pos_user_id or email is required as lookup key")
+        has_any = any([
+            self.first_name is not None,
+            self.last_name is not None,
+            self.phone is not None,
+            self.new_email is not None,
+            self.departments is not None,
+            self.available_sites is not None,
+            self.adp_employee_id is not None,
+            self.emergency_contact_name is not None,
+            self.emergency_contact_phone is not None,
+            self.wage_rate is not None,
+            self.overtime_wage_rate is not None,
+            self.permission is not None,
+        ])
+        if not has_any:
+            raise ValueError("at least one change field must be provided")
+        return self
+
+
 class CreateBackofficeUserRequest(_BackofficeBaseModel):
     username: str
     email: str
@@ -203,6 +283,14 @@ class EmployeeDisabled(_BackofficeBaseModel):
     pos_user_id: int
     email: str | None = None
     disabled_at: datetime
+
+
+class EmployeeModified(_BackofficeBaseModel):
+    employee_id: int
+    changes_applied: list[str]
+    permission_applied: str | None = None
+    wage_rate: Decimal | None = None
+    warnings: list[str] = Field(default_factory=list)
 
 
 class Region(_BackofficeBaseModel):

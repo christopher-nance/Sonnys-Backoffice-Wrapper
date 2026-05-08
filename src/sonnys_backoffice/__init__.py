@@ -18,12 +18,14 @@ from .models import (
     DisableEmployeeRequest,
     EmployeeCreated,
     EmployeeDisabled,
+    EmployeeModified,
+    ModifyEmployeeRequest,
     Permission,
     Region,
     Site,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     "SonnysBackofficeClient",
@@ -37,9 +39,11 @@ __all__ = [
     "CreateEmployeeRequest",
     "CreateBackofficeUserRequest",
     "DisableEmployeeRequest",
+    "ModifyEmployeeRequest",
     "EmployeeCreated",
     "BackofficeUserCreated",
     "EmployeeDisabled",
+    "EmployeeModified",
     "Site",
     "Region",
     "Department",

@@ -6,6 +6,7 @@ import re
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from decimal import Decimal
 from typing import Any
 
 from bs4 import BeautifulSoup
@@ -22,6 +23,8 @@ from .models import (
     DisableEmployeeRequest,
     EmployeeCreated,
     EmployeeDisabled,
+    EmployeeModified,
+    ModifyEmployeeRequest,
     Permission,
     PermissionFieldMeta,
 )
@@ -247,8 +250,10 @@ def build_employee_step1_payload(
         if request.available_sites == "all":
             payload["employee[isAllSitesAllowed]"] = "1"
         else:
-            payload["employee[isAllSitesAllowed]"] = "0"
-            payload["employee[siteIds][]"] = [s.id for s in resolved_sites]
+            enabled_ids = {s.id for s in resolved_sites}
+            payload["employee[siteIds][]"] = [
+                s.id for s in site_tree.sites if s.id not in enabled_ids
+            ]
 
     return payload
 
@@ -407,13 +412,19 @@ _TEXTUAL_INPUT_TYPES = frozenset(
     {"text", "hidden", "number", "email", "tel", "password", "search", "url", "date", "time"}
 )
 
+_EDIT_FORM_RE = re.compile(r"/employee/update")
+_COMP_FORM_RE = re.compile(r"/employee/compensation/update")
 
-def _parse_edit_form_into_payload(
+
+def _parse_form_into_payload(
     html: str,
     *,
-    drop_fields: set[str],
+    form_action_re: re.Pattern[str],
+    drop_fields: set[str] | None = None,
 ) -> list[tuple[str, str]]:
-    """Parse an `/employee/edit/<id>` form into POST field tuples.
+    """Parse a Symfony form into POST-ready field tuples.
+
+    Works with any form matched by *form_action_re* (edit, compensation, etc.).
 
     - Text/hidden/number/email/tel/password inputs are always included with their
       current value (empty string if no value).
@@ -422,26 +433,30 @@ def _parse_edit_form_into_payload(
       option if none is selected).
     - Select multiple: include every selected option.
     - Textareas are included with their current text content.
-    - Inputs carrying the `disabled` attribute are skipped (browsers don't submit
+    - Inputs carrying the ``disabled`` attribute are skipped (browsers don't submit
       disabled fields).
-    - Fields in `drop_fields` are always excluded.
+    - Fields in *drop_fields* are always excluded.
     """
+    _drop = drop_fields or set()
     soup = BeautifulSoup(html, "html.parser")
-    form = soup.find("form", action=re.compile(r"/employee/update"))
+    form = soup.find("form", action=form_action_re)
     if form is None:
-        raise BackofficeServerError("could not locate /employee/update form on edit page")
+        raise BackofficeServerError(
+            f"could not locate form matching {form_action_re.pattern!r} in HTML"
+        )
 
     out: list[tuple[str, str]] = []
     for el in form.find_all(["input", "select", "textarea"]):
         name = el.get("name")
-        if not name or name in drop_fields:
+        if not name or name in _drop:
             continue
         if el.get("disabled") is not None:
             continue
         if el.name == "input":
             t = (el.get("type") or "text").lower()
             if t in _TEXTUAL_INPUT_TYPES:
-                out.append((name, el.get("value") or ""))
+                val = el.get("value") or el.get("data-value") or ""
+                out.append((name, val))
             elif t == "checkbox":
                 if el.has_attr("checked"):
                     out.append((name, el.get("value") or "on"))
@@ -474,6 +489,103 @@ def _parse_edit_form_into_payload(
     return out
 
 
+def _overlay_payload(
+    payload: list[tuple[str, str]],
+    overrides: dict[str, str | list[str]],
+) -> list[tuple[str, str]]:
+    """Apply field overrides to a parsed form payload.
+
+    Single-value overrides (str) replace the first matching entry or are appended.
+    Multi-value overrides (list[str]) remove all existing entries for that field
+    name and append the new values.
+    """
+    multi_keys = {k for k, v in overrides.items() if isinstance(v, list)}
+    single_keys = {k for k in overrides if k not in multi_keys}
+
+    replaced: set[str] = set()
+    result: list[tuple[str, str]] = []
+    for name, value in payload:
+        if name in multi_keys:
+            continue
+        if name in single_keys:
+            if name not in replaced:
+                result.append((name, overrides[name]))  # type: ignore[arg-type]
+                replaced.add(name)
+        else:
+            result.append((name, value))
+
+    for name in single_keys:
+        if name not in replaced:
+            result.append((name, overrides[name]))  # type: ignore[arg-type]
+
+    for name in multi_keys:
+        for val in overrides[name]:  # type: ignore[union-attr]
+            result.append((name, val))
+
+    return result
+
+
+_PROPERTY_FIELD_MAP: dict[str, str] = {
+    "first_name": "employee[firstName]",
+    "last_name": "employee[lastName]",
+    "phone": "employee[phone]",
+    "new_email": "employee[email]",
+    "adp_employee_id": "employee[adpEmployeeId]",
+    "emergency_contact_name": "employee[emergencyContactName]",
+    "emergency_contact_phone": "employee[emergencyContactPhone]",
+}
+
+_SITE_FIELD_PREFIXES = (
+    "employee[isAllRegionsAllowed]",
+    "employee[isAllSitesAllowed]",
+    "employee[disabledRegions]",
+    "employee[disabledDistricts]",
+    "employee[isAllDistrictsAllowedByRegion]",
+    "employee[isAllSitesAllowedByDistrict]",
+    "employee[sites]",
+    "employee[siteIds]",
+)
+
+
+def _build_site_availability_fields(
+    site_tree: SiteTree,
+    available_sites: list[str] | str,
+) -> list[tuple[str, str]]:
+    """Build site availability fields for a hierarchical or flat tenant.
+
+    For hierarchical tenants the server uses ``employee[sites][N][siteId]``
+    **presence** to determine availability (matching browser behaviour, not
+    the ``isAvailable`` checkbox which is a JS-only UI control).
+    """
+    resolved = site_tree.resolve_all(available_sites)
+    fields: list[tuple[str, str]] = []
+
+    if available_sites == "all":
+        if site_tree.is_hierarchical:
+            fields.append(("employee[isAllRegionsAllowed]", "1"))
+        else:
+            fields.append(("employee[isAllSitesAllowed]", "1"))
+        return fields
+
+    enabled_ids = {s.id for s in resolved}
+
+    if site_tree.is_hierarchical:
+        enabled_region_ids = {s.region_id for s in resolved if s.region_id}
+        for r in site_tree.regions:
+            if r.id not in enabled_region_ids:
+                fields.append(("employee[disabledRegions][]", str(r.id)))
+        for s in site_tree.sites:
+            if s.id in enabled_ids:
+                fields.append((f"employee[sites][{s.id}][siteId]", str(s.id)))
+    else:
+        enabled_ids = {s.id for s in resolved}
+        for s in site_tree.sites:
+            if s.id not in enabled_ids:
+                fields.append(("employee[siteIds][]", str(s.id)))
+
+    return fields
+
+
 def disable_employee(
     *,
     session,
@@ -495,7 +607,9 @@ def disable_employee(
 
     edit_resp = session.get(f"/employee/edit/{employee_id}")
     _check_create_response(edit_resp)
-    payload = _parse_edit_form_into_payload(edit_resp.text, drop_fields={"employee[isActive]"})
+    payload = _parse_form_into_payload(
+        edit_resp.text, form_action_re=_EDIT_FORM_RE, drop_fields={"employee[isActive]"}
+    )
     if not any(name == "employee[id]" for name, _ in payload):
         payload.append(("employee[id]", str(employee_id)))
 
@@ -518,4 +632,134 @@ def disable_employee(
         pos_user_id=resolved_pos_user_id,
         email=request.email,
         disabled_at=datetime.now(timezone.utc),
+    )
+
+
+def modify_employee(
+    *,
+    session,
+    employee_id: int,
+    request: ModifyEmployeeRequest,
+    site_tree: SiteTree | None = None,
+    departments: list[Department] | None = None,
+    pos_permissions: list[Permission] | None = None,
+    pos_permission_schema: list[PermissionFieldMeta] | None = None,
+) -> EmployeeModified:
+    """Modify an existing employee across up to three forms.
+
+    Phase 1 — Properties: GET ``/employee/edit/{id}``, overlay changed fields,
+    POST ``/employee/update``.
+
+    Phase 2 — Compensation: GET ``/employee/compensation/{id}``, overlay wage
+    fields, POST ``/employee/compensation/update`` (creates a new wage record
+    effective today).
+
+    Phase 3 — Permission template: build the full permission matrix and POST
+    ``/employee/permissions/update``.
+
+    Only phases with caller-provided changes are executed.
+    """
+    changes_applied: list[str] = []
+    warnings_list: list[str] = []
+
+    has_property = any(
+        getattr(request, attr) is not None
+        for attr in (
+            "first_name", "last_name", "phone", "new_email",
+            "departments", "available_sites", "adp_employee_id",
+            "emergency_contact_name", "emergency_contact_phone",
+        )
+    )
+
+    if has_property:
+        edit_resp = session.get(f"/employee/edit/{employee_id}")
+        _check_create_response(edit_resp)
+        payload = _parse_form_into_payload(
+            edit_resp.text, form_action_re=_EDIT_FORM_RE,
+        )
+
+        overrides: dict[str, str | list[str]] = {}
+        for attr, form_name in _PROPERTY_FIELD_MAP.items():
+            val = getattr(request, attr)
+            if val is not None:
+                overrides[form_name] = val
+
+        if request.departments is not None:
+            dept_names = list(request.departments)
+            if "Greeter" not in dept_names:
+                dept_names.append("Greeter")
+            dept_by_name = {d.name: d.id for d in (departments or [])}
+            dept_ids = [str(dept_by_name[n]) for n in dept_names if n in dept_by_name]
+            overrides["employee[departments][]"] = dept_ids
+
+        payload = _overlay_payload(payload, overrides)
+
+        if request.available_sites is not None and site_tree is not None:
+            payload = [
+                (n, v) for n, v in payload
+                if not any(n.startswith(p) for p in _SITE_FIELD_PREFIXES)
+            ]
+            payload.extend(
+                _build_site_availability_fields(site_tree, request.available_sites)
+            )
+
+        if not any(name == "employee[id]" for name, _ in payload):
+            payload.append(("employee[id]", str(employee_id)))
+
+        resp = session.post("/employee/update", data=payload, allow_redirects=False)
+        _check_create_response(resp)
+        changes_applied.append("properties")
+
+    if request.wage_rate is not None:
+        comp_resp = session.get(f"/employee/compensation/{employee_id}")
+        _check_create_response(comp_resp)
+        payload = _parse_form_into_payload(
+            comp_resp.text, form_action_re=_COMP_FORM_RE,
+        )
+
+        comp_overrides: dict[str, str | list[str]] = {
+            "wage[regularRate]": f"{request.wage_rate:.2f}",
+        }
+
+        ot_eligible = any(name == "wage[isOvertimeEligible]" for name, _ in payload)
+        if request.overtime_wage_rate is not None:
+            comp_overrides["wage[overtimeRate]"] = f"{request.overtime_wage_rate:.2f}"
+            if not ot_eligible:
+                payload.append(("wage[isOvertimeEligible]", "1"))
+        elif ot_eligible:
+            ot = (request.wage_rate * Decimal("1.5")).quantize(Decimal("0.01"))
+            comp_overrides["wage[overtimeRate]"] = f"{ot:.2f}"
+
+        payload = _overlay_payload(payload, comp_overrides)
+
+        resp = session.post(
+            "/employee/compensation/update", data=payload, allow_redirects=False,
+        )
+        _check_create_response(resp)
+        changes_applied.append("compensation")
+
+    perm_applied: str | None = None
+    if request.permission is not None:
+        from .permissions import resolve_permission
+
+        perm, perm_warnings = resolve_permission(
+            request.permission, pos_permissions or [],
+        )
+        warnings_list.extend(perm_warnings)
+        perm_payload = build_employee_step2_permissions_payload(
+            permission=perm,
+            permission_schema=pos_permission_schema or [],
+            employee_id=employee_id,
+        )
+        resp = session.post("/employee/permissions/update", data=perm_payload)
+        _check_create_response(resp)
+        perm_applied = perm.name
+        changes_applied.append("permission")
+
+    return EmployeeModified(
+        employee_id=employee_id,
+        changes_applied=changes_applied,
+        permission_applied=perm_applied,
+        wage_rate=request.wage_rate,
+        warnings=warnings_list,
     )

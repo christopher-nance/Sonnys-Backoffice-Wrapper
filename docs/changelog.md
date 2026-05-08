@@ -1,6 +1,27 @@
 # Changelog
 
-## v0.1.0 — 2026-04-XX (Milestone 1)
+## v0.2.0 — 2026-05-08 (Phase 1 Complete)
+
+### Features
+
+- **`modify_employee`** — modify an existing employee's properties, compensation, or permission template via three independent form submissions:
+    - **Properties** (name, phone, email, departments, sites, emergency contact, ADP ID) via full-form round-trip on `/employee/update`.
+    - **Compensation** (hourly wage, overtime rate) via `/employee/compensation/update` — creates a new wage record effective today.
+    - **Permission template** via `/employee/permissions/update` with the full grant/override matrix.
+- **`available_sites` modification** — switch employees between `"all"` and specific-site access. Correctly handles both hierarchical tenants (region/district/site tree) and flat tenants (siteIds blocklist semantics).
+- **`ModifyEmployeeRequest`** and **`EmployeeModified`** Pydantic models with full validation.
+
+### Breaking changes
+
+- **`resolve_permission` now raises `NotFoundError`** with the list of available template names when the requested name doesn't match any tenant template. Previously it silently fell back to "General User".
+
+### Bug fixes
+
+- **`data-value` fallback in form parser** — pickadate date pickers render server-side with `data-value` instead of `value` (JavaScript populates the value at runtime). The form parser now reads `data-value` as a fallback, fixing round-trip failures on the `employee[startDate]` field that caused disable and modify to silently fail.
+- **Flat-tenant site payload** — `employee[siteIds][]` checkboxes represent *disabled* sites (presence = excluded), not enabled sites. Both `create_employee` and `modify_employee` now send the correct inverted list.
+- **Cache invalidation after `create_employee`** — the employee list and index caches are now cleared after creation, so subsequent `modify_employee`/`disable_employee` calls find newly created employees.
+
+## v0.1.0 — 2026-04-13 (Milestone 1)
 
 Initial release.
 
@@ -18,16 +39,9 @@ Initial release.
 - Transparent session re-authentication on cookie expiration.
 - MkDocs Material documentation site with mkdocstrings API reference.
 
-### Known limitations in Milestone 1
+### Known limitations
 
-- **Backoffice user permission template assignment is not automated.** `create_backoffice_user` (and the linked path of `create_employee`) creates the account but does not POST to `/user/permissions/update`. The caller must click the shield icon in the Backoffice UI to apply a template. Deferred to Milestone 2 — the site-inheritance semantics on the BO permissions form do not cleanly round-trip through the wrapper's form parser yet. See [Creating a Backoffice user](guides/create-backoffice-user.md).
-- **`modify_employee` is not included.** Different fields live behind different Backoffice URLs and deserve targeted functions. Deferred to Milestone 2+.
-- **Email lookup in `disable_employee` only works when the email appears in the visible employee-list columns**, which is rare. Use `pos_user_id` lookup instead. A hidden-dropdown resolver is on the Milestone 2 roadmap.
-- **`list_employees` is not exposed.** The internal `EmployeeIndex` has most of what's needed, but the public API is minimal for M1.
+- **Backoffice user permission template assignment is not automated.** `create_backoffice_user` (and the linked path of `create_employee`) creates the account but does not POST to `/user/permissions/update`. Deferred to Phase 2.
+- **Email lookup in `disable_employee` only works when the email appears in the visible employee-list columns.** Use `pos_user_id` lookup instead.
+- **`list_employees` is not exposed.** The internal `EmployeeIndex` has most of what's needed, but the public API is minimal.
 - **No parallelism.** The `_BackofficeSession` wraps a single `requests.Session`. Do not share a client across threads.
-
-### Infrastructure
-
-- 136+ unit tests covering every public function, including fixture-driven parsers exercised against real captured Backoffice HTML.
-- CI-ready GitHub Actions workflow for docs deploy to GitHub Pages.
-- Strict MkDocs build with a Google-style docstring convention.

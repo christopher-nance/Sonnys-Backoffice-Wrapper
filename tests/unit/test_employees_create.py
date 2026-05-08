@@ -139,19 +139,18 @@ def test_create_employee_generates_pin_if_not_provided():
     assert 10000 <= result.pos_pin <= 99999
 
 
-def test_create_employee_falls_back_to_general_user_on_unknown_permission():
+def test_create_employee_raises_on_unknown_permission():
     session = _make_mock_session(employee_id=42)
     req = _valid_request(permission="NonExistentRole")
-    result = create_employee(
-        session=session,
-        request=req,
-        site_tree=_flat_tree(),
-        departments=_depts(),
-        pos_permissions=_pos_perms(),
-        pos_permission_schema=_pos_schema(),
-    )
-    assert result.permission_applied == "General User"
-    assert any("NonExistentRole" in w for w in result.warnings)
+    with pytest.raises(Exception, match="NonExistentRole"):
+        create_employee(
+            session=session,
+            request=req,
+            site_tree=_flat_tree(),
+            departments=_depts(),
+            pos_permissions=_pos_perms(),
+            pos_permission_schema=_pos_schema(),
+        )
 
 
 def test_create_employee_extracts_id_from_permissions_redirect():

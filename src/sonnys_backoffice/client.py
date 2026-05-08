@@ -15,12 +15,16 @@ from .departments import parse_departments
 from .employees import (
     EmployeeIndex,
     build_employee_index,
+    find_employee_in_list_html,
 )
 from .employees import (
     create_employee as _create_employee,
 )
 from .employees import (
     disable_employee as _disable_employee,
+)
+from .employees import (
+    modify_employee as _modify_employee,
 )
 from .exceptions import NotFoundError
 from .models import (
@@ -31,6 +35,8 @@ from .models import (
     DisableEmployeeRequest,
     EmployeeCreated,
     EmployeeDisabled,
+    EmployeeModified,
+    ModifyEmployeeRequest,
     Permission,
     PermissionFieldMeta,
     Site,
@@ -315,7 +321,7 @@ class SonnysBackofficeClient:
         assert self._pos_permissions is not None
         assert self._pos_permission_schema is not None
         assert self._employee_index is not None
-        return _create_employee(
+        result = _create_employee(
             session=self._session,
             request=req,
             site_tree=self._site_tree,
@@ -325,6 +331,9 @@ class SonnysBackofficeClient:
             bo_permissions=self._bo_permissions,
             employee_index=self._employee_index,
         )
+        self._employee_index = None
+        self._employee_list_html = None
+        return result
 
     def disable_employee(
         self,
@@ -364,7 +373,129 @@ class SonnysBackofficeClient:
         """
         req = DisableEmployeeRequest(pos_user_id=pos_user_id, email=email)
         result = _disable_employee(session=self._session, request=req)
-        # Invalidate caches that may now be stale
+        self._employee_index = None
+        self._employee_list_html = None
+        return result
+
+    def modify_employee(
+        self,
+        *,
+        pos_user_id: int | None = None,
+        email: str | None = None,
+        first_name: str | None = None,
+        last_name: str | None = None,
+        phone: str | None = None,
+        new_email: str | None = None,
+        departments: list[str] | None = None,
+        available_sites: list[str] | Literal["all"] | None = None,
+        adp_employee_id: str | None = None,
+        emergency_contact_name: str | None = None,
+        emergency_contact_phone: str | None = None,
+        wage_rate: Decimal | float | None = None,
+        overtime_wage_rate: Decimal | float | None = None,
+        permission: str | None = None,
+    ) -> EmployeeModified:
+        """Modify an existing employee's properties, compensation, or permission template.
+
+        Looks up the employee by ``pos_user_id`` or ``email`` (exactly one
+        required), then applies only the changes you provide.  Unchanged fields
+        are round-tripped from the current form state.
+
+        Three independent forms may be submitted depending on which arguments
+        are provided:
+
+        - **Properties** (name, phone, email, departments, emergency contact,
+          ADP ID) → ``POST /employee/update``
+        - **Compensation** (wage rate, overtime rate) → ``POST
+          /employee/compensation/update`` — creates a new wage record
+          effective today.
+        - **Permission template** → ``POST /employee/permissions/update``
+          with the full grant/override matrix.
+
+        Args:
+            pos_user_id: Lookup key — the employee's POS User ID.
+            email: Lookup key — the employee's email (alternative to
+                ``pos_user_id``).
+            first_name: New first name.
+            last_name: New last name.
+            phone: New phone number (9-10 digits after stripping).
+            new_email: New email address (distinct from the ``email`` lookup
+                key).
+            departments: New department list. ``"Greeter"`` is auto-added if
+                omitted.
+            available_sites: New site availability. Pass ``"all"`` for
+                full access or a list of site names for limited access.
+                Unknown site names raise ``LookupError``.
+            adp_employee_id: New ADP employee ID.
+            emergency_contact_name: New emergency contact name.
+            emergency_contact_phone: New emergency contact phone.
+            wage_rate: New hourly wage.  Prefer ``Decimal`` to avoid
+                floating-point drift.
+            overtime_wage_rate: New overtime hourly wage.  If omitted when
+                ``wage_rate`` is provided and the employee is currently
+                overtime-eligible, overtime is auto-computed at 1.5×.
+            permission: POS template name.  Matched case-insensitively;
+                unknown names fall back to ``"General User"`` with a warning.
+
+        Returns:
+            EmployeeModified: Confirmation of which forms were submitted and
+            any warnings.
+        """
+        self._ensure_employee_list_html()
+        assert self._employee_list_html is not None
+        employee_id = find_employee_in_list_html(
+            self._employee_list_html,
+            pos_user_id=pos_user_id,
+            email=email,
+        )
+
+        req = ModifyEmployeeRequest(
+            pos_user_id=pos_user_id,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            phone=phone,
+            new_email=new_email,
+            departments=departments,
+            available_sites=available_sites,
+            adp_employee_id=adp_employee_id,
+            emergency_contact_name=emergency_contact_name,
+            emergency_contact_phone=emergency_contact_phone,
+            wage_rate=Decimal(str(wage_rate)) if wage_rate is not None else None,
+            overtime_wage_rate=Decimal(str(overtime_wage_rate))
+            if overtime_wage_rate is not None
+            else None,
+            permission=permission,
+        )
+
+        need_departments = req.departments is not None
+        need_sites = req.available_sites is not None
+        need_permissions = req.permission is not None
+
+        if need_departments:
+            self._ensure_departments()
+        if need_sites:
+            self._ensure_site_tree()
+        if need_permissions:
+            self._ensure_pos_permissions()
+
+        assert not need_departments or self._departments is not None
+        assert not need_sites or self._site_tree is not None
+        assert not need_permissions or self._pos_permissions is not None
+        assert not need_permissions or self._pos_permission_schema is not None
+
+        result = _modify_employee(
+            session=self._session,
+            employee_id=employee_id,
+            request=req,
+            site_tree=self._site_tree if need_sites else None,
+            departments=self._departments if need_departments else None,
+            pos_permissions=self._pos_permissions if need_permissions else None,
+            pos_permission_schema=self._pos_permission_schema
+            if need_permissions
+            else None,
+        )
+
         self._employee_index = None
         self._employee_list_html = None
         return result

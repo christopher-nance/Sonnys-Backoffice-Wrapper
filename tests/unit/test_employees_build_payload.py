@@ -27,7 +27,7 @@ def _sample_request(**overrides) -> CreateEmployeeRequest:
 def _flat_tree() -> SiteTree:
     return SiteTree(
         is_hierarchical=False,
-        sites=[Site(id=17, name="Wash 37135")],
+        sites=[Site(id=17, name="Wash 37135"), Site(id=18, name="Wash 37055")],
     )
 
 
@@ -163,8 +163,8 @@ def test_flat_tenant_specific_sites():
         departments_by_name={"Greeter": 3},
         wage_site_id=17,
     )
-    assert payload["employee[isAllSitesAllowed]"] == "0"
-    assert payload["employee[siteIds][]"] == [17]
+    assert "employee[isAllSitesAllowed]" not in payload
+    assert payload["employee[siteIds][]"] == [18]
 
 
 def test_flat_tenant_all_sites():

@@ -132,7 +132,7 @@ def test_standalone_respects_provided_password():
     assert result.password == "MyPreset1!"
 
 
-def test_standalone_falls_back_on_unknown_permission_name():
+def test_standalone_raises_on_unknown_permission_name():
     session = MagicMock()
     session.post.return_value = _insert_response()
 
@@ -143,14 +143,13 @@ def test_standalone_falls_back_on_unknown_permission_name():
         last_name="B",
         permission="NotAReal",
     )
-    result = create_standalone_backoffice_user(
-        session=session,
-        request=req,
-        site_tree=_flat_tree(),
-        bo_permissions=_bo_perms(),
-    )
-    assert result.permission_applied == "General User"
-    assert any("NotAReal" in w for w in result.warnings)
+    with pytest.raises(Exception, match="NotAReal"):
+        create_standalone_backoffice_user(
+            session=session,
+            request=req,
+            site_tree=_flat_tree(),
+            bo_permissions=_bo_perms(),
+        )
 
 
 def test_standalone_raises_duplicate_on_existing_username():
