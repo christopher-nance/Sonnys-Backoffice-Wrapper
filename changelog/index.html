@@ -1270,6 +1270,34 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v050-2026-06-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.5.0 — 2026-06-15
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.5.0 — 2026-06-15">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features-name-based-lookup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features — name-based lookup
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v040-2026-06-15" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1460,6 +1488,34 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v050-2026-06-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.5.0 — 2026-06-15
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.5.0 — 2026-06-15">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features-name-based-lookup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features — name-based lookup
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v040-2026-06-15" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1636,6 +1692,25 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v050-2026-06-15">v0.5.0 — 2026-06-15<a class="headerlink" href="#v050-2026-06-15" title="Permanent link">&para;</a></h2>
+<h3 id="features-name-based-lookup">Features — name-based lookup<a class="headerlink" href="#features-name-based-lookup" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>find_employee(first_name=…, last_name=…, phone=None, active="active")</code></strong> — resolve a single
+  employee by first + last name (normalized: trim + casefold), using <code>phone</code> as a tiebreaker when
+  names collide (compared digits-only on the last 10, so a leading country code or formatting
+  doesn't matter). Returns an <code>EmployeeSummary</code>. This is the reliable lookup when you don't have a
+  POS User ID: the roster page has no email column and Sonny's accounts often use a personal email,
+  so email lookups frequently miss.</li>
+<li><strong><code>find_employees(first_name=…, last_name=…, active="active")</code></strong> — all roster rows matching a
+  name (no phone narrowing), for inspecting candidates.</li>
+<li><strong><code>AmbiguousMatchError</code></strong> (new, exported) — raised by <code>find_employee</code> when a name matches multiple
+  and phone doesn't narrow it to one; the message lists the candidate POS User IDs so callers can
+  fall back to manual confirmation. <code>NotFoundError</code> is still raised for zero matches, keeping
+  "couldn't confidently pick one" distinct from "none found".</li>
+</ul>
+<p>Both reuse the existing single roster GET (<code>list_employees</code> / <code>parse_employee_summaries</code>); the
+matching logic is a pure, unit-tested helper in <code>employees.py</code>. Additive — the existing
+<code>disable_employee</code> / <code>get_employee</code> POS-id and email lookups are unchanged.</p>
 <h2 id="v040-2026-06-15">v0.4.0 — 2026-06-15<a class="headerlink" href="#v040-2026-06-15" title="Permanent link">&para;</a></h2>
 <h3 id="features-employee-read-surface">Features — employee read surface<a class="headerlink" href="#features-employee-read-surface" title="Permanent link">&para;</a></h3>
 <p>The wrapper is now a full read/write interface, not just write. All reads are live (uncached).</p>

@@ -822,6 +822,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#finding-the-employee-by-name-the-reliable-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding the employee by name (the reliable key)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#why-the-round-trip" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1375,6 +1386,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#finding-the-employee-by-name-the-reliable-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding the employee by name (the reliable key)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#why-the-round-trip" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1449,6 +1471,40 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">disable_employee</span><span class="p">(</span><span class="n">email</span><span class="o">=</span><span class="s2">&quot;jane.doe@example.com&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>Exactly one of <code>pos_user_id</code> or <code>email</code> is required. Passing both raises <code>ValidationError</code>.</p>
+<h2 id="finding-the-employee-by-name-the-reliable-key">Finding the employee by name (the reliable key)<a class="headerlink" href="#finding-the-employee-by-name-the-reliable-key" title="Permanent link">&para;</a></h2>
+<p>In practice, neither POS User ID nor email is always available, and <strong>email is unreliable</strong>:
+the roster page has no email column (so an email lookup can return <code>NotFoundError</code> for an
+employee who is clearly active), and Sonny's accounts are usually created with the employee's
+<strong>personal</strong> email rather than a work address. The dependable key is the employee's
+<strong>first + last name</strong>, with <strong>phone number</strong> as a tiebreaker when names collide.</p>
+<p><code>find_employee</code> resolves a name to a single <code>EmployeeSummary</code> (one roster request), which you
+then disable by its POS User ID:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">emp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">find_employee</span><span class="p">(</span><span class="n">first_name</span><span class="o">=</span><span class="s2">&quot;Jane&quot;</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="s2">&quot;Doe&quot;</span><span class="p">,</span> <span class="n">phone</span><span class="o">=</span><span class="s2">&quot;615-555-0001&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">client</span><span class="o">.</span><span class="n">disable_employee</span><span class="p">(</span><span class="n">pos_user_id</span><span class="o">=</span><span class="n">emp</span><span class="o">.</span><span class="n">pos_user_id</span><span class="p">)</span>
+</code></pre></div>
+<p>Resolution rules:</p>
+<ul>
+<li>Exactly one name match → returned.</li>
+<li>Multiple matches <strong>and</strong> <code>phone</code> given → narrowed by phone (digits-only, compared on the
+  last 10 so a leading country code or formatting doesn't matter). One survivor → returned.</li>
+<li>No name match → <code>NotFoundError</code>.</li>
+<li>Still ambiguous (several after the phone step, or several with no phone) →
+  <code>AmbiguousMatchError</code>, whose message lists the candidate POS User IDs so you can fall back to
+  manual confirmation instead of guessing.</li>
+</ul>
+<p><code>active</code> defaults to <code>"active"</code> (the live employee you'd typically disable); pass <code>"inactive"</code>
+or <code>"all"</code> to widen. Use <code>find_employees(first_name=…, last_name=…)</code> to get every name match
+(no phone narrowing) when you want to inspect the candidates yourself.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">sonnys_backoffice</span><span class="w"> </span><span class="kn">import</span> <span class="n">AmbiguousMatchError</span><span class="p">,</span> <span class="n">NotFoundError</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">emp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">find_employee</span><span class="p">(</span><span class="n">first_name</span><span class="o">=</span><span class="n">first</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="n">last</span><span class="p">,</span> <span class="n">phone</span><span class="o">=</span><span class="n">phone</span><span class="p">)</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">client</span><span class="o">.</span><span class="n">disable_employee</span><span class="p">(</span><span class="n">pos_user_id</span><span class="o">=</span><span class="n">emp</span><span class="o">.</span><span class="n">pos_user_id</span><span class="p">)</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="k">except</span> <span class="n">NotFoundError</span><span class="p">:</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="o">...</span>  <span class="c1"># not on this tenant — try the next one</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="k">except</span> <span class="n">AmbiguousMatchError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="o">...</span>  <span class="c1"># flag for manual confirmation; e lists the candidate POS User IDs</span>
+</code></pre></div>
 <h2 id="why-the-round-trip">Why the round-trip?<a class="headerlink" href="#why-the-round-trip" title="Permanent link">&para;</a></h2>
 <p>The naive approach — <code>POST /employee/update</code> with <code>{employee[id]: X, employee[isActive]: "0"}</code> — looks like it works: the server returns HTTP 302. But the employee stays active.</p>
 <p>Sonny's runs on Symfony, which binds form checkboxes by <strong>presence, not value</strong>. Sending <code>employee[isActive]=0</code> (or any value) is parsed as "the box is checked." To actually uncheck the box over the wire, the field must be absent from the POST body entirely.</p>
@@ -1464,8 +1520,7 @@
 </ol>
 <p>The library implements all six steps. The entire thing happens inside a single <code>disable_employee</code> call.</p>
 <h2 id="email-lookup-caveat">Email lookup caveat<a class="headerlink" href="#email-lookup-caveat" title="Permanent link">&para;</a></h2>
-<p>The employee list table <strong>does not include an email column</strong>, so an email lookup has to scan row text and will only match if the email happens to appear somewhere in the rendered columns (usually it doesn't). If the email isn't found, the library raises <code>NotFoundError</code> with a hint to use <code>pos_user_id</code> instead.</p>
-<p>A smarter email-to-employee-id resolver is on the Milestone 2 roadmap — it'll use the hidden email map already embedded in the <code>/user/create</code> page dropdown.</p>
+<p>The employee list table <strong>does not include an email column</strong>, so an email lookup has to scan row text and will only match if the email happens to appear somewhere in the rendered columns (usually it doesn't). If the email isn't found, the library raises <code>NotFoundError</code>. Prefer <code>pos_user_id</code>, or resolve by name with <a href="#finding-the-employee-by-name-the-reliable-key"><code>find_employee</code></a> (above) when you don't have the ID.</p>
 <h2 id="what-happens-to-the-backoffice-user">What happens to the Backoffice user?<a class="headerlink" href="#what-happens-to-the-backoffice-user" title="Permanent link">&para;</a></h2>
 <p>Disabling an employee does <strong>not</strong> automatically disable any linked Backoffice user. Subsequent login attempts for that BO user will still authenticate. You have two options:</p>
 <ol>
