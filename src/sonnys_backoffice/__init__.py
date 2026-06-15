@@ -2,6 +2,7 @@
 
 from .client import SonnysBackofficeClient
 from .exceptions import (
+    AmbiguousMatchError,
     AuthenticationError,
     BackofficeServerError,
     DuplicateError,
@@ -31,13 +32,14 @@ from .models import (
     WageRecord,
 )
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 __all__ = [
     "SonnysBackofficeClient",
     "SonnysBackofficeError",
     "AuthenticationError",
     "NotFoundError",
+    "AmbiguousMatchError",
     "ValidationError",
     "PermissionDeniedError",
     "DuplicateError",

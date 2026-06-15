@@ -19,6 +19,48 @@ result = client.disable_employee(email="jane.doe@example.com")
 
 Exactly one of `pos_user_id` or `email` is required. Passing both raises `ValidationError`.
 
+## Finding the employee by name (the reliable key)
+
+In practice, neither POS User ID nor email is always available, and **email is unreliable**:
+the roster page has no email column (so an email lookup can return `NotFoundError` for an
+employee who is clearly active), and Sonny's accounts are usually created with the employee's
+**personal** email rather than a work address. The dependable key is the employee's
+**first + last name**, with **phone number** as a tiebreaker when names collide.
+
+`find_employee` resolves a name to a single `EmployeeSummary` (one roster request), which you
+then disable by its POS User ID:
+
+```python
+emp = client.find_employee(first_name="Jane", last_name="Doe", phone="615-555-0001")
+client.disable_employee(pos_user_id=emp.pos_user_id)
+```
+
+Resolution rules:
+
+- Exactly one name match → returned.
+- Multiple matches **and** `phone` given → narrowed by phone (digits-only, compared on the
+  last 10 so a leading country code or formatting doesn't matter). One survivor → returned.
+- No name match → `NotFoundError`.
+- Still ambiguous (several after the phone step, or several with no phone) →
+  `AmbiguousMatchError`, whose message lists the candidate POS User IDs so you can fall back to
+  manual confirmation instead of guessing.
+
+`active` defaults to `"active"` (the live employee you'd typically disable); pass `"inactive"`
+or `"all"` to widen. Use `find_employees(first_name=…, last_name=…)` to get every name match
+(no phone narrowing) when you want to inspect the candidates yourself.
+
+```python
+from sonnys_backoffice import AmbiguousMatchError, NotFoundError
+
+try:
+    emp = client.find_employee(first_name=first, last_name=last, phone=phone)
+    client.disable_employee(pos_user_id=emp.pos_user_id)
+except NotFoundError:
+    ...  # not on this tenant — try the next one
+except AmbiguousMatchError as e:
+    ...  # flag for manual confirmation; e lists the candidate POS User IDs
+```
+
 ## Why the round-trip?
 
 The naive approach — `POST /employee/update` with `{employee[id]: X, employee[isActive]: "0"}` — looks like it works: the server returns HTTP 302. But the employee stays active.
@@ -40,9 +82,7 @@ The library implements all six steps. The entire thing happens inside a single `
 
 ## Email lookup caveat
 
-The employee list table **does not include an email column**, so an email lookup has to scan row text and will only match if the email happens to appear somewhere in the rendered columns (usually it doesn't). If the email isn't found, the library raises `NotFoundError` with a hint to use `pos_user_id` instead.
-
-A smarter email-to-employee-id resolver is on the Milestone 2 roadmap — it'll use the hidden email map already embedded in the `/user/create` page dropdown.
+The employee list table **does not include an email column**, so an email lookup has to scan row text and will only match if the email happens to appear somewhere in the rendered columns (usually it doesn't). If the email isn't found, the library raises `NotFoundError`. Prefer `pos_user_id`, or resolve by name with [`find_employee`](#finding-the-employee-by-name-the-reliable-key) (above) when you don't have the ID.
 
 ## What happens to the Backoffice user?
 

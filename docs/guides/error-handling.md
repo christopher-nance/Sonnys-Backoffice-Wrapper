@@ -20,6 +20,7 @@ SonnysBackofficeError
 ├── AuthenticationError
 ├── DuplicateError
 ├── NotFoundError
+├── AmbiguousMatchError
 ├── ValidationError
 ├── PermissionDeniedError
 └── BackofficeServerError
@@ -73,6 +74,17 @@ A lookup didn't match. Raised by:
 - `create_employee` / `modify_employee` when the `permission` name doesn't match any template on the tenant (no silent fallback — the message lists the valid templates).
 
 **Recovery:** inspect the key, double-check the tenant has the record, retry with a corrected lookup.
+
+### `AmbiguousMatchError`
+
+A name lookup (`find_employee`) matched more than one employee and couldn't be narrowed to one —
+either no `phone` was given, or the phone didn't single out a candidate. The message lists the
+candidate `pos_user_id`s.
+
+**Recovery:** pass a `phone` to disambiguate, widen/narrow with `active`, or surface the
+candidates for manual confirmation rather than guessing. This is deliberately distinct from
+`NotFoundError` (zero matches) so automation can tell "couldn't confidently pick one" apart from
+"not here."
 
 ### `ValidationError`
 

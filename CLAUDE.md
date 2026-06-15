@@ -35,6 +35,7 @@ Integration tests need `SONNYS_SUBDOMAIN` / `SONNYS_BOT_USERNAME` / `SONNYS_BOT_
 - **Hierarchical site restriction** works by *exclusion*: omit the all-regions flag and submit `employee[sites][N][siteId]` for every site you want to **disable**; unmentioned sites stay available. Flat tenants use the `employee[siteIds][]` blocklist.
 - **Wage changes create a new record** that must be effective strictly **after** the most recent rate's effective date. `modify_employee` defaults to `max(today, most_recent + 1 day)`. Overtime eligibility must be read from the current wage-history row (the "add wage" form is always blank).
 - **Date fields render with `data-value`, not `value`** (pickadate populates `value` via JS). The form parser reads `data-value` as a fallback.
+- **The roster page has no email column**, and Sonny's accounts often use a personal (not work) email — so email lookups are unreliable. The dependable key is first + last name with phone as a tiebreaker (`find_employee`). Phone matching compares digits-only on the last 10 (ignores a leading country code).
 
 ## Live testing safety
 

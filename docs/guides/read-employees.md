@@ -20,6 +20,23 @@ for row in client.list_employees(active="active"):
 `employee_id`, `pos_user_id`, `first_name`, `last_name`, `phone`, and `is_active`. For the
 full profile of a selected person, call `get_employee`.
 
+## Find an employee by name
+
+When you don't have a POS User ID, resolve one by name. This is the reliable lookup — the roster
+has no email column and Sonny's accounts often use a personal email, so email lookups miss.
+
+```python
+emp = client.find_employee(first_name="Jane", last_name="Doe", phone="615-555-0001")
+# -> a single EmployeeSummary; then e.g. client.disable_employee(pos_user_id=emp.pos_user_id)
+```
+
+`phone` is only used as a tiebreaker when several employees share a name (compared digits-only on
+the last 10 digits). A name with no match raises `NotFoundError`; a name that stays ambiguous
+raises `AmbiguousMatchError` (its message lists the candidate POS User IDs). Use
+`find_employees(first_name=…, last_name=…)` to get every name match without the phone narrowing.
+See [Disabling an employee](disable-employee.md#finding-the-employee-by-name-the-reliable-key)
+for the full resolution rules.
+
 ## Read one employee (full snapshot)
 
 `get_employee()` fetches everything — identity, contact, departments, sites, active state,

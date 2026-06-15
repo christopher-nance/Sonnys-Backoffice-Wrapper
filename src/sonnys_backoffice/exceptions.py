@@ -13,6 +13,10 @@ class NotFoundError(SonnysBackofficeError):
     """Lookup (by POS User ID or email) did not match any record."""
 
 
+class AmbiguousMatchError(SonnysBackofficeError):
+    """A name lookup matched multiple employees and could not be narrowed to one."""
+
+
 class ValidationError(SonnysBackofficeError):
     """Caller input violated a constraint, or Backoffice rejected the payload."""
 

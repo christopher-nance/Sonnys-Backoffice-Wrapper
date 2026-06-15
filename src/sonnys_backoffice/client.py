@@ -16,10 +16,12 @@ from .employees import (
     EmployeeIndex,
     build_employee_index,
     find_employee_in_list_html,
+    match_employees_by_name,
     parse_employee_permission,
     parse_employee_profile,
     parse_employee_summaries,
     parse_wage_history,
+    resolve_employee_by_name,
 )
 from .employees import (
     create_employee as _create_employee,
@@ -549,6 +551,64 @@ class SonnysBackofficeClient:
         if active == "inactive":
             return [r for r in rows if not r.is_active]
         return rows
+
+    def find_employees(
+        self,
+        *,
+        first_name: str,
+        last_name: str,
+        active: Literal["active", "inactive", "all"] = "active",
+    ) -> list[EmployeeSummary]:
+        """All roster rows whose first+last name match (case-insensitive).
+
+        Args:
+            first_name: First name to match (trimmed + casefolded).
+            last_name: Last name to match (trimmed + casefolded).
+            active: Roster filter — ``"active"`` (default), ``"inactive"``, or ``"all"``.
+
+        Returns:
+            list[EmployeeSummary]: Every matching row (possibly empty).
+        """
+        rows = self.list_employees(active=active)
+        return match_employees_by_name(rows, first_name=first_name, last_name=last_name)
+
+    def find_employee(
+        self,
+        *,
+        first_name: str,
+        last_name: str,
+        phone: str | None = None,
+        active: Literal["active", "inactive", "all"] = "active",
+    ) -> EmployeeSummary:
+        """Resolve a single employee by name, using phone as a tiebreaker.
+
+        Name (first + last) is the reliable lookup key on Sonny's: the roster page
+        has no email column, and Sonny's accounts are typically created with the
+        employee's personal email rather than a work address — so email lookups
+        often miss. When several employees share a name, pass ``phone`` to
+        disambiguate (compared digits-only on the last 10, so a leading country
+        code or formatting differences don't matter).
+
+        Args:
+            first_name: First name (trimmed + casefolded before matching).
+            last_name: Last name (trimmed + casefolded before matching).
+            phone: Optional tiebreaker used only when the name matches more than one.
+            active: Roster filter — defaults to ``"active"`` (the employee you'd
+                typically want to act on, e.g. to disable).
+
+        Returns:
+            EmployeeSummary: The single resolved employee.
+
+        Raises:
+            NotFoundError: If no employee matches the name.
+            AmbiguousMatchError: If the name matches multiple and phone does not
+                narrow it to exactly one (message lists the candidate
+                ``pos_user_id``s so a caller can fall back to manual confirmation).
+        """
+        rows = self.list_employees(active=active)
+        return resolve_employee_by_name(
+            rows, first_name=first_name, last_name=last_name, phone=phone
+        )
 
     def _resolve_employee_id(
         self,

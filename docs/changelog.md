@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.5.0 — 2026-06-15
+
+### Features — name-based lookup
+
+- **`find_employee(first_name=…, last_name=…, phone=None, active="active")`** — resolve a single
+  employee by first + last name (normalized: trim + casefold), using `phone` as a tiebreaker when
+  names collide (compared digits-only on the last 10, so a leading country code or formatting
+  doesn't matter). Returns an `EmployeeSummary`. This is the reliable lookup when you don't have a
+  POS User ID: the roster page has no email column and Sonny's accounts often use a personal email,
+  so email lookups frequently miss.
+- **`find_employees(first_name=…, last_name=…, active="active")`** — all roster rows matching a
+  name (no phone narrowing), for inspecting candidates.
+- **`AmbiguousMatchError`** (new, exported) — raised by `find_employee` when a name matches multiple
+  and phone doesn't narrow it to one; the message lists the candidate POS User IDs so callers can
+  fall back to manual confirmation. `NotFoundError` is still raised for zero matches, keeping
+  "couldn't confidently pick one" distinct from "none found".
+
+Both reuse the existing single roster GET (`list_employees` / `parse_employee_summaries`); the
+matching logic is a pure, unit-tested helper in `employees.py`. Additive — the existing
+`disable_employee` / `get_employee` POS-id and email lookups are unchanged.
+
 ## v0.4.0 — 2026-06-15
 
 ### Features — employee read surface

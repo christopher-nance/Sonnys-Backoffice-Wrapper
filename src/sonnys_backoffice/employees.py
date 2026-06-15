@@ -12,6 +12,7 @@ from typing import Any
 from bs4 import BeautifulSoup
 
 from .exceptions import (
+    AmbiguousMatchError,
     BackofficeServerError,
     DuplicateError,
     NotFoundError,
@@ -254,6 +255,73 @@ def parse_employee_summaries(html: str) -> list[EmployeeSummary]:
             )
         )
     return out
+
+
+def _normalize_name(value: str) -> str:
+    return (value or "").strip().casefold()
+
+
+def _phone_last10(phone: str | None) -> str:
+    """Digits-only, last 10 — so a leading 1/country code doesn't matter."""
+    digits = _DIGITS_ONLY_RE.sub("", phone or "")
+    return digits[-10:]
+
+
+def match_employees_by_name(
+    rows: list[EmployeeSummary],
+    *,
+    first_name: str,
+    last_name: str,
+) -> list[EmployeeSummary]:
+    """Roster rows whose first AND last name match, normalized (trim + casefold)."""
+    fn = _normalize_name(first_name)
+    ln = _normalize_name(last_name)
+    return [
+        r
+        for r in rows
+        if _normalize_name(r.first_name) == fn and _normalize_name(r.last_name) == ln
+    ]
+
+
+def resolve_employee_by_name(
+    rows: list[EmployeeSummary],
+    *,
+    first_name: str,
+    last_name: str,
+    phone: str | None = None,
+) -> EmployeeSummary:
+    """Resolve a single employee by name, using phone as a tiebreaker.
+
+    - Exactly one name match → return it.
+    - Multiple name matches + ``phone`` → narrow by phone (digits-only, last 10).
+      Exactly one remaining → return it.
+    - Zero name matches → ``NotFoundError``.
+    - Otherwise (still multiple, or phone narrowed to none/many) →
+      ``AmbiguousMatchError`` with the candidate count and POS User IDs.
+    """
+    matches = match_employees_by_name(rows, first_name=first_name, last_name=last_name)
+    if not matches:
+        raise NotFoundError(f"no employee found with name {first_name!r} {last_name!r}")
+    if len(matches) == 1:
+        return matches[0]
+
+    pool = matches
+    if phone:
+        target = _phone_last10(phone)
+        narrowed = [r for r in matches if target and _phone_last10(r.phone) == target]
+        if len(narrowed) == 1:
+            return narrowed[0]
+        if narrowed:
+            pool = narrowed
+
+    pos_ids = [r.pos_user_id for r in pool]
+    detail = (
+        "provide a phone number to disambiguate" if not phone else "phone did not narrow to one"
+    )
+    raise AmbiguousMatchError(
+        f"name {first_name!r} {last_name!r} matched {len(pool)} employees "
+        f"(pos_user_ids={pos_ids}); {detail}"
+    )
 
 
 def _parse_available_sites(soup: BeautifulSoup, site_tree: SiteTree | None):
