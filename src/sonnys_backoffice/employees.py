@@ -21,12 +21,17 @@ from .models import (
     CreateEmployeeRequest,
     Department,
     DisableEmployeeRequest,
+    EmployeeCompensation,
     EmployeeCreated,
     EmployeeDisabled,
     EmployeeModified,
+    EmployeePermission,
+    EmployeeProfile,
+    EmployeeSummary,
     ModifyEmployeeRequest,
     Permission,
     PermissionFieldMeta,
+    WageRecord,
 )
 from .passwords import generate_pos_pin
 from .sites import SiteTree
@@ -182,6 +187,205 @@ def find_employee_in_list_html(
     raise NotFoundError(
         f"no employee found for "
         f"{'pos_user_id=' + str(pos_user_id) if pos_user_id is not None else 'email=' + (email or '')}"
+    )
+
+
+# ── read-surface parsers ─────────────────────────────────────────────────────
+
+_MONEY_RE = re.compile(r"[\d,]+(?:\.\d+)?")
+
+
+def _parse_money(text: str) -> Decimal | None:
+    m = _MONEY_RE.search(text or "")
+    if not m:
+        return None
+    return Decimal(m.group(0).replace(",", ""))
+
+
+def _parse_mdy(text: str | None) -> date | None:
+    if not text:
+        return None
+    try:
+        return datetime.strptime(text.strip(), "%m/%d/%Y").date()
+    except ValueError:
+        return None
+
+
+def _input_value(soup: BeautifulSoup, name: str) -> str | None:
+    el = soup.find(["input", "textarea"], attrs={"name": name})
+    if el is None:
+        return None
+    if el.name == "textarea":
+        return el.get_text() or None
+    return el.get("value") or el.get("data-value") or None
+
+
+def parse_employee_summaries(html: str) -> list[EmployeeSummary]:
+    """Parse the /employee roster page into lightweight summary rows."""
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find("table", class_="table-employees-list")
+    out: list[EmployeeSummary] = []
+    if table is None:
+        return out
+    for tr in table.find_all("tr"):
+        emp_id: int | None = None
+        for a in tr.find_all("a", href=True):
+            m = _EMP_ID_RE.search(a["href"])
+            if m:
+                emp_id = int(m.group(1))
+                break
+        if emp_id is None:
+            continue
+        first = tr.find("td", class_="employees-col-first-name")
+        last = tr.find("td", class_="employees-col-last-name")
+        pos = tr.find("td", class_="employees-col-pos-user-id")
+        phone = tr.find("td", class_="employees-col-phone")
+        active = tr.find("td", class_="employees-col-active")
+        pos_text = pos.get_text(strip=True) if pos else ""
+        phone_digits = _DIGITS_ONLY_RE.sub("", phone.get_text(strip=True)) if phone else ""
+        out.append(
+            EmployeeSummary(
+                employee_id=emp_id,
+                pos_user_id=int(pos_text) if pos_text.isdigit() else None,
+                first_name=first.get_text(strip=True) if first else "",
+                last_name=last.get_text(strip=True) if last else "",
+                phone=phone_digits or None,
+                is_active=bool(active and active.find("i", class_="fa-check")),
+            )
+        )
+    return out
+
+
+def _parse_available_sites(soup: BeautifulSoup, site_tree: SiteTree | None):
+    all_regions = soup.find("input", attrs={"name": "employee[isAllRegionsAllowed]"})
+    all_sites = soup.find("input", attrs={"name": "employee[isAllSitesAllowed]"})
+    if (all_regions and all_regions.has_attr("checked")) or (
+        all_sites and all_sites.has_attr("checked")
+    ):
+        return "all"
+    enabled_ids: set[int] = set()
+    for el in soup.find_all("input"):
+        n = el.get("name") or ""
+        if n.endswith("][isAvailable]") and el.has_attr("checked"):
+            inner = n[len("employee[sites][") :].split("]")[0]
+            if inner.isdigit():
+                enabled_ids.add(int(inner))
+    id_to_name = {s.id: s.name for s in site_tree.sites} if site_tree else {}
+    return sorted(id_to_name[i] for i in enabled_ids if i in id_to_name)
+
+
+def parse_employee_profile(
+    edit_html: str,
+    *,
+    site_tree: SiteTree | None = None,
+    departments: list[Department] | None = None,
+) -> EmployeeProfile:
+    """Parse the /employee/edit page into an EmployeeProfile."""
+    soup = BeautifulSoup(edit_html, "html.parser")
+    emp_id_raw = _input_value(soup, "employee[id]")
+    pos_raw = _input_value(soup, "posCredential[POSLoginID]")
+    active = soup.find("input", attrs={"name": "employee[isActive]"})
+
+    dept_by_id = {d.id: d.name for d in (departments or [])}
+    dept_names: list[str] = []
+    sel = soup.find("select", attrs={"name": "employee[departments][]"})
+    if sel is not None:
+        for opt in sel.find_all("option"):
+            if opt.has_attr("selected"):
+                v = (opt.get("value") or "").strip()
+                if v.isdigit():
+                    dept_names.append(dept_by_id.get(int(v), opt.get_text(strip=True)))
+
+    return EmployeeProfile(
+        employee_id=int(emp_id_raw) if emp_id_raw and emp_id_raw.isdigit() else 0,
+        pos_user_id=int(pos_raw) if pos_raw and pos_raw.isdigit() else None,
+        first_name=_input_value(soup, "employee[firstName]") or "",
+        last_name=_input_value(soup, "employee[lastName]") or "",
+        email=_input_value(soup, "employee[email]"),
+        phone=_input_value(soup, "employee[phone]"),
+        departments=dept_names,
+        available_sites=_parse_available_sites(soup, site_tree),
+        start_date=_parse_mdy(_input_value(soup, "employee[startDate]")),
+        adp_employee_id=_input_value(soup, "employee[adpEmployeeId]"),
+        emergency_contact_name=_input_value(soup, "employee[emergencyContactName]"),
+        emergency_contact_phone=_input_value(soup, "employee[emergencyContactPhone]"),
+        is_active=bool(active and active.has_attr("checked")),
+    )
+
+
+def parse_wage_history(comp_html: str) -> EmployeeCompensation:
+    """Parse the compensation history table into current + historical WageRecords."""
+    soup = BeautifulSoup(comp_html, "html.parser")
+    table = soup.find("table", class_="table-employee-compensation-history")
+    history: list[WageRecord] = []
+    if table is None or table.find("tbody") is None:
+        return EmployeeCompensation(current=None, history=[])
+    for tr in table.find("tbody").find_all("tr"):
+        wage = tr.find("td", class_="employee-compensation-col-wage")
+        rate = _parse_money(wage.get_text() if wage else "")
+        if rate is None:
+            continue
+        wtype = tr.find("td", class_="employee-compensation-col-wage-type")
+        ot_elig = tr.find("td", class_="employee-compensation-col-overtime-eligible")
+        ot_rate = tr.find("td", class_="employee-compensation-col-overtime-rate")
+        eff = tr.find("td", class_="employee-compensation-col-effective-date")
+        end = tr.find("td", class_="employee-compensation-col-end-date")
+        end_text = end.get_text(strip=True) if end else ""
+        history.append(
+            WageRecord(
+                wage_type=wtype.get_text(strip=True) if wtype else "",
+                rate=rate,
+                overtime_eligible=bool(ot_elig and ot_elig.find("i", class_="fa-check")),
+                overtime_rate=_parse_money(ot_rate.get_text() if ot_rate else ""),
+                effective_date=_parse_mdy(eff.get_text(strip=True)) if eff else None,
+                end_date=_parse_mdy(end_text),
+                is_current=(end is not None and not end_text),
+            )
+        )
+    current = next((r for r in history if r.is_current), None)
+    return EmployeeCompensation(current=current, history=history)
+
+
+_PERM_ID_RE = re.compile(r"permissions\[(\d+)\]")
+
+
+def parse_employee_permission(
+    perm_html: str,
+    *,
+    pos_permissions: list[Permission] | None = None,
+) -> EmployeePermission:
+    """Parse the /employee/permissions page into the current grant state.
+
+    ``template_name`` is the name of the template whose grant set exactly equals
+    the employee's checked grants, or None when no template matches (custom).
+    """
+    soup = BeautifulSoup(perm_html, "html.parser")
+    granted: set[int] = set()
+    overrides: set[int] = set()
+    for el in soup.find_all("input"):
+        n = el.get("name") or ""
+        if not el.has_attr("checked"):
+            continue
+        if n.endswith("][hasGrantAccess]"):
+            m = _PERM_ID_RE.search(n)
+            if m:
+                granted.add(int(m.group(1)))
+        elif n.endswith("][requiresOverride]"):
+            m = _PERM_ID_RE.search(n)
+            if m:
+                overrides.add(int(m.group(1)))
+    granted_fs = frozenset(granted)
+    override_fs = frozenset(overrides)
+    template_name: str | None = None
+    for p in pos_permissions or []:
+        if p.grants == granted_fs:
+            template_name = p.name
+            break
+    return EmployeePermission(
+        template_name=template_name,
+        is_custom=template_name is None,
+        granted_permission_ids=granted_fs,
+        override_permission_ids=override_fs,
     )
 
 

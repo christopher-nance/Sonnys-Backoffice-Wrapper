@@ -16,16 +16,22 @@ from .models import (
     CreateEmployeeRequest,
     Department,
     DisableEmployeeRequest,
+    Employee,
+    EmployeeCompensation,
     EmployeeCreated,
     EmployeeDisabled,
     EmployeeModified,
+    EmployeePermission,
+    EmployeeProfile,
+    EmployeeSummary,
     ModifyEmployeeRequest,
     Permission,
     Region,
     Site,
+    WageRecord,
 )
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 __all__ = [
     "SonnysBackofficeClient",
@@ -44,6 +50,12 @@ __all__ = [
     "BackofficeUserCreated",
     "EmployeeDisabled",
     "EmployeeModified",
+    "EmployeeSummary",
+    "EmployeeProfile",
+    "EmployeeCompensation",
+    "EmployeePermission",
+    "Employee",
+    "WageRecord",
     "Site",
     "Region",
     "Department",

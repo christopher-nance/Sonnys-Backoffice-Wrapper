@@ -16,6 +16,10 @@ from .employees import (
     EmployeeIndex,
     build_employee_index,
     find_employee_in_list_html,
+    parse_employee_permission,
+    parse_employee_profile,
+    parse_employee_summaries,
+    parse_wage_history,
 )
 from .employees import (
     create_employee as _create_employee,
@@ -33,9 +37,14 @@ from .models import (
     CreateEmployeeRequest,
     Department,
     DisableEmployeeRequest,
+    Employee,
+    EmployeeCompensation,
     EmployeeCreated,
     EmployeeDisabled,
     EmployeeModified,
+    EmployeePermission,
+    EmployeeProfile,
+    EmployeeSummary,
     ModifyEmployeeRequest,
     Permission,
     PermissionFieldMeta,
@@ -512,6 +521,131 @@ class SonnysBackofficeClient:
         self._employee_index = None
         self._employee_list_html = None
         return result
+
+    # ── reads ────────────────────────────────────────────────────────────────
+
+    def list_employees(
+        self,
+        *,
+        active: Literal["active", "inactive", "all"] = "active",
+    ) -> list[EmployeeSummary]:
+        """List employees on the tenant as lightweight roster rows.
+
+        One request. Each row carries ``employee_id``, ``pos_user_id``,
+        ``first_name``, ``last_name``, ``phone``, and ``is_active``. For a full
+        profile of a selected employee, call :meth:`get_employee`.
+
+        Args:
+            active: ``"active"`` (default) returns only active employees,
+                ``"inactive"`` only disabled ones, ``"all"`` everyone.
+
+        Returns:
+            list[EmployeeSummary]: Matching roster rows.
+        """
+        html = self._session.get("/employee?limit=10000&active=all").text
+        rows = parse_employee_summaries(html)
+        if active == "active":
+            return [r for r in rows if r.is_active]
+        if active == "inactive":
+            return [r for r in rows if not r.is_active]
+        return rows
+
+    def _resolve_employee_id(
+        self,
+        *,
+        pos_user_id: int | None,
+        email: str | None,
+    ) -> int:
+        if (pos_user_id is None) == (email is None):
+            raise ValueError("exactly one of pos_user_id or email is required")
+        roster = self._session.get("/employee?limit=10000&active=all").text
+        if pos_user_id is not None:
+            return find_employee_in_list_html(roster, pos_user_id=pos_user_id)
+        user_create = self._session.get("/user/create").text
+        index = build_employee_index(employee_list_html=roster, user_create_html=user_create)
+        assert email is not None
+        emp_id = index.by_email.get(email.strip().lower())
+        if emp_id is None:
+            raise NotFoundError(f"no employee found with email={email!r}")
+        return emp_id
+
+    def get_employee_profile(
+        self,
+        *,
+        pos_user_id: int | None = None,
+        email: str | None = None,
+    ) -> EmployeeProfile:
+        """Read an employee's identity, contact, departments, sites, and active state.
+
+        One resolve request plus one GET of the edit page. Always live (uncached).
+        """
+        self._ensure_site_tree()
+        self._ensure_departments()
+        employee_id = self._resolve_employee_id(pos_user_id=pos_user_id, email=email)
+        html = self._session.get(f"/employee/edit/{employee_id}").text
+        return parse_employee_profile(
+            html, site_tree=self._site_tree, departments=self._departments
+        )
+
+    def get_employee_compensation(
+        self,
+        *,
+        pos_user_id: int | None = None,
+        email: str | None = None,
+    ) -> EmployeeCompensation:
+        """Read an employee's current wage and full wage history."""
+        employee_id = self._resolve_employee_id(pos_user_id=pos_user_id, email=email)
+        html = self._session.get(f"/employee/compensation/{employee_id}").text
+        return parse_wage_history(html)
+
+    def get_employee_permission(
+        self,
+        *,
+        pos_user_id: int | None = None,
+        email: str | None = None,
+    ) -> EmployeePermission:
+        """Read an employee's current POS permission state (best-effort template name)."""
+        self._ensure_pos_permissions()
+        employee_id = self._resolve_employee_id(pos_user_id=pos_user_id, email=email)
+        html = self._session.get(f"/employee/permissions/{employee_id}").text
+        return parse_employee_permission(html, pos_permissions=self._pos_permissions)
+
+    def get_employee(
+        self,
+        *,
+        pos_user_id: int | None = None,
+        email: str | None = None,
+    ) -> Employee:
+        """Read a full current-state snapshot of one employee.
+
+        Resolves the employee, then fetches the edit, compensation, and
+        permissions pages (3 requests) and assembles an :class:`Employee`
+        (profile fields + ``current_wage`` + ``wage_history`` + ``permission``).
+        Always live (uncached). Looks up by ``pos_user_id`` or ``email``.
+
+        Raises:
+            NotFoundError: If no employee matches the lookup key.
+        """
+        self._ensure_site_tree()
+        self._ensure_departments()
+        self._ensure_pos_permissions()
+        employee_id = self._resolve_employee_id(pos_user_id=pos_user_id, email=email)
+        profile = parse_employee_profile(
+            self._session.get(f"/employee/edit/{employee_id}").text,
+            site_tree=self._site_tree,
+            departments=self._departments,
+        )
+        comp = parse_wage_history(self._session.get(f"/employee/compensation/{employee_id}").text)
+        perm = parse_employee_permission(
+            self._session.get(f"/employee/permissions/{employee_id}").text,
+            pos_permissions=self._pos_permissions,
+        )
+        return Employee(
+            **profile.model_dump(),
+            current_wage=comp.current,
+            wage_history=comp.history,
+            permission=perm,
+        )
 
     def create_backoffice_user(
         self,

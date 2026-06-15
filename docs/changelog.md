@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.4.0 — 2026-06-15
+
+### Features — employee read surface
+
+The wrapper is now a full read/write interface, not just write. All reads are live (uncached).
+
+- **`list_employees(active="active"|"inactive"|"all")`** — lightweight roster rows (`EmployeeSummary`) in one request.
+- **`get_employee(pos_user_id=… | email=…)`** — full current-state snapshot (`Employee`): identity, contact, departments, sites, active state, current wage + full wage history, and current permission level.
+- **Granular getters** — `get_employee_profile` (`EmployeeProfile`), `get_employee_compensation` (`EmployeeCompensation` with `current` + `history`), `get_employee_permission` (`EmployeePermission`) — fetch only the slice a screen needs.
+- New read models: `EmployeeSummary`, `Employee`, `EmployeeProfile`, `EmployeeCompensation`, `WageRecord`, `EmployeePermission`.
+- `EmployeePermission.template_name` is a best-effort exact match of the employee's granted permission IDs against the tenant's templates (Sonny's doesn't store a clean "current template"); `is_custom` + the raw grant/override ID sets are exposed for customized employees.
+
 ## v0.3.0 — 2026-06-15
 
 ### Features

@@ -62,6 +62,7 @@ nav:
       - Authentication & bot setup: getting-started/auth.md
   - Guides:
       - Creating an employee: guides/create-employee.md
+      - Reading employees: guides/read-employees.md
       - Modifying an employee: guides/modify-employee.md
       - Creating a Backoffice user: guides/create-backoffice-user.md
       - Disabling an employee: guides/disable-employee.md

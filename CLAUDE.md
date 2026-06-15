@@ -10,7 +10,7 @@ Guidance for working in this repo.
 
 - `src/sonnys_backoffice/`
   - `client.py` — public `SonnysBackofficeClient` façade (lazy caches; use as a context manager).
-  - `employees.py` — `create_employee` / `disable_employee` / `modify_employee` orchestration and form/payload builders.
+  - `employees.py` — `create_employee` / `disable_employee` / `modify_employee` orchestration and form/payload builders, plus the read-surface parsers (`parse_employee_summaries`, `parse_employee_profile`, `parse_wage_history`, `parse_employee_permission`).
   - `bo_users.py` — back-office user creation (standalone + linked). BO permission templates are **not** auto-applied (M2).
   - `sites.py`, `departments.py`, `permissions.py` — HTML parsers for the `/employee/create` form tree.
   - `session.py` — login (`/login_check`, `_username`/`_password`, `PHPSESSID`) + transparent re-auth. `models.py` — pydantic models. `exceptions.py`.

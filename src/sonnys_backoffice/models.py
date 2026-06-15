@@ -300,6 +300,75 @@ class EmployeeModified(_BackofficeBaseModel):
     warnings: list[str] = Field(default_factory=list)
 
 
+class EmployeeSummary(_BackofficeBaseModel):
+    """A lightweight roster row from the employee list page."""
+
+    employee_id: int
+    pos_user_id: int | None = None
+    first_name: str
+    last_name: str
+    phone: str | None = None
+    is_active: bool
+
+
+class WageRecord(_BackofficeBaseModel):
+    """A single wage record from the compensation history."""
+
+    wage_type: str
+    rate: Decimal
+    overtime_eligible: bool
+    overtime_rate: Decimal | None = None
+    effective_date: date | None = None
+    end_date: date | None = None
+    is_current: bool = False
+
+
+class EmployeeCompensation(_BackofficeBaseModel):
+    current: WageRecord | None = None
+    history: list[WageRecord] = Field(default_factory=list)
+
+
+class EmployeePermission(_BackofficeBaseModel):
+    """An employee's current POS permission state.
+
+    Sonny's does not store a clean "current template" — the template dropdown
+    resets to blank after a template is applied, so the grant matrix is the
+    source of truth. ``template_name`` is a best-effort exact match against the
+    tenant's templates; ``is_custom`` is True when the grants match none exactly.
+    """
+
+    template_name: str | None = None
+    is_custom: bool = True
+    granted_permission_ids: frozenset[int] = Field(default_factory=frozenset)
+    override_permission_ids: frozenset[int] = Field(default_factory=frozenset)
+
+
+class EmployeeProfile(_BackofficeBaseModel):
+    """Identity, contact, and assignment fields from the edit page."""
+
+    employee_id: int
+    pos_user_id: int | None = None
+    first_name: str
+    last_name: str
+    email: str | None = None
+    phone: str | None = None
+    departments: list[str] = Field(default_factory=list)
+    available_sites: list[str] | Literal["all"] = Field(default_factory=list)
+    start_date: date | None = None
+    adp_employee_id: str | None = None
+    emergency_contact_name: str | None = None
+    emergency_contact_phone: str | None = None
+    is_active: bool = True
+
+
+class Employee(EmployeeProfile):
+    """Full current-state snapshot: profile + compensation + permission."""
+
+    current_wage: WageRecord | None = None
+    wage_history: list[WageRecord] = Field(default_factory=list)
+    permission: EmployeePermission = Field(default_factory=EmployeePermission)
+
+
 class Region(_BackofficeBaseModel):
     id: int
     name: str

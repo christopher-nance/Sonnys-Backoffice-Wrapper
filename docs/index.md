@@ -46,6 +46,7 @@ with SonnysBackofficeClient(
 - `create_employee` — with or without a linked Backoffice user
 - `modify_employee` — change properties, site availability, compensation, permission template, or active state (incl. reactivating a disabled employee)
 - `disable_employee` — looked up by POS User ID or email
+- `list_employees` / `get_employee` — read the roster and full current state of an employee (profile, pay rate + history, current permission); granular `get_employee_profile` / `get_employee_compensation` / `get_employee_permission` too
 - `create_backoffice_user` — standalone or linked to an existing employee
 - `list_sites`, `list_departments`, `list_permissions` — discovery helpers
 - `is_pos_user_id_available`, `is_email_available`, `is_phone_available` — pre-flight uniqueness checks
