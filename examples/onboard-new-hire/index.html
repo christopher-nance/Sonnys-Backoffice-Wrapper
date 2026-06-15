@@ -1440,7 +1440,7 @@
 <ul>
 <li><code>find_free_pos_id</code> is a defensive pattern — if <code>preferred=50001</code> is already taken (e.g., a previous hire used it), fall back to a random integer. You can customize the range if your organization uses specific POS ID ranges per site or department.</li>
 <li><code>requires_backoffice=True</code> creates the linked BO user in the same call. The library returns the auto-generated password in <code>result.backoffice_password</code> — capture it, because Backoffice won't display it again.</li>
-<li>Always log <code>result.warnings</code>. Permission fallbacks, missed departments, and the BO deferral are surfaced there.</li>
+<li>Always log <code>result.warnings</code>. Missed departments and the BO template deferral are surfaced there. (An unknown permission name raises <code>NotFoundError</code> instead — it isn't a warning.)</li>
 </ul>
 
 

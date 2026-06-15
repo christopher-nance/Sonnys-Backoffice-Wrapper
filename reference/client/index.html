@@ -2012,7 +2012,7 @@ Unknown names raise <code>LookupError</code> before any HTTP call.</p>
             <td>
               <div class="doc-md-description">
                 <p>POS template name. Matched case-insensitively; unknown
-names fall back to <code>"General User"</code> with a warning.</p>
+names raise <code>NotFoundError</code> listing the valid templates.</p>
               </div>
             </td>
             <td>
@@ -2245,6 +2245,17 @@ rejects the form.</p>
               <div class="doc-md-description">
                 <p>If pos_user_id, email, or phone already exists on
 the tenant (pre-flight or server-side).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="sonnys_backoffice.NotFoundError (sonnys_backoffice.exceptions.NotFoundError)" href="../exceptions/#sonnys_backoffice.NotFoundError">NotFoundError</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>permission</code> does not match any template on the
+tenant (no silent fallback).</p>
               </div>
             </td>
           </tr>

@@ -1566,7 +1566,7 @@
 <td><code>str</code></td>
 <td>yes</td>
 <td>—</td>
-<td>Case-insensitive. Unknown names fall back to "General User" with a warning.</td>
+<td>POS template name, case-insensitive. Unknown names raise <code>NotFoundError</code> listing the valid templates (no silent fallback).</td>
 </tr>
 <tr>
 <td><code>departments</code></td>
@@ -1654,11 +1654,11 @@
 <a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">backoffice_user_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>    <span class="c1"># only set when requires_backoffice=True</span>
 <a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">backoffice_username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
 <a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="n">backoffice_password</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>   <span class="c1"># auto-generated if not supplied</span>
-<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="n">permission_applied</span><span class="p">:</span> <span class="nb">str</span>           <span class="c1"># the resolved template name (after fallback)</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="n">permission_applied</span><span class="p">:</span> <span class="nb">str</span>           <span class="c1"># the resolved template name</span>
 <a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="n">sites_granted</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>          <span class="c1"># site names, resolved from available_sites</span>
 <a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="n">departments</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>            <span class="c1"># with Greeter included</span>
 <a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="n">wage_site</span><span class="p">:</span> <span class="nb">str</span>                    <span class="c1"># the wage attribution site name</span>
-<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="n">warnings</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>               <span class="c1"># permission fallback, BO deferral, etc.</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="n">warnings</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>               <span class="c1"># BO template deferral, etc.</span>
 </code></pre></div>
 <p>Always log or persist <code>pos_pin</code> and <code>backoffice_password</code> — Backoffice does not show them again.</p>
 

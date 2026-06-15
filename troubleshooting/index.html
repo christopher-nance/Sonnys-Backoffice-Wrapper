@@ -1602,7 +1602,7 @@
 <p><strong>Fix:</strong> file a bug with the tenant subdomain. This is a structural wrapper issue, not something a retry will fix.</p>
 <h2 id="backofficeservererror-linked-bo-user-creation-requires-the-employee-to-be-active"><code>BackofficeServerError: linked BO user creation requires the employee to be active</code><a class="headerlink" href="#backofficeservererror-linked-bo-user-creation-requires-the-employee-to-be-active" title="Permanent link">&para;</a></h2>
 <p>You're trying to link a BO user to a disabled employee. This is a Sonny's server-side rule — not a library limitation.</p>
-<p><strong>Fix:</strong> re-enable the employee first (manually, via the Backoffice UI — <code>enable_employee</code> is on the Milestone 2 roadmap), then create the linked BO user, then re-disable if needed.</p>
+<p><strong>Fix:</strong> reactivate the employee first with <code>client.modify_employee(pos_user_id=..., activate=True)</code>, then create the linked BO user, then re-disable with <code>disable_employee</code> if needed.</p>
 <h2 id="lookuperror-unknown-site-nolensville"><code>LookupError: Unknown Site: 'Nolensville'</code><a class="headerlink" href="#lookuperror-unknown-site-nolensville" title="Permanent link">&para;</a></h2>
 <p>The site name doesn't exist on the tenant. Site names are case-sensitive and must exactly match the Backoffice UI label.</p>
 <p><strong>Fix:</strong> list the tenant's sites to see valid names:</p>

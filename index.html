@@ -1440,23 +1440,21 @@
 <h2 id="whats-in-the-box">What's in the box<a class="headerlink" href="#whats-in-the-box" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>create_employee</code> — with or without a linked Backoffice user</li>
+<li><code>modify_employee</code> — change properties, site availability, compensation, permission template, or active state (incl. reactivating a disabled employee)</li>
 <li><code>disable_employee</code> — looked up by POS User ID or email</li>
 <li><code>create_backoffice_user</code> — standalone or linked to an existing employee</li>
 <li><code>list_sites</code>, <code>list_departments</code>, <code>list_permissions</code> — discovery helpers</li>
 <li><code>is_pos_user_id_available</code>, <code>is_email_available</code>, <code>is_phone_available</code> — pre-flight uniqueness checks</li>
 <li>Pydantic v2 input validation and typed result objects</li>
 <li>Automatic site/region/district hierarchy detection</li>
-<li>Case-insensitive permission name matching with a "General User" fallback</li>
+<li>Case-insensitive permission name matching (unknown names raise <code>NotFoundError</code> listing the valid templates)</li>
 <li>Transparent session re-authentication on cookie expiration</li>
 </ul>
 <h2 id="status">Status<a class="headerlink" href="#status" title="Permanent link">&para;</a></h2>
 <p>Alpha. The public API is stable for Milestone 1.</p>
 <div class="admonition warning">
-<p class="admonition-title">Milestone 1 limitations</p>
-<ul>
-<li><code>modify_employee</code> is deliberately not included — different fields live behind different Backoffice URLs and deserve targeted functions. Deferred to a later release.</li>
-<li><strong>Backoffice user permission template assignment is deferred to Milestone 2.</strong> <code>create_backoffice_user</code> (and the linked path of <code>create_employee</code>) creates the account successfully, but the caller must assign the template manually via the Backoffice UI (shield icon on the user list). See <a href="guides/create-backoffice-user/">Creating a Backoffice user</a>.</li>
-</ul>
+<p class="admonition-title">Known limitation</p>
+<p><strong>Backoffice user permission template assignment is deferred to Milestone 2.</strong> <code>create_backoffice_user</code> (and the linked path of <code>create_employee</code>) creates the account successfully, but the caller must assign the template manually via the Backoffice UI (shield icon on the user list). See <a href="guides/create-backoffice-user/">Creating a Backoffice user</a>.</p>
 </div>
 
 

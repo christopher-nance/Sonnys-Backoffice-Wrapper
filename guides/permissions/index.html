@@ -861,10 +861,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#unknown-name-fallback" class="md-nav__link">
+  <a href="#unknown-name-raises" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Unknown name fallback
+        Unknown name raises
       
     </span>
   </a>
@@ -1380,10 +1380,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#unknown-name-fallback" class="md-nav__link">
+  <a href="#unknown-name-raises" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Unknown name fallback
+        Unknown name raises
       
     </span>
   </a>
@@ -1484,22 +1484,18 @@
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="n">permission</span><span class="o">=</span><span class="s2">&quot;MANAGER&quot;</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">permission</span><span class="o">=</span><span class="s2">&quot;mAnAgEr&quot;</span>
 </code></pre></div>
-<h2 id="unknown-name-fallback">Unknown name fallback<a class="headerlink" href="#unknown-name-fallback" title="Permanent link">&para;</a></h2>
-<p>If you pass a template name the tenant doesn't have, the library:</p>
-<ol>
-<li>Emits a Python <code>UserWarning</code> with the mismatch details.</li>
-<li>Falls back to <code>General User</code>.</li>
-<li>Adds a message to <code>result.warnings</code> so you can see the fallback in your logs.</li>
-</ol>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">create_employee</span><span class="p">(</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="o">...</span><span class="p">,</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">permission</span><span class="o">=</span><span class="s2">&quot;SuperAdmin&quot;</span><span class="p">,</span>  <span class="c1"># not a real template</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">)</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">warnings</span><span class="p">:</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># -&gt; &quot;permission &#39;SuperAdmin&#39; not found in tenant, falling back to &#39;General User&#39;&quot;</span>
+<h2 id="unknown-name-raises">Unknown name raises<a class="headerlink" href="#unknown-name-raises" title="Permanent link">&para;</a></h2>
+<p>If you pass a template name the tenant doesn't have, the library raises <code>NotFoundError</code> <strong>before</strong> any record is created or modified — the message lists every valid template so you can correct the call:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">sonnys_backoffice</span><span class="w"> </span><span class="kn">import</span> <span class="n">NotFoundError</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">try</span><span class="p">:</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="n">client</span><span class="o">.</span><span class="n">create_employee</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">permission</span><span class="o">=</span><span class="s2">&quot;SuperAdmin&quot;</span><span class="p">)</span>  <span class="c1"># not a real template</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">except</span> <span class="n">NotFoundError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="c1"># -&gt; &quot;permission template &#39;SuperAdmin&#39; not found on this tenant.</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="c1">#     Available templates: [&#39;Manager&#39;, &#39;Cashier&#39;, &#39;General User&#39;, ...]&quot;</span>
 </code></pre></div>
-<p>The fallback only works if <code>General User</code> itself exists on the tenant. If it doesn't (unusual but possible on a heavily customized tenant), the call raises <code>ValueError</code> with instructions to check the tenant's role configuration.</p>
+<p>This is a deliberate change from early alpha, which silently fell back to <code>General User</code> — quietly granting the wrong access is worse than failing loudly. Discover valid names up front with <code>client.list_permissions(scope="pos")</code> (or <code>scope="backoffice"</code>).</p>
 <h2 id="inspecting-templates">Inspecting templates<a class="headerlink" href="#inspecting-templates" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">list_permissions</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;pos&quot;</span><span class="p">):</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;grants:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">grants</span><span class="p">),</span> <span class="s2">&quot;overrides:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">overrides</span><span class="p">))</span>
@@ -1509,10 +1505,10 @@
 </code></pre></div>
 <p><code>list_permissions</code> returns a list of <code>Permission</code> domain objects. For POS templates, each one carries <code>grants</code> (a <code>frozenset[int]</code> of permission IDs the template enables) and <code>overrides</code> (IDs that require manager approval). The BO template list is name-only in Milestone 1 — see the M1 deferral note below.</p>
 <h2 id="linked-employee-bo-user-permission-matching">Linked employee + BO user permission matching<a class="headerlink" href="#linked-employee-bo-user-permission-matching" title="Permanent link">&para;</a></h2>
-<p>When you create an employee with <code>requires_backoffice=True</code>, the <code>permission</code> parameter is used for <strong>both</strong> the POS side and the BO side. The name is looked up in the POS template list <em>and</em> the BO template list separately. If either side fails to match, the respective side falls back to <code>General User</code> with a warning.</p>
+<p>When you create an employee with <code>requires_backoffice=True</code>, the <code>permission</code> parameter is used for <strong>both</strong> the POS side and the BO side. The name is looked up in the POS template list <em>and</em> the BO template list separately. If either side fails to match, that lookup raises <code>NotFoundError</code>.</p>
 <div class="admonition tip">
 <p class="admonition-title">Use matching template names</p>
-<p>For linked employee+BO users, pick a template name that exists on both sides. "Manager" and "General User" are safe on every tenant. "Administrator" is safe for BO but is not a POS template on most tenants — passing <code>permission="Administrator"</code> for a linked user will fall back to <code>General User</code> on the POS side.</p>
+<p>For linked employee+BO users, pick a template name that exists on both sides. "Manager" and "General User" are safe on every tenant. "Administrator" is safe for BO but is not a POS template on most tenants — passing <code>permission="Administrator"</code> for a linked user will raise <code>NotFoundError</code> on the POS side.</p>
 </div>
 <h2 id="pos-step-2-form-requires-the-full-matrix">POS step-2 form requires the full matrix<a class="headerlink" href="#pos-step-2-form-requires-the-full-matrix" title="Permanent link">&para;</a></h2>
 <p>A Phase 1 exploration finding: the <code>/employee/permissions/update</code> endpoint accepts a minimal <code>templateId</code>-only payload with HTTP 302, but silently has no effect. The server requires you to submit the <em>entire</em> permission matrix (one <code>permissions[N][id]</code> + <code>permissions[N][label]</code> + <code>permissions[N][description]</code> block per permission in the tenant's system, plus <code>hasGrantAccess=1</code> flags on the template's granted IDs and <code>requiresOverride=1</code> flags on its overrides).</p>

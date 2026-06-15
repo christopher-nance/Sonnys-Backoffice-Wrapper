@@ -1537,9 +1537,10 @@
 </code></pre></div>
 <h3 id="notfounderror"><code>NotFoundError</code><a class="headerlink" href="#notfounderror" title="Permanent link">&para;</a></h3>
 <p>A lookup didn't match. Raised by:
-- <code>disable_employee(pos_user_id=...)</code> when no employee has that POS User ID.
+- <code>disable_employee(pos_user_id=...)</code> / <code>modify_employee(...)</code> when no employee has that POS User ID.
 - <code>disable_employee(email=...)</code> when the email isn't in the employee list's visible columns (see <a href="../disable-employee/#email-lookup-caveat">Disabling an Employee</a>).
-- <code>create_backoffice_user(link_to_employee_pos_user_id=...)</code> when the employee doesn't exist.</p>
+- <code>create_backoffice_user(link_to_employee_pos_user_id=...)</code> when the employee doesn't exist.
+- <code>create_employee</code> / <code>modify_employee</code> when the <code>permission</code> name doesn't match any template on the tenant (no silent fallback — the message lists the valid templates).</p>
 <p><strong>Recovery:</strong> inspect the key, double-check the tenant has the record, retry with a corrected lookup.</p>
 <h3 id="validationerror"><code>ValidationError</code><a class="headerlink" href="#validationerror" title="Permanent link">&para;</a></h3>
 <p>Caller input violated a constraint <em>or</em> Backoffice rejected the submitted payload. Common causes:</p>
@@ -1566,10 +1567,11 @@
 <h2 id="warnings-vs-exceptions">Warnings vs exceptions<a class="headerlink" href="#warnings-vs-exceptions" title="Permanent link">&para;</a></h2>
 <p>Things that are non-fatal go into <code>result.warnings</code> as strings, not exceptions. Examples:</p>
 <ul>
-<li>Permission name fallback to General User.</li>
 <li>Department name that didn't match any known department (silently dropped).</li>
+<li>A requested <code>wage_effective_date</code> clamped up to the earliest legal date.</li>
 <li>Milestone 1 BO permission template deferral notice.</li>
 </ul>
+<p>(An unknown <code>permission</code> name is <strong>not</strong> a warning — it raises <code>NotFoundError</code>.)</p>
 <p>Always log <code>result.warnings</code> after a successful create — they're how the library tells you "something unexpected happened but I made a reasonable choice."</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">create_employee</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 <a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">warnings</span><span class="p">:</span>
