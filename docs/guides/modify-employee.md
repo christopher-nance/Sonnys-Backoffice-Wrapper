@@ -23,7 +23,7 @@ with SonnysBackofficeClient(
 
 ## Change compensation
 
-Creates a new wage record effective today:
+A pay change creates a **new** wage record (the old one is given an end date — the rate history is preserved):
 
 ```python
 from decimal import Decimal
@@ -32,7 +32,9 @@ result = client.modify_employee(
     pos_user_id=12345,
     wage_rate=Decimal("25.00"),
 )
-# If the employee is overtime-eligible, overtime auto-computes to 1.5x
+print(result.wage_effective_date)   # the date the new rate took effect
+# Overtime eligibility is preserved from the current rate; if eligible and you
+# don't pass overtime_wage_rate, overtime auto-computes to 1.5x the new rate.
 ```
 
 To set overtime explicitly:
@@ -43,6 +45,38 @@ result = client.modify_employee(
     wage_rate=Decimal("25.00"),
     overtime_wage_rate=Decimal("40.00"),
 )
+```
+
+### Effective date rule
+
+A new wage record must be effective **strictly after** the most recent existing rate's effective date. The wrapper handles this for you: the new rate defaults to **`max(today, most_recent_effective_date + 1 day)`** — i.e. effective today in the normal case, but automatically rolled forward to the earliest legal date when the current rate is *also* effective today (which happens, for example, if you change pay the same day you created the employee). The applied date is returned in `result.wage_effective_date`.
+
+You can request a specific effective date — useful for backdating a raise:
+
+```python
+from datetime import datetime
+
+result = client.modify_employee(
+    pos_user_id=12345,
+    wage_rate=Decimal("25.00"),
+    wage_effective_date=datetime(2026, 6, 14),
+)
+```
+
+If the date you ask for is on or before the most recent rate's effective date, it's clamped up to the earliest legal date and a note is added to `result.warnings`.
+
+## Reactivate or deactivate
+
+Pass `activate=True` to bring a disabled employee back, or `activate=False` to deactivate (equivalent to `disable_employee`). It can be combined with any other change in the same call:
+
+```python
+# Reactivate a former employee and restrict them to one site in one call
+result = client.modify_employee(
+    pos_user_id=12345,
+    activate=True,
+    available_sites=["WashU Niles"],
+)
+print(result.changes_applied)   # ["properties", "activated"]
 ```
 
 ## Change site availability

@@ -30,3 +30,7 @@ site/
 # Playwright
 .playwright/
 test-results/
+
+# Secrets / local env
+.env
+.env.*

@@ -393,7 +393,9 @@ class SonnysBackofficeClient:
         emergency_contact_phone: str | None = None,
         wage_rate: Decimal | float | None = None,
         overtime_wage_rate: Decimal | float | None = None,
+        wage_effective_date: datetime | None = None,
         permission: str | None = None,
+        activate: bool | None = None,
     ) -> EmployeeModified:
         """Modify an existing employee's properties, compensation, or permission template.
 
@@ -434,8 +436,17 @@ class SonnysBackofficeClient:
             overtime_wage_rate: New overtime hourly wage.  If omitted when
                 ``wage_rate`` is provided and the employee is currently
                 overtime-eligible, overtime is auto-computed at 1.5×.
+            wage_effective_date: Effective date for the new wage record. A new
+                rate must be effective strictly after the most recent existing
+                rate, so this defaults to ``max(today, most_recent + 1 day)``.
+                A supplied date earlier than that minimum is clamped up to it
+                (with a warning). Only used when ``wage_rate`` is provided.
             permission: POS template name.  Matched case-insensitively;
                 unknown names fall back to ``"General User"`` with a warning.
+            activate: ``True`` reactivates a disabled employee; ``False``
+                deactivates (like ``disable_employee``); ``None`` (default)
+                leaves the active/inactive state unchanged. Can be combined
+                with other changes (e.g. reactivate and set sites in one call).
 
         Returns:
             EmployeeModified: Confirmation of which forms were submitted and
@@ -465,7 +476,9 @@ class SonnysBackofficeClient:
             overtime_wage_rate=Decimal(str(overtime_wage_rate))
             if overtime_wage_rate is not None
             else None,
+            wage_effective_date=wage_effective_date,
             permission=permission,
+            activate=activate,
         )
 
         need_departments = req.departments is not None
@@ -491,9 +504,7 @@ class SonnysBackofficeClient:
             site_tree=self._site_tree if need_sites else None,
             departments=self._departments if need_departments else None,
             pos_permissions=self._pos_permissions if need_permissions else None,
-            pos_permission_schema=self._pos_permission_schema
-            if need_permissions
-            else None,
+            pos_permission_schema=self._pos_permission_schema if need_permissions else None,
         )
 
         self._employee_index = None

@@ -126,22 +126,25 @@ def test_adp_id_omitted_when_none():
 
 
 def test_hierarchical_tenant_specific_site_selection():
-    req = _sample_request(available_sites=["Wash 37135"])
+    req = _sample_request(available_sites=["Wash 37135"])  # site 17 granted, site 1 not
     payload = build_employee_step1_payload(
         req,
         site_tree=_hierarchical_tree(),
         departments_by_name={"Cashier": 1, "Greeter": 3},
         wage_site_id=17,
     )
-    assert payload["employee[isAllRegionsAllowed]"] == "0"
-    # Region 2 disabled, region 1 enabled
-    assert 2 in payload["employee[disabledRegions][]"]
-    assert 1 not in payload["employee[disabledRegions][]"]
-    # Site 17 enabled, Site 1 disabled
-    assert payload["employee[sites][17][isAvailable]"] == "1"
-    assert payload["employee[sites][1][isAvailable]"] == "0"
-    assert payload["employee[sites][17][siteId]"] == "17"
+    # The all-regions flag must be OMITTED entirely (Symfony presence-binds it
+    # true; sending "0" grants everything). Verified live against WashU.
+    assert "employee[isAllRegionsAllowed]" not in payload
+    # A site is disabled by submitting only its siteId; granted sites are not
+    # mentioned. Site 1 is the complement → disabled; site 17 → unmentioned.
     assert payload["employee[sites][1][siteId]"] == "1"
+    assert "employee[sites][17][siteId]" not in payload
+    # No isAvailable fields are emitted at all.
+    assert not any("isAvailable" in k for k in payload)
+    # No region/district disable flags either.
+    assert "employee[disabledRegions][]" not in payload
+    assert "employee[disabledDistricts][]" not in payload
 
 
 def test_hierarchical_tenant_all_sites():

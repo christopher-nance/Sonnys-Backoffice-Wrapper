@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.3.0 — 2026-06-15
+
+### Features
+
+- **`modify_employee(activate=...)`** — reactivate a disabled employee (`activate=True`) or deactivate one (`activate=False`) via the `employee[isActive]` presence semantics. Composes with any other change, so you can reactivate and (re)assign sites/pay/permission in a single call.
+- **`modify_employee(wage_effective_date=...)`** and **`EmployeeModified.wage_effective_date`** — control and report the effective date of a pay change (see bug fixes below for the rule).
+
+### Bug fixes
+
+- **Hierarchical site restriction now works.** `create_employee` and `modify_employee` previously sent `employee[isAllRegionsAllowed]=0` plus per-site `isAvailable` flags when restricting to specific sites on a hierarchical tenant. Because the Backoffice form binds checkbox *presence* as true, this silently granted **all** regions/sites. Both paths now omit the flag and submit the *complement* of the granted sites by `siteId` only — verified live to grant exactly the requested sites.
+- **Pay-rate changes effective the same day now apply.** A new wage record must be effective strictly after the most recent rate's effective date; the previous code defaulted to today, so changing pay the same day an employee was created (or last raised) silently kept the old rate. The effective date now defaults to `max(today, most_recent + 1 day)`.
+- **Overtime eligibility is preserved on pay changes.** `modify_employee` read overtime-eligibility from the always-blank "add wage" form, which dropped eligibility on every raise. It now reads the employee's current wage record and preserves eligibility (recomputing overtime at 1.5× when not explicitly provided).
+
 ## v0.2.0 — 2026-05-08 (Phase 1 Complete)
 
 ### Features

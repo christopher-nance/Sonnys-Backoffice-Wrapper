@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 from typing import Literal
 
@@ -144,8 +144,11 @@ class ModifyEmployeeRequest(_BackofficeBaseModel):
 
     wage_rate: Decimal | None = None
     overtime_wage_rate: Decimal | None = None
+    wage_effective_date: datetime | None = None
 
     permission: str | None = None
+
+    activate: bool | None = None
 
     @field_validator("available_sites", mode="before")
     @classmethod
@@ -189,20 +192,23 @@ class ModifyEmployeeRequest(_BackofficeBaseModel):
         provided = [x for x in (self.pos_user_id, self.email) if x is not None]
         if len(provided) != 1:
             raise ValueError("exactly one of pos_user_id or email is required as lookup key")
-        has_any = any([
-            self.first_name is not None,
-            self.last_name is not None,
-            self.phone is not None,
-            self.new_email is not None,
-            self.departments is not None,
-            self.available_sites is not None,
-            self.adp_employee_id is not None,
-            self.emergency_contact_name is not None,
-            self.emergency_contact_phone is not None,
-            self.wage_rate is not None,
-            self.overtime_wage_rate is not None,
-            self.permission is not None,
-        ])
+        has_any = any(
+            [
+                self.first_name is not None,
+                self.last_name is not None,
+                self.phone is not None,
+                self.new_email is not None,
+                self.departments is not None,
+                self.available_sites is not None,
+                self.adp_employee_id is not None,
+                self.emergency_contact_name is not None,
+                self.emergency_contact_phone is not None,
+                self.wage_rate is not None,
+                self.overtime_wage_rate is not None,
+                self.permission is not None,
+                self.activate is not None,
+            ]
+        )
         if not has_any:
             raise ValueError("at least one change field must be provided")
         return self
@@ -290,6 +296,7 @@ class EmployeeModified(_BackofficeBaseModel):
     changes_applied: list[str]
     permission_applied: str | None = None
     wage_rate: Decimal | None = None
+    wage_effective_date: date | None = None
     warnings: list[str] = Field(default_factory=list)
 
 

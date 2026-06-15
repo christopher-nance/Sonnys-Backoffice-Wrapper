@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any
 
@@ -227,30 +227,24 @@ def build_employee_step1_payload(
     payload["employee[departments][]"] = dept_ids
 
     resolved_sites = site_tree.resolve_all(request.available_sites)
+    enabled_ids = {s.id for s in resolved_sites}
     if site_tree.is_hierarchical:
-        enabled_region_ids = {s.region_id for s in resolved_sites if s.region_id}
-        enabled_district_ids = {s.district_id for s in resolved_sites if s.district_id}
         if request.available_sites == "all":
             payload["employee[isAllRegionsAllowed]"] = "1"
         else:
-            payload["employee[isAllRegionsAllowed]"] = "0"
-            payload["employee[disabledRegions][]"] = [
-                r.id for r in site_tree.regions if r.id not in enabled_region_ids
-            ]
-            payload["employee[disabledDistricts][]"] = [
-                d.id for d in site_tree.districts if d.id not in enabled_district_ids
-            ]
-            enabled_site_ids = {s.id for s in resolved_sites}
+            # `employee[isAllRegionsAllowed]` is OMITTED on purpose: Symfony binds
+            # checkbox *presence* as true regardless of value, so sending "0" would
+            # grant all regions (the same gotcha disable_employee handles for
+            # isActive). A site is marked unavailable by submitting only its
+            # `siteId`; sites left unmentioned stay available. So we list the
+            # complement (every non-granted site) to disable it.
             for s in site_tree.sites:
-                payload[f"employee[sites][{s.id}][isAvailable]"] = (
-                    "1" if s.id in enabled_site_ids else "0"
-                )
-                payload[f"employee[sites][{s.id}][siteId]"] = str(s.id)
+                if s.id not in enabled_ids:
+                    payload[f"employee[sites][{s.id}][siteId]"] = str(s.id)
     else:
         if request.available_sites == "all":
             payload["employee[isAllSitesAllowed]"] = "1"
         else:
-            enabled_ids = {s.id for s in resolved_sites}
             payload["employee[siteIds][]"] = [
                 s.id for s in site_tree.sites if s.id not in enabled_ids
             ]
@@ -416,6 +410,50 @@ _EDIT_FORM_RE = re.compile(r"/employee/update")
 _COMP_FORM_RE = re.compile(r"/employee/compensation/update")
 
 
+def _latest_wage_effective_date(html: str) -> date | None:
+    """Return the most recent effective date in the compensation history table.
+
+    A new wage record must be effective strictly after the most recent existing
+    record's effective date, so callers use this to compute the earliest legal
+    effective date (``latest + 1 day``).
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find("table", class_="table-employee-compensation-history")
+    if table is None:
+        return None
+    latest: date | None = None
+    for td in table.find_all("td", class_="employee-compensation-col-effective-date"):
+        text = td.get_text(strip=True)
+        try:
+            parsed = datetime.strptime(text, "%m/%d/%Y").date()
+        except ValueError:
+            continue
+        if latest is None or parsed > latest:
+            latest = parsed
+    return latest
+
+
+def _current_wage_overtime_eligible(html: str) -> bool | None:
+    """Whether the employee's current wage record is overtime-eligible.
+
+    Reads the active row (the one with no end date) of the compensation history
+    table. Returns None if no current row is found.
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    table = soup.find("table", class_="table-employee-compensation-history")
+    if table is None or table.find("tbody") is None:
+        return None
+    for tr in table.find("tbody").find_all("tr"):
+        end_cell = tr.find("td", class_="employee-compensation-col-end-date")
+        if end_cell is None or end_cell.get_text(strip=True):
+            continue  # ended row — skip; we want the active (no end date) one
+        ot_cell = tr.find("td", class_="employee-compensation-col-overtime-eligible")
+        if ot_cell is None:
+            return None
+        return ot_cell.find("i", class_="fa-check") is not None
+    return None
+
+
 def _parse_form_into_payload(
     html: str,
     *,
@@ -553,9 +591,12 @@ def _build_site_availability_fields(
 ) -> list[tuple[str, str]]:
     """Build site availability fields for a hierarchical or flat tenant.
 
-    For hierarchical tenants the server uses ``employee[sites][N][siteId]``
-    **presence** to determine availability (matching browser behaviour, not
-    the ``isAvailable`` checkbox which is a JS-only UI control).
+    Encoding (verified live against the WashU tenant): the "all-regions" flag is
+    OMITTED when restricting (Symfony binds checkbox *presence* as true, so
+    sending it at all grants everything). A site is marked **unavailable** by
+    submitting only its ``employee[sites][N][siteId]``; sites left unmentioned
+    stay available. So we submit the *complement* — every non-granted site — to
+    disable it, and say nothing about the granted ones.
     """
     resolved = site_tree.resolve_all(available_sites)
     fields: list[tuple[str, str]] = []
@@ -570,15 +611,10 @@ def _build_site_availability_fields(
     enabled_ids = {s.id for s in resolved}
 
     if site_tree.is_hierarchical:
-        enabled_region_ids = {s.region_id for s in resolved if s.region_id}
-        for r in site_tree.regions:
-            if r.id not in enabled_region_ids:
-                fields.append(("employee[disabledRegions][]", str(r.id)))
         for s in site_tree.sites:
-            if s.id in enabled_ids:
+            if s.id not in enabled_ids:
                 fields.append((f"employee[sites][{s.id}][siteId]", str(s.id)))
     else:
-        enabled_ids = {s.id for s in resolved}
         for s in site_tree.sites:
             if s.id not in enabled_ids:
                 fields.append(("employee[siteIds][]", str(s.id)))
@@ -661,13 +697,21 @@ def modify_employee(
     """
     changes_applied: list[str] = []
     warnings_list: list[str] = []
+    wage_effective: date | None = None
 
     has_property = any(
         getattr(request, attr) is not None
         for attr in (
-            "first_name", "last_name", "phone", "new_email",
-            "departments", "available_sites", "adp_employee_id",
-            "emergency_contact_name", "emergency_contact_phone",
+            "first_name",
+            "last_name",
+            "phone",
+            "new_email",
+            "departments",
+            "available_sites",
+            "adp_employee_id",
+            "emergency_contact_name",
+            "emergency_contact_phone",
+            "activate",
         )
     )
 
@@ -675,7 +719,8 @@ def modify_employee(
         edit_resp = session.get(f"/employee/edit/{employee_id}")
         _check_create_response(edit_resp)
         payload = _parse_form_into_payload(
-            edit_resp.text, form_action_re=_EDIT_FORM_RE,
+            edit_resp.text,
+            form_action_re=_EDIT_FORM_RE,
         )
 
         overrides: dict[str, str | list[str]] = {}
@@ -696,12 +741,16 @@ def modify_employee(
 
         if request.available_sites is not None and site_tree is not None:
             payload = [
-                (n, v) for n, v in payload
-                if not any(n.startswith(p) for p in _SITE_FIELD_PREFIXES)
+                (n, v) for n, v in payload if not any(n.startswith(p) for p in _SITE_FIELD_PREFIXES)
             ]
-            payload.extend(
-                _build_site_availability_fields(site_tree, request.available_sites)
-            )
+            payload.extend(_build_site_availability_fields(site_tree, request.available_sites))
+
+        if request.activate is not None:
+            # Symfony binds checkbox presence as true, so reactivating means
+            # emitting employee[isActive]=1; deactivating means omitting it.
+            payload = [(n, v) for n, v in payload if n != "employee[isActive]"]
+            if request.activate:
+                payload.append(("employee[isActive]", "1"))
 
         if not any(name == "employee[id]" for name, _ in payload):
             payload.append(("employee[id]", str(employee_id)))
@@ -709,31 +758,62 @@ def modify_employee(
         resp = session.post("/employee/update", data=payload, allow_redirects=False)
         _check_create_response(resp)
         changes_applied.append("properties")
+        if request.activate is not None:
+            changes_applied.append("activated" if request.activate else "deactivated")
 
     if request.wage_rate is not None:
         comp_resp = session.get(f"/employee/compensation/{employee_id}")
         _check_create_response(comp_resp)
         payload = _parse_form_into_payload(
-            comp_resp.text, form_action_re=_COMP_FORM_RE,
+            comp_resp.text,
+            form_action_re=_COMP_FORM_RE,
         )
+
+        # The new wage record must be effective strictly after the most recent
+        # existing record's effective date (else it silently fails to apply).
+        # Default to today, but roll forward to latest+1 day on a same-day
+        # collision. A caller-supplied date is clamped up to that minimum.
+        today = datetime.now().date()
+        latest_effective = _latest_wage_effective_date(comp_resp.text)
+        min_effective = (latest_effective + timedelta(days=1)) if latest_effective else today
+        desired = request.wage_effective_date.date() if request.wage_effective_date else today
+        effective = max(desired, min_effective)
+        wage_effective = effective
+        if request.wage_effective_date and effective != desired:
+            warnings_list.append(
+                f"wage_effective_date {desired:%m/%d/%Y} is on/before the most recent "
+                f"rate ({latest_effective:%m/%d/%Y}); clamped to {effective:%m/%d/%Y}"
+            )
 
         comp_overrides: dict[str, str | list[str]] = {
             "wage[regularRate]": f"{request.wage_rate:.2f}",
+            "wage[effectiveDate]": effective.strftime("%m/%d/%Y"),
         }
 
-        ot_eligible = any(name == "wage[isOvertimeEligible]" for name, _ in payload)
+        # Preserve the employee's current overtime eligibility. The blank
+        # "add wage" form always reports not-eligible, so read it from the
+        # active wage row instead of the parsed form.
+        ot_eligible = _current_wage_overtime_eligible(comp_resp.text)
+        if ot_eligible is None:
+            ot_eligible = any(name == "wage[isOvertimeEligible]" for name, _ in payload)
         if request.overtime_wage_rate is not None:
             comp_overrides["wage[overtimeRate]"] = f"{request.overtime_wage_rate:.2f}"
-            if not ot_eligible:
-                payload.append(("wage[isOvertimeEligible]", "1"))
+            ot_eligible = True
         elif ot_eligible:
             ot = (request.wage_rate * Decimal("1.5")).quantize(Decimal("0.01"))
             comp_overrides["wage[overtimeRate]"] = f"{ot:.2f}"
 
+        # Re-emit the eligibility flag explicitly (presence = true in Symfony).
+        payload = [(n, v) for n, v in payload if n != "wage[isOvertimeEligible]"]
+        if ot_eligible:
+            payload.append(("wage[isOvertimeEligible]", "1"))
+
         payload = _overlay_payload(payload, comp_overrides)
 
         resp = session.post(
-            "/employee/compensation/update", data=payload, allow_redirects=False,
+            "/employee/compensation/update",
+            data=payload,
+            allow_redirects=False,
         )
         _check_create_response(resp)
         changes_applied.append("compensation")
@@ -743,7 +823,8 @@ def modify_employee(
         from .permissions import resolve_permission
 
         perm, perm_warnings = resolve_permission(
-            request.permission, pos_permissions or [],
+            request.permission,
+            pos_permissions or [],
         )
         warnings_list.extend(perm_warnings)
         perm_payload = build_employee_step2_permissions_payload(
@@ -761,5 +842,6 @@ def modify_employee(
         changes_applied=changes_applied,
         permission_applied=perm_applied,
         wage_rate=request.wage_rate,
+        wage_effective_date=wage_effective,
         warnings=warnings_list,
     )

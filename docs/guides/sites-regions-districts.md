@@ -33,6 +33,17 @@ result = client.create_employee(
 
 On a flat tenant this sends `employee[isAllSitesAllowed]=1`. On a hierarchical tenant it sends `employee[isAllRegionsAllowed]=1`, which cascades down to every district and site.
 
+## Restricting to specific sites
+
+When you pass a list of site names (rather than `"all"`), the wrapper grants exactly those sites and no others — verified live against a hierarchical tenant.
+
+The encoding is subtle, so the wrapper hides it for you:
+
+- **Flat tenants** use a *blocklist*: `employee[siteIds][]` lists the sites to **exclude**.
+- **Hierarchical tenants** also work by exclusion. The `employee[isAllRegionsAllowed]` flag is **omitted entirely** (the Backoffice form binds a checkbox's mere *presence* as "true", so sending it — even as `0` — would grant every region). Each non-granted site is then marked unavailable by submitting only its `employee[sites][N][siteId]`; sites left unmentioned stay available. In other words, the wrapper submits the *complement* of your requested list.
+
+This is the same "presence = true" gotcha that `disable_employee` works around for `employee[isActive]`.
+
 ## Unknown site names
 
 Passing a site name the tenant doesn't have raises `LookupError` immediately — the wrapper does not silently drop unknown names, because that would mean creating an employee with narrower access than the caller asked for. Instead, you get a clear error before any HTTP call is made.
