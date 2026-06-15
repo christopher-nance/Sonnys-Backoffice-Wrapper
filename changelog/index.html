@@ -662,6 +662,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../guides/read-employees/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading employees
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../guides/modify-employee/" class="md-nav__link">
         
   
@@ -1242,6 +1270,34 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v040-2026-06-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.4.0 — 2026-06-15
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.4.0 — 2026-06-15">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features-employee-read-surface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features — employee read surface
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v030-2026-06-15" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1404,6 +1460,34 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v040-2026-06-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.4.0 — 2026-06-15
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.4.0 — 2026-06-15">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features-employee-read-surface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features — employee read surface
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v030-2026-06-15" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1552,6 +1636,16 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v040-2026-06-15">v0.4.0 — 2026-06-15<a class="headerlink" href="#v040-2026-06-15" title="Permanent link">&para;</a></h2>
+<h3 id="features-employee-read-surface">Features — employee read surface<a class="headerlink" href="#features-employee-read-surface" title="Permanent link">&para;</a></h3>
+<p>The wrapper is now a full read/write interface, not just write. All reads are live (uncached).</p>
+<ul>
+<li><strong><code>list_employees(active="active"|"inactive"|"all")</code></strong> — lightweight roster rows (<code>EmployeeSummary</code>) in one request.</li>
+<li><strong><code>get_employee(pos_user_id=… | email=…)</code></strong> — full current-state snapshot (<code>Employee</code>): identity, contact, departments, sites, active state, current wage + full wage history, and current permission level.</li>
+<li><strong>Granular getters</strong> — <code>get_employee_profile</code> (<code>EmployeeProfile</code>), <code>get_employee_compensation</code> (<code>EmployeeCompensation</code> with <code>current</code> + <code>history</code>), <code>get_employee_permission</code> (<code>EmployeePermission</code>) — fetch only the slice a screen needs.</li>
+<li>New read models: <code>EmployeeSummary</code>, <code>Employee</code>, <code>EmployeeProfile</code>, <code>EmployeeCompensation</code>, <code>WageRecord</code>, <code>EmployeePermission</code>.</li>
+<li><code>EmployeePermission.template_name</code> is a best-effort exact match of the employee's granted permission IDs against the tenant's templates (Sonny's doesn't store a clean "current template"); <code>is_custom</code> + the raw grant/override ID sets are exposed for customized employees.</li>
+</ul>
 <h2 id="v030-2026-06-15">v0.3.0 — 2026-06-15<a class="headerlink" href="#v030-2026-06-15" title="Permanent link">&para;</a></h2>
 <h3 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h3>
 <ul>
