@@ -36,25 +36,22 @@ permission="MANAGER"
 permission="mAnAgEr"
 ```
 
-## Unknown name fallback
+## Unknown name raises
 
-If you pass a template name the tenant doesn't have, the library:
-
-1. Emits a Python `UserWarning` with the mismatch details.
-2. Falls back to `General User`.
-3. Adds a message to `result.warnings` so you can see the fallback in your logs.
+If you pass a template name the tenant doesn't have, the library raises `NotFoundError` **before** any record is created or modified — the message lists every valid template so you can correct the call:
 
 ```python
-result = client.create_employee(
-    ...,
-    permission="SuperAdmin",  # not a real template
-)
-for w in result.warnings:
-    print(w)
-# -> "permission 'SuperAdmin' not found in tenant, falling back to 'General User'"
+from sonnys_backoffice import NotFoundError
+
+try:
+    client.create_employee(..., permission="SuperAdmin")  # not a real template
+except NotFoundError as e:
+    print(e)
+    # -> "permission template 'SuperAdmin' not found on this tenant.
+    #     Available templates: ['Manager', 'Cashier', 'General User', ...]"
 ```
 
-The fallback only works if `General User` itself exists on the tenant. If it doesn't (unusual but possible on a heavily customized tenant), the call raises `ValueError` with instructions to check the tenant's role configuration.
+This is a deliberate change from early alpha, which silently fell back to `General User` — quietly granting the wrong access is worse than failing loudly. Discover valid names up front with `client.list_permissions(scope="pos")` (or `scope="backoffice"`).
 
 ## Inspecting templates
 
@@ -70,10 +67,10 @@ for p in client.list_permissions(scope="backoffice"):
 
 ## Linked employee + BO user permission matching
 
-When you create an employee with `requires_backoffice=True`, the `permission` parameter is used for **both** the POS side and the BO side. The name is looked up in the POS template list *and* the BO template list separately. If either side fails to match, the respective side falls back to `General User` with a warning.
+When you create an employee with `requires_backoffice=True`, the `permission` parameter is used for **both** the POS side and the BO side. The name is looked up in the POS template list *and* the BO template list separately. If either side fails to match, that lookup raises `NotFoundError`.
 
 !!! tip "Use matching template names"
-    For linked employee+BO users, pick a template name that exists on both sides. "Manager" and "General User" are safe on every tenant. "Administrator" is safe for BO but is not a POS template on most tenants — passing `permission="Administrator"` for a linked user will fall back to `General User` on the POS side.
+    For linked employee+BO users, pick a template name that exists on both sides. "Manager" and "General User" are safe on every tenant. "Administrator" is safe for BO but is not a POS template on most tenants — passing `permission="Administrator"` for a linked user will raise `NotFoundError` on the POS side.
 
 ## POS step-2 form requires the full matrix
 

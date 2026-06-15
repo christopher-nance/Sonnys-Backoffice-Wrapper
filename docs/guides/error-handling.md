@@ -67,9 +67,10 @@ for attempt in range(5):
 ### `NotFoundError`
 
 A lookup didn't match. Raised by:
-- `disable_employee(pos_user_id=...)` when no employee has that POS User ID.
+- `disable_employee(pos_user_id=...)` / `modify_employee(...)` when no employee has that POS User ID.
 - `disable_employee(email=...)` when the email isn't in the employee list's visible columns (see [Disabling an Employee](disable-employee.md#email-lookup-caveat)).
 - `create_backoffice_user(link_to_employee_pos_user_id=...)` when the employee doesn't exist.
+- `create_employee` / `modify_employee` when the `permission` name doesn't match any template on the tenant (no silent fallback — the message lists the valid templates).
 
 **Recovery:** inspect the key, double-check the tenant has the record, retry with a corrected lookup.
 
@@ -106,9 +107,11 @@ Unexpected server response. Covers:
 
 Things that are non-fatal go into `result.warnings` as strings, not exceptions. Examples:
 
-- Permission name fallback to General User.
 - Department name that didn't match any known department (silently dropped).
+- A requested `wage_effective_date` clamped up to the earliest legal date.
 - Milestone 1 BO permission template deferral notice.
+
+(An unknown `permission` name is **not** a warning — it raises `NotFoundError`.)
 
 Always log `result.warnings` after a successful create — they're how the library tells you "something unexpected happened but I made a reasonable choice."
 

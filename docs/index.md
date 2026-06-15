@@ -44,19 +44,19 @@ with SonnysBackofficeClient(
 ## What's in the box
 
 - `create_employee` — with or without a linked Backoffice user
+- `modify_employee` — change properties, site availability, compensation, permission template, or active state (incl. reactivating a disabled employee)
 - `disable_employee` — looked up by POS User ID or email
 - `create_backoffice_user` — standalone or linked to an existing employee
 - `list_sites`, `list_departments`, `list_permissions` — discovery helpers
 - `is_pos_user_id_available`, `is_email_available`, `is_phone_available` — pre-flight uniqueness checks
 - Pydantic v2 input validation and typed result objects
 - Automatic site/region/district hierarchy detection
-- Case-insensitive permission name matching with a "General User" fallback
+- Case-insensitive permission name matching (unknown names raise `NotFoundError` listing the valid templates)
 - Transparent session re-authentication on cookie expiration
 
 ## Status
 
 Alpha. The public API is stable for Milestone 1.
 
-!!! warning "Milestone 1 limitations"
-    - `modify_employee` is deliberately not included — different fields live behind different Backoffice URLs and deserve targeted functions. Deferred to a later release.
-    - **Backoffice user permission template assignment is deferred to Milestone 2.** `create_backoffice_user` (and the linked path of `create_employee`) creates the account successfully, but the caller must assign the template manually via the Backoffice UI (shield icon on the user list). See [Creating a Backoffice user](guides/create-backoffice-user.md).
+!!! warning "Known limitation"
+    **Backoffice user permission template assignment is deferred to Milestone 2.** `create_backoffice_user` (and the linked path of `create_employee`) creates the account successfully, but the caller must assign the template manually via the Backoffice UI (shield icon on the user list). See [Creating a Backoffice user](guides/create-backoffice-user.md).

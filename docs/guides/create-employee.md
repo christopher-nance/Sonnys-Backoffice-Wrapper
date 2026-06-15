@@ -41,7 +41,7 @@ with SonnysBackofficeClient(
 | `overtime_wage_rate` | `Decimal \| float \| None` | no | `wage_rate × 1.5` | |
 | `start_date` | `datetime` | yes | — | The form expects `MM/DD/YYYY`; the library formats it. |
 | `available_sites` | `list[str] \| "all"` | yes | — | Site *names* (not IDs). The wrapper auto-detects flat vs hierarchical tenants — see [Sites, regions & districts](sites-regions-districts.md). |
-| `permission` | `str` | yes | — | Case-insensitive. Unknown names fall back to "General User" with a warning. |
+| `permission` | `str` | yes | — | POS template name, case-insensitive. Unknown names raise `NotFoundError` listing the valid templates (no silent fallback). |
 | `departments` | `list[str] \| None` | no | `["Greeter"]` | "Greeter" is always auto-added — see below. |
 | `adp_employee_id` | `str \| None` | no | `None` | ADP employee ID, if your tenant uses ADP payroll integration. |
 | `emergency_contact_name` | `str \| None` | no | `None` | |
@@ -100,11 +100,11 @@ class EmployeeCreated:
     backoffice_user_id: int | None    # only set when requires_backoffice=True
     backoffice_username: str | None
     backoffice_password: str | None   # auto-generated if not supplied
-    permission_applied: str           # the resolved template name (after fallback)
+    permission_applied: str           # the resolved template name
     sites_granted: list[str]          # site names, resolved from available_sites
     departments: list[str]            # with Greeter included
     wage_site: str                    # the wage attribution site name
-    warnings: list[str]               # permission fallback, BO deferral, etc.
+    warnings: list[str]               # BO template deferral, etc.
 ```
 
 Always log or persist `pos_pin` and `backoffice_password` — Backoffice does not show them again.

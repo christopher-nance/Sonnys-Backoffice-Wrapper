@@ -103,4 +103,4 @@ The Milestone 1 BO deferral warning is expected — hand the new hire the creden
 
 - `find_free_pos_id` is a defensive pattern — if `preferred=50001` is already taken (e.g., a previous hire used it), fall back to a random integer. You can customize the range if your organization uses specific POS ID ranges per site or department.
 - `requires_backoffice=True` creates the linked BO user in the same call. The library returns the auto-generated password in `result.backoffice_password` — capture it, because Backoffice won't display it again.
-- Always log `result.warnings`. Permission fallbacks, missed departments, and the BO deferral are surfaced there.
+- Always log `result.warnings`. Missed departments and the BO template deferral are surfaced there. (An unknown permission name raises `NotFoundError` instead — it isn't a warning.)

@@ -254,7 +254,7 @@ class SonnysBackofficeClient:
             available_sites: List of site *names* or the literal ``"all"``.
                 Unknown names raise ``LookupError`` before any HTTP call.
             permission: POS template name. Matched case-insensitively; unknown
-                names fall back to ``"General User"`` with a warning.
+                names raise ``NotFoundError`` listing the valid templates.
             pos_pin: 5-digit POS PIN integer (10000-99999). If ``None``, a
                 random PIN is generated. The final value is always returned
                 in the result.
@@ -282,6 +282,8 @@ class SonnysBackofficeClient:
                 rejects the form.
             DuplicateError: If pos_user_id, email, or phone already exists on
                 the tenant (pre-flight or server-side).
+            NotFoundError: If ``permission`` does not match any template on the
+                tenant (no silent fallback).
             AuthenticationError: If login or re-authentication fails.
             BackofficeServerError: If Backoffice returns an unexpected
                 response (HTTP 5xx, unparseable HTML, etc.).
@@ -442,7 +444,7 @@ class SonnysBackofficeClient:
                 A supplied date earlier than that minimum is clamped up to it
                 (with a warning). Only used when ``wage_rate`` is provided.
             permission: POS template name.  Matched case-insensitively;
-                unknown names fall back to ``"General User"`` with a warning.
+                unknown names raise ``NotFoundError`` listing the valid templates.
             activate: ``True`` reactivates a disabled employee; ``False``
                 deactivates (like ``disable_employee``); ``None`` (default)
                 leaves the active/inactive state unchanged. Can be combined

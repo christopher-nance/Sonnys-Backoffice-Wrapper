@@ -63,7 +63,7 @@ The disable round-trip went through (HTTP 302) but the re-GET verification saw t
 
 You're trying to link a BO user to a disabled employee. This is a Sonny's server-side rule — not a library limitation.
 
-**Fix:** re-enable the employee first (manually, via the Backoffice UI — `enable_employee` is on the Milestone 2 roadmap), then create the linked BO user, then re-disable if needed.
+**Fix:** reactivate the employee first with `client.modify_employee(pos_user_id=..., activate=True)`, then create the linked BO user, then re-disable with `disable_employee` if needed.
 
 ## `LookupError: Unknown Site: 'Nolensville'`
 
