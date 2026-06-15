@@ -1514,7 +1514,7 @@
 </code></pre></div>
 <p>On success the server redirects to <code>/user/permissions/&lt;new_user_id&gt;?userIsNew=1</code> — the wrapper extracts <code>user_id</code> from that location header.</p>
 <h2 id="the-returned-backofficeusercreated-object">The returned <code>BackofficeUserCreated</code> object<a class="headerlink" href="#the-returned-backofficeusercreated-object" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">class</span> <span class="nc">BackofficeUserCreated</span><span class="p">:</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">BackofficeUserCreated</span><span class="p">:</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">user_id</span><span class="p">:</span> <span class="nb">int</span>
 <a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="n">username</span><span class="p">:</span> <span class="nb">str</span>
 <a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">password</span><span class="p">:</span> <span class="nb">str</span>                   <span class="c1"># echo of provided or auto-generated</span>

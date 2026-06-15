@@ -833,6 +833,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#restricting-to-specific-sites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Restricting to specific sites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#unknown-site-names" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1380,6 +1391,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#restricting-to-specific-sites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Restricting to specific sites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#unknown-site-names" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1477,6 +1499,14 @@
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">)</span>
 </code></pre></div>
 <p>On a flat tenant this sends <code>employee[isAllSitesAllowed]=1</code>. On a hierarchical tenant it sends <code>employee[isAllRegionsAllowed]=1</code>, which cascades down to every district and site.</p>
+<h2 id="restricting-to-specific-sites">Restricting to specific sites<a class="headerlink" href="#restricting-to-specific-sites" title="Permanent link">&para;</a></h2>
+<p>When you pass a list of site names (rather than <code>"all"</code>), the wrapper grants exactly those sites and no others — verified live against a hierarchical tenant.</p>
+<p>The encoding is subtle, so the wrapper hides it for you:</p>
+<ul>
+<li><strong>Flat tenants</strong> use a <em>blocklist</em>: <code>employee[siteIds][]</code> lists the sites to <strong>exclude</strong>.</li>
+<li><strong>Hierarchical tenants</strong> also work by exclusion. The <code>employee[isAllRegionsAllowed]</code> flag is <strong>omitted entirely</strong> (the Backoffice form binds a checkbox's mere <em>presence</em> as "true", so sending it — even as <code>0</code> — would grant every region). Each non-granted site is then marked unavailable by submitting only its <code>employee[sites][N][siteId]</code>; sites left unmentioned stay available. In other words, the wrapper submits the <em>complement</em> of your requested list.</li>
+</ul>
+<p>This is the same "presence = true" gotcha that <code>disable_employee</code> works around for <code>employee[isActive]</code>.</p>
 <h2 id="unknown-site-names">Unknown site names<a class="headerlink" href="#unknown-site-names" title="Permanent link">&para;</a></h2>
 <p>Passing a site name the tenant doesn't have raises <code>LookupError</code> immediately — the wrapper does not silently drop unknown names, because that would mean creating an employee with narrower access than the caller asked for. Instead, you get a clear error before any HTTP call is made.</p>
 <h2 id="inspecting-the-tree">Inspecting the tree<a class="headerlink" href="#inspecting-the-tree" title="Permanent link">&para;</a></h2>
@@ -1496,16 +1526,16 @@
 <h2 id="wage-attribution">Wage attribution<a class="headerlink" href="#wage-attribution" title="Permanent link">&para;</a></h2>
 <p>Even on a hierarchical tenant with a thousand sites, each employee's wage is attributed to a <strong>single</strong> site on the form. The library picks the first site from your <code>available_sites</code> list (or the first site in the tree if you passed <code>"all"</code>) and uses that as the wage attribution. You can see which site was chosen in <code>result.wage_site</code>.</p>
 <h2 id="domain-models">Domain models<a class="headerlink" href="#domain-models" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">class</span> <span class="nc">Region</span><span class="p">:</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">Region</span><span class="p">:</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">class</span> <span class="nc">District</span><span class="p">:</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">class</span><span class="w"> </span><span class="nc">District</span><span class="p">:</span>
 <a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span>
 <a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
 <a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">region_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>
 <a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="k">class</span> <span class="nc">Site</span><span class="p">:</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="k">class</span><span class="w"> </span><span class="nc">Site</span><span class="p">:</span>
 <a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="nb">id</span><span class="p">:</span> <span class="nb">int</span>
 <a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
 <a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="n">district_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>

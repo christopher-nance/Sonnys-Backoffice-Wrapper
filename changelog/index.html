@@ -1242,6 +1242,45 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v030-2026-06-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.3.0 — 2026-06-15
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.3.0 — 2026-06-15">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bug fixes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v020-2026-05-08-phase-1-complete" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1254,7 +1293,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
+  <a href="#features_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Features
@@ -1276,7 +1315,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bug-fixes" class="md-nav__link">
+  <a href="#bug-fixes_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Bug fixes
@@ -1304,7 +1343,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#features_1" class="md-nav__link">
+  <a href="#features_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         Features
@@ -1365,6 +1404,45 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v030-2026-06-15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.3.0 — 2026-06-15
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.3.0 — 2026-06-15">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bug-fixes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bug fixes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v020-2026-05-08-phase-1-complete" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1377,7 +1455,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
+  <a href="#features_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Features
@@ -1399,7 +1477,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#bug-fixes" class="md-nav__link">
+  <a href="#bug-fixes_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Bug fixes
@@ -1427,7 +1505,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#features_1" class="md-nav__link">
+  <a href="#features_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         Features
@@ -1474,8 +1552,20 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
-<h2 id="v020-2026-05-08-phase-1-complete">v0.2.0 — 2026-05-08 (Phase 1 Complete)<a class="headerlink" href="#v020-2026-05-08-phase-1-complete" title="Permanent link">&para;</a></h2>
+<h2 id="v030-2026-06-15">v0.3.0 — 2026-06-15<a class="headerlink" href="#v030-2026-06-15" title="Permanent link">&para;</a></h2>
 <h3 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>modify_employee(activate=...)</code></strong> — reactivate a disabled employee (<code>activate=True</code>) or deactivate one (<code>activate=False</code>) via the <code>employee[isActive]</code> presence semantics. Composes with any other change, so you can reactivate and (re)assign sites/pay/permission in a single call.</li>
+<li><strong><code>modify_employee(wage_effective_date=...)</code></strong> and <strong><code>EmployeeModified.wage_effective_date</code></strong> — control and report the effective date of a pay change (see bug fixes below for the rule).</li>
+</ul>
+<h3 id="bug-fixes">Bug fixes<a class="headerlink" href="#bug-fixes" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Hierarchical site restriction now works.</strong> <code>create_employee</code> and <code>modify_employee</code> previously sent <code>employee[isAllRegionsAllowed]=0</code> plus per-site <code>isAvailable</code> flags when restricting to specific sites on a hierarchical tenant. Because the Backoffice form binds checkbox <em>presence</em> as true, this silently granted <strong>all</strong> regions/sites. Both paths now omit the flag and submit the <em>complement</em> of the granted sites by <code>siteId</code> only — verified live to grant exactly the requested sites.</li>
+<li><strong>Pay-rate changes effective the same day now apply.</strong> A new wage record must be effective strictly after the most recent rate's effective date; the previous code defaulted to today, so changing pay the same day an employee was created (or last raised) silently kept the old rate. The effective date now defaults to <code>max(today, most_recent + 1 day)</code>.</li>
+<li><strong>Overtime eligibility is preserved on pay changes.</strong> <code>modify_employee</code> read overtime-eligibility from the always-blank "add wage" form, which dropped eligibility on every raise. It now reads the employee's current wage record and preserves eligibility (recomputing overtime at 1.5× when not explicitly provided).</li>
+</ul>
+<h2 id="v020-2026-05-08-phase-1-complete">v0.2.0 — 2026-05-08 (Phase 1 Complete)<a class="headerlink" href="#v020-2026-05-08-phase-1-complete" title="Permanent link">&para;</a></h2>
+<h3 id="features_1">Features<a class="headerlink" href="#features_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong><code>modify_employee</code></strong> — modify an existing employee's properties, compensation, or permission template via three independent form submissions:<ul>
 <li><strong>Properties</strong> (name, phone, email, departments, sites, emergency contact, ADP ID) via full-form round-trip on <code>/employee/update</code>.</li>
@@ -1490,7 +1580,7 @@
 <ul>
 <li><strong><code>resolve_permission</code> now raises <code>NotFoundError</code></strong> with the list of available template names when the requested name doesn't match any tenant template. Previously it silently fell back to "General User".</li>
 </ul>
-<h3 id="bug-fixes">Bug fixes<a class="headerlink" href="#bug-fixes" title="Permanent link">&para;</a></h3>
+<h3 id="bug-fixes_1">Bug fixes<a class="headerlink" href="#bug-fixes_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong><code>data-value</code> fallback in form parser</strong> — pickadate date pickers render server-side with <code>data-value</code> instead of <code>value</code> (JavaScript populates the value at runtime). The form parser now reads <code>data-value</code> as a fallback, fixing round-trip failures on the <code>employee[startDate]</code> field that caused disable and modify to silently fail.</li>
 <li><strong>Flat-tenant site payload</strong> — <code>employee[siteIds][]</code> checkboxes represent <em>disabled</em> sites (presence = excluded), not enabled sites. Both <code>create_employee</code> and <code>modify_employee</code> now send the correct inverted list.</li>
@@ -1498,7 +1588,7 @@
 </ul>
 <h2 id="v010-2026-04-13-milestone-1">v0.1.0 — 2026-04-13 (Milestone 1)<a class="headerlink" href="#v010-2026-04-13-milestone-1" title="Permanent link">&para;</a></h2>
 <p>Initial release.</p>
-<h3 id="features_1">Features<a class="headerlink" href="#features_1" title="Permanent link">&para;</a></h3>
+<h3 id="features_2">Features<a class="headerlink" href="#features_2" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>create_employee</code> — two-step POST flow (<code>/employee/insert</code> + <code>/employee/permissions/update</code>), with uniqueness pre-flight across POS User ID / email / phone, full permission matrix submission, wage-site attribution, hierarchical site detection, and optional linked Backoffice user creation.</li>
 <li><code>disable_employee</code> — full-form round-trip via <code>/employee/update</code> with <code>isActive</code> omitted, followed by a re-GET verification.</li>

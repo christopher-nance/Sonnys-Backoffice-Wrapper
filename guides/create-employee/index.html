@@ -1456,10 +1456,10 @@
 
 <h1 id="creating-an-employee">Creating an Employee<a class="headerlink" href="#creating-an-employee" title="Permanent link">&para;</a></h1>
 <h2 id="minimal-call">Minimal call<a class="headerlink" href="#minimal-call" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span> <span class="nn">decimal</span> <span class="kn">import</span> <span class="n">Decimal</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">decimal</span><span class="w"> </span><span class="kn">import</span> <span class="n">Decimal</span>
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kn">from</span> <span class="nn">sonnys_backoffice</span> <span class="kn">import</span> <span class="n">SonnysBackofficeClient</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">sonnys_backoffice</span><span class="w"> </span><span class="kn">import</span> <span class="n">SonnysBackofficeClient</span>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="k">with</span> <span class="n">SonnysBackofficeClient</span><span class="p">(</span>
 <a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="n">subdomain</span><span class="o">=</span><span class="s2">&quot;washu&quot;</span><span class="p">,</span>
@@ -1644,7 +1644,7 @@
 </div>
 <p>The linked employee must be <strong>active</strong> at the moment of BO user creation. Since <code>create_employee</code> always creates the employee first and then the BO user, this is automatic for new hires. It only becomes a concern when re-linking a BO account to a previously-disabled employee — which Milestone 1 doesn't support.</p>
 <h2 id="the-returned-employeecreated-object">The returned <code>EmployeeCreated</code> object<a class="headerlink" href="#the-returned-employeecreated-object" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">class</span> <span class="nc">EmployeeCreated</span><span class="p">:</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">EmployeeCreated</span><span class="p">:</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">employee_id</span><span class="p">:</span> <span class="nb">int</span>                  <span class="c1"># the internal Backoffice ID</span>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">pos_user_id</span><span class="p">:</span> <span class="nb">int</span>                  <span class="c1"># echoed from the request</span>
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">pos_pin</span><span class="p">:</span> <span class="nb">int</span>                      <span class="c1"># either the passed value or auto-generated</span>
