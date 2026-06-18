@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.5.2 — 2026-06-18
+
+### Fixed — hierarchical site restriction (correct encoding, verified against the live form)
+
+- **Supersedes the incomplete v0.5.1 fix**, which granted **all** sites: it emitted
+  `employee[sites][N][siteId]` for every site *and* `employee[sites][N][isAvailable]` for granted
+  ones, so granted sites carried both fields and the server read the payload as "grant everything."
+- `create_employee` / `modify_employee` now reproduce the Backoffice form's own `FormData`
+  submission, captured byte-for-byte from the live tenant:
+  - a region with **no** granted site is excluded wholesale via
+    `employee[disabledRegions][]=<regionId>` (its sites drop out of the form);
+  - each site in a region that keeps a grant is listed **once** — granted →
+    `employee[sites][N][isAvailable]`, denied → `employee[sites][N][siteId]`;
+  - all "all allowed" rollups are omitted.
+  The generated payload is verified equal to a real browser `FormData` capture for the same
+  selection. No public API change.
+
 ## v0.5.1 — 2026-06-18
 
 ### Fixed — hierarchical site restriction leaked entire districts

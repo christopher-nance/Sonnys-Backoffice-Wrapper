@@ -133,24 +133,22 @@ def test_hierarchical_tenant_specific_site_selection():
         departments_by_name={"Cashier": 1, "Greeter": 3},
         wage_site_id=17,
     )
-    # Mirror exactly what the Backoffice UI submits for a restricted employee
-    # (verified against real, UI-configured employees on WashU): the hidden
-    # `siteId` is emitted for EVERY site, and `isAvailable` only for the GRANTED
-    # sites. The all-regions flag and every region/district "all allowed" rollup
-    # flag are OMITTED so Symfony binds them false — otherwise an untouched
-    # district stays fully allowed and leaks every site in it.
+    # Encoding captured byte-for-byte from the Backoffice form's own FormData:
+    # site 17 (region 1) is granted, so region 1 stays enabled and lists its
+    # sites individually; region 2 has no granted site (site 1 denied) so the
+    # whole region is excluded via disabledRegions and emits no per-site fields.
     assert "employee[isAllRegionsAllowed]" not in payload
-    # siteId present for all sites (granted and not).
-    assert payload["employee[sites][17][siteId]"] == "17"
-    assert payload["employee[sites][1][siteId]"] == "1"
-    # isAvailable present for the granted site only; absent for the disabled one.
+    # Region 2 excluded wholesale.
+    assert payload["employee[disabledRegions][]"] == "2"
+    # Granted site → isAvailable; no siteId for it.
     assert payload["employee[sites][17][isAvailable]"] == "17"
+    assert "employee[sites][17][siteId]" not in payload
+    # Excluded region's site emits nothing at all.
     assert "employee[sites][1][isAvailable]" not in payload
-    # No region/district rollup or disable flags.
+    assert "employee[sites][1][siteId]" not in payload
+    # No "all allowed" rollup flags.
     assert not any("isAllSitesAllowedByDistrict" in k for k in payload)
     assert not any("isAllDistrictsAllowedByRegion" in k for k in payload)
-    assert "employee[disabledRegions][]" not in payload
-    assert "employee[disabledDistricts][]" not in payload
 
 
 def test_hierarchical_tenant_all_sites():

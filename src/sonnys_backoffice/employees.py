@@ -504,10 +504,20 @@ def build_employee_step1_payload(
         if request.available_sites == "all":
             payload["employee[isAllRegionsAllowed]"] = "1"
         else:
+            # Fold the (possibly repeated-key) tuples into the dict payload.
+            # Repeated keys — e.g. multiple employee[disabledRegions][] — must
+            # become a list so requests emits them as repeated POST params.
             for name, value in _build_site_availability_fields(
                 site_tree, list(request.available_sites)
             ):
-                payload[name] = value
+                if name in payload:
+                    existing = payload[name]
+                    if isinstance(existing, list):
+                        existing.append(value)
+                    else:
+                        payload[name] = [existing, value]
+                else:
+                    payload[name] = value
     else:
         if request.available_sites == "all":
             payload["employee[isAllSitesAllowed]"] = "1"
@@ -858,17 +868,24 @@ def _build_site_availability_fields(
 ) -> list[tuple[str, str]]:
     """Build site availability fields for a hierarchical or flat tenant.
 
-    Encoding for a hierarchical tenant (verified against real, UI-configured
-    employees on WashU): emit the hidden ``employee[sites][N][siteId]`` for
-    **every** site and ``employee[sites][N][isAvailable]`` only for the
-    **granted** sites — exactly what the Backoffice form submits. The
-    all-regions flag and every region/district "all allowed" rollup
-    (``isAllRegionsAllowed`` / ``isAllDistrictsAllowedByRegion`` /
-    ``isAllSitesAllowedByDistrict``) are OMITTED so Symfony binds them false;
-    sending any of them — or leaving a district untouched — keeps that whole
-    district allowed and leaks every site in it. (The earlier "submit only the
-    complement's siteId" encoding did exactly that: it left the other district's
-    rollup flag true, silently granting all of its sites.)
+    Encoding for a hierarchical tenant (captured byte-for-byte from the
+    Backoffice form's own ``FormData`` submission on WashU):
+
+    - A region with **no** granted sites is excluded wholesale via
+      ``employee[disabledRegions][]=<regionId>``; its sites are then disabled in
+      the form and emit nothing.
+    - A region with **at least one** granted site is left enabled, and each of
+      its sites is listed exactly once: granted → ``employee[sites][N][isAvailable]``,
+      denied → ``employee[sites][N][siteId]``.
+    - Every "all allowed" rollup (``isAllRegionsAllowed`` /
+      ``isAllDistrictsAllowedByRegion`` / ``isAllSitesAllowedByDistrict``) is
+      OMITTED so Symfony binds them false.
+
+    Two earlier encodings were wrong and are recorded here as guardrails: the
+    "complement siteId-only" version left an untouched region's rollup true and
+    leaked its whole district; the "siteId for every site + isAvailable for
+    granted" version sent *both* fields for granted sites, which the server read
+    as grant-all.
 
     Flat tenants keep the blocklist encoding (``employee[siteIds][]`` for every
     non-granted site).
@@ -886,10 +903,18 @@ def _build_site_availability_fields(
     enabled_ids = {s.id for s in resolved}
 
     if site_tree.is_hierarchical:
+        regions_with_grant = {s.region_id for s in site_tree.sites if s.id in enabled_ids}
+        # Exclude regions that have no granted site (deterministic order).
+        excluded_regions = sorted(
+            {s.region_id for s in site_tree.sites if s.region_id is not None} - regions_with_grant
+        )
+        for region_id in excluded_regions:
+            fields.append(("employee[disabledRegions][]", str(region_id)))
+        # For regions that keep at least one grant, list each site once.
         for s in site_tree.sites:
-            fields.append((f"employee[sites][{s.id}][siteId]", str(s.id)))
-            if s.id in enabled_ids:
-                fields.append((f"employee[sites][{s.id}][isAvailable]", str(s.id)))
+            if s.region_id in regions_with_grant or s.region_id is None:
+                key = "isAvailable" if s.id in enabled_ids else "siteId"
+                fields.append((f"employee[sites][{s.id}][{key}]", str(s.id)))
     else:
         for s in site_tree.sites:
             if s.id not in enabled_ids:
