@@ -1270,6 +1270,34 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v051-2026-06-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.5.1 — 2026-06-18
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.5.1 — 2026-06-18">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed-hierarchical-site-restriction-leaked-entire-districts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed — hierarchical site restriction leaked entire districts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v050-2026-06-15" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1488,6 +1516,34 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v051-2026-06-18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.5.1 — 2026-06-18
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.5.1 — 2026-06-18">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed-hierarchical-site-restriction-leaked-entire-districts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed — hierarchical site restriction leaked entire districts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v050-2026-06-15" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1692,6 +1748,22 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v051-2026-06-18">v0.5.1 — 2026-06-18<a class="headerlink" href="#v051-2026-06-18" title="Permanent link">&para;</a></h2>
+<h3 id="fixed-hierarchical-site-restriction-leaked-entire-districts">Fixed — hierarchical site restriction leaked entire districts<a class="headerlink" href="#fixed-hierarchical-site-restriction-leaked-entire-districts" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>create_employee</code> / <code>modify_employee</code> now restrict sites correctly on hierarchical
+  (region → district → site) tenants.</strong> The previous encoding submitted only the <em>complement's</em>
+  <code>employee[sites][N][siteId]</code>, which left every untouched district's "all allowed" rollup flag
+  (<code>isAllSitesAllowedByDistrict[N]</code>) at its default <strong>true</strong> — silently granting the employee every
+  site in any district that wasn't the target's. An employee meant for one site (e.g. Niles) also
+  received all sites in the other district (the Global/Tennessee region).</li>
+<li>The builder now mirrors exactly what the Backoffice form submits, verified against real
+  UI-configured employees: emit the hidden <code>employee[sites][N][siteId]</code> for <strong>every</strong> site,
+  <code>employee[sites][N][isAvailable]</code> only for the <strong>granted</strong> sites, and omit all region/district
+  rollup flags so Symfony binds them false. No public API change.</li>
+<li>Flat-tenant encoding (<code>employee[siteIds][]</code> blocklist) is unchanged (no flat tenant available to
+  re-verify).</li>
+</ul>
 <h2 id="v050-2026-06-15">v0.5.0 — 2026-06-15<a class="headerlink" href="#v050-2026-06-15" title="Permanent link">&para;</a></h2>
 <h3 id="features-name-based-lookup">Features — name-based lookup<a class="headerlink" href="#features-name-based-lookup" title="Permanent link">&para;</a></h3>
 <ul>
