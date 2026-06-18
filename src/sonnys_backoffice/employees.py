@@ -504,15 +504,10 @@ def build_employee_step1_payload(
         if request.available_sites == "all":
             payload["employee[isAllRegionsAllowed]"] = "1"
         else:
-            # `employee[isAllRegionsAllowed]` is OMITTED on purpose: Symfony binds
-            # checkbox *presence* as true regardless of value, so sending "0" would
-            # grant all regions (the same gotcha disable_employee handles for
-            # isActive). A site is marked unavailable by submitting only its
-            # `siteId`; sites left unmentioned stay available. So we list the
-            # complement (every non-granted site) to disable it.
-            for s in site_tree.sites:
-                if s.id not in enabled_ids:
-                    payload[f"employee[sites][{s.id}][siteId]"] = str(s.id)
+            for name, value in _build_site_availability_fields(
+                site_tree, list(request.available_sites)
+            ):
+                payload[name] = value
     else:
         if request.available_sites == "all":
             payload["employee[isAllSitesAllowed]"] = "1"
@@ -863,12 +858,20 @@ def _build_site_availability_fields(
 ) -> list[tuple[str, str]]:
     """Build site availability fields for a hierarchical or flat tenant.
 
-    Encoding (verified live against the WashU tenant): the "all-regions" flag is
-    OMITTED when restricting (Symfony binds checkbox *presence* as true, so
-    sending it at all grants everything). A site is marked **unavailable** by
-    submitting only its ``employee[sites][N][siteId]``; sites left unmentioned
-    stay available. So we submit the *complement* — every non-granted site — to
-    disable it, and say nothing about the granted ones.
+    Encoding for a hierarchical tenant (verified against real, UI-configured
+    employees on WashU): emit the hidden ``employee[sites][N][siteId]`` for
+    **every** site and ``employee[sites][N][isAvailable]`` only for the
+    **granted** sites — exactly what the Backoffice form submits. The
+    all-regions flag and every region/district "all allowed" rollup
+    (``isAllRegionsAllowed`` / ``isAllDistrictsAllowedByRegion`` /
+    ``isAllSitesAllowedByDistrict``) are OMITTED so Symfony binds them false;
+    sending any of them — or leaving a district untouched — keeps that whole
+    district allowed and leaks every site in it. (The earlier "submit only the
+    complement's siteId" encoding did exactly that: it left the other district's
+    rollup flag true, silently granting all of its sites.)
+
+    Flat tenants keep the blocklist encoding (``employee[siteIds][]`` for every
+    non-granted site).
     """
     resolved = site_tree.resolve_all(available_sites)
     fields: list[tuple[str, str]] = []
@@ -884,8 +887,9 @@ def _build_site_availability_fields(
 
     if site_tree.is_hierarchical:
         for s in site_tree.sites:
-            if s.id not in enabled_ids:
-                fields.append((f"employee[sites][{s.id}][siteId]", str(s.id)))
+            fields.append((f"employee[sites][{s.id}][siteId]", str(s.id)))
+            if s.id in enabled_ids:
+                fields.append((f"employee[sites][{s.id}][isAvailable]", str(s.id)))
     else:
         for s in site_tree.sites:
             if s.id not in enabled_ids:

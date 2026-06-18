@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.5.1 — 2026-06-18
+
+### Fixed — hierarchical site restriction leaked entire districts
+
+- **`create_employee` / `modify_employee` now restrict sites correctly on hierarchical
+  (region → district → site) tenants.** The previous encoding submitted only the *complement's*
+  `employee[sites][N][siteId]`, which left every untouched district's "all allowed" rollup flag
+  (`isAllSitesAllowedByDistrict[N]`) at its default **true** — silently granting the employee every
+  site in any district that wasn't the target's. An employee meant for one site (e.g. Niles) also
+  received all sites in the other district (the Global/Tennessee region).
+- The builder now mirrors exactly what the Backoffice form submits, verified against real
+  UI-configured employees: emit the hidden `employee[sites][N][siteId]` for **every** site,
+  `employee[sites][N][isAvailable]` only for the **granted** sites, and omit all region/district
+  rollup flags so Symfony binds them false. No public API change.
+- Flat-tenant encoding (`employee[siteIds][]` blocklist) is unchanged (no flat tenant available to
+  re-verify).
+
 ## v0.5.0 — 2026-06-15
 
 ### Features — name-based lookup

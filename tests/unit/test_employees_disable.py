@@ -44,7 +44,9 @@ def _edit_after_disable_html() -> str:
 
 def test_parse_edit_form_drops_isActive():
     html = _edit_before_disable_html()
-    payload = _parse_form_into_payload(html, form_action_re=_EDIT_FORM_RE, drop_fields={"employee[isActive]"})
+    payload = _parse_form_into_payload(
+        html, form_action_re=_EDIT_FORM_RE, drop_fields={"employee[isActive]"}
+    )
     names = [n for n, _ in payload]
     assert "employee[isActive]" not in names
     # The form still carries the employee id, first name, last name, etc.
@@ -55,7 +57,9 @@ def test_parse_edit_form_drops_isActive():
 
 def test_parse_edit_form_skips_disabled_inputs():
     html = _edit_before_disable_html()
-    payload = _parse_form_into_payload(html, form_action_re=_EDIT_FORM_RE, drop_fields={"employee[isActive]"})
+    payload = _parse_form_into_payload(
+        html, form_action_re=_EDIT_FORM_RE, drop_fields={"employee[isActive]"}
+    )
     # Sites with hidden disabled siteId inputs should NOT be submitted.
     # No disabled inputs means the output count is smaller than a blind parse would give
     assert len(payload) < 500
@@ -63,7 +67,9 @@ def test_parse_edit_form_skips_disabled_inputs():
 
 def test_parse_edit_form_preserves_checked_checkboxes():
     html = _edit_before_disable_html()
-    payload = _parse_form_into_payload(html, form_action_re=_EDIT_FORM_RE, drop_fields={"employee[isActive]"})
+    payload = _parse_form_into_payload(
+        html, form_action_re=_EDIT_FORM_RE, drop_fields={"employee[isActive]"}
+    )
     # wage[isHourly] is a checked toggle/checkbox in the form
     names = [n for n, _ in payload]
     # At least one site isAvailable checkbox should survive (site 17 was enabled)

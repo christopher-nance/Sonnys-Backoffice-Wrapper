@@ -42,17 +42,25 @@ def _flat_tree() -> SiteTree:
 # ── _build_site_availability_fields ──────────────────────────────────────────
 
 
-def test_site_fields_hierarchical_restricted_lists_complement_only():
+def test_site_fields_hierarchical_restricted_lists_granted_isavailable():
+    # Grant sites 1 + 4 (both in district 2); site 17 (district 1) is denied.
     fields = _build_site_availability_fields(_hierarchical_tree(), ["WashU Fiesta", "WashU Niles"])
     names = [n for n, _ in fields]
-    # No all-regions flag (omission = false; presence would grant everything).
+    # No all-regions flag, and crucially NO district/region rollup flags — an
+    # untouched district's rollup stays true and leaks all of its sites (this is
+    # the bug that granted site 17's whole district).
     assert not any("isAllRegionsAllowed" in n for n in names)
-    # Granted sites (1, 4) are NOT mentioned; the complement (17) is disabled.
+    assert not any("isAllSitesAllowedByDistrict" in n for n in names)
+    assert not any("isAllDistrictsAllowedByRegion" in n for n in names)
+    # siteId is emitted for EVERY site (granted and denied) — the hidden fields
+    # a browser always submits.
+    assert ("employee[sites][1][siteId]", "1") in fields
+    assert ("employee[sites][4][siteId]", "4") in fields
     assert ("employee[sites][17][siteId]", "17") in fields
-    assert not any(n == "employee[sites][1][siteId]" for n in names)
-    assert not any(n == "employee[sites][4][siteId]" for n in names)
-    # No isAvailable fields at all.
-    assert not any("isAvailable" in n for n in names)
+    # isAvailable only for the granted sites; the denied site 17 has none.
+    assert ("employee[sites][1][isAvailable]", "1") in fields
+    assert ("employee[sites][4][isAvailable]", "4") in fields
+    assert not any(n == "employee[sites][17][isAvailable]" for n in names)
 
 
 def test_site_fields_hierarchical_all_sets_flag():

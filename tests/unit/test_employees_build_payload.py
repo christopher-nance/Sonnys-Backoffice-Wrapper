@@ -133,16 +133,22 @@ def test_hierarchical_tenant_specific_site_selection():
         departments_by_name={"Cashier": 1, "Greeter": 3},
         wage_site_id=17,
     )
-    # The all-regions flag must be OMITTED entirely (Symfony presence-binds it
-    # true; sending "0" grants everything). Verified live against WashU.
+    # Mirror exactly what the Backoffice UI submits for a restricted employee
+    # (verified against real, UI-configured employees on WashU): the hidden
+    # `siteId` is emitted for EVERY site, and `isAvailable` only for the GRANTED
+    # sites. The all-regions flag and every region/district "all allowed" rollup
+    # flag are OMITTED so Symfony binds them false — otherwise an untouched
+    # district stays fully allowed and leaks every site in it.
     assert "employee[isAllRegionsAllowed]" not in payload
-    # A site is disabled by submitting only its siteId; granted sites are not
-    # mentioned. Site 1 is the complement → disabled; site 17 → unmentioned.
+    # siteId present for all sites (granted and not).
+    assert payload["employee[sites][17][siteId]"] == "17"
     assert payload["employee[sites][1][siteId]"] == "1"
-    assert "employee[sites][17][siteId]" not in payload
-    # No isAvailable fields are emitted at all.
-    assert not any("isAvailable" in k for k in payload)
-    # No region/district disable flags either.
+    # isAvailable present for the granted site only; absent for the disabled one.
+    assert payload["employee[sites][17][isAvailable]"] == "17"
+    assert "employee[sites][1][isAvailable]" not in payload
+    # No region/district rollup or disable flags.
+    assert not any("isAllSitesAllowedByDistrict" in k for k in payload)
+    assert not any("isAllDistrictsAllowedByRegion" in k for k in payload)
     assert "employee[disabledRegions][]" not in payload
     assert "employee[disabledDistricts][]" not in payload
 
