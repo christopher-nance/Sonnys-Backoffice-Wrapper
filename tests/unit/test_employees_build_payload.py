@@ -36,14 +36,17 @@ def _hierarchical_tree() -> SiteTree:
 
     return SiteTree(
         is_hierarchical=True,
-        regions=[Region(id=1, name="Global"), Region(id=2, name="WashU Illinois")],
+        regions=[Region(id=1, name="North"), Region(id=2, name="WashU Illinois")],
         districts=[
-            District(id=1, name="Global", region_id=1),
+            District(id=1, name="North", region_id=1),
             District(id=2, name="WashU", region_id=2),
         ],
         sites=[
             Site(id=17, name="Wash 37135", district_id=1, region_id=1),
+            Site(id=18, name="Wash 37055", district_id=1, region_id=1),
             Site(id=1, name="WashU Fiesta", district_id=2, region_id=2),
+            Site(id=2, name="WashU Centennial", district_id=2, region_id=2),
+            Site(id=3, name="WashU Niles", district_id=2, region_id=2),
         ],
     )
 
@@ -126,29 +129,53 @@ def test_adp_id_omitted_when_none():
 
 
 def test_hierarchical_tenant_specific_site_selection():
-    req = _sample_request(available_sites=["Wash 37135"])  # site 17 granted, site 1 not
+    # The onboarding case: grant exactly ONE site (id 1, in region 2, which also
+    # holds sites 2 and 3). Region 1 (sites 17, 18) gets nothing.
+    req = _sample_request(available_sites=["WashU Fiesta"])
     payload = build_employee_step1_payload(
         req,
         site_tree=_hierarchical_tree(),
         departments_by_name={"Cashier": 1, "Greeter": 3},
-        wage_site_id=17,
+        wage_site_id=1,
     )
-    # Encoding captured byte-for-byte from the Backoffice form's own FormData:
-    # site 17 (region 1) is granted, so region 1 stays enabled and lists its
-    # sites individually; region 2 has no granted site (site 1 denied) so the
-    # whole region is excluded via disabledRegions and emits no per-site fields.
+    # Verified live on WashU (create → read-back): employee[disabledRegions][]=R
+    # means region R is FULLY GRANTED, not excluded. When no region/district is
+    # fully granted, emit NO disabled* rollups and list EVERY site once:
+    # granted → isAvailable, denied → siteId (including the whole empty region 1).
     assert "employee[isAllRegionsAllowed]" not in payload
-    # Region 2 excluded wholesale.
-    assert payload["employee[disabledRegions][]"] == "2"
-    # Granted site → isAvailable; no siteId for it.
-    assert payload["employee[sites][17][isAvailable]"] == "17"
-    assert "employee[sites][17][siteId]" not in payload
-    # Excluded region's site emits nothing at all.
-    assert "employee[sites][1][isAvailable]" not in payload
+    assert "employee[disabledRegions][]" not in payload
+    assert "employee[disabledDistricts][]" not in payload
+    # Granted site → isAvailable only.
+    assert payload["employee[sites][1][isAvailable]"] == "1"
     assert "employee[sites][1][siteId]" not in payload
+    # Every other site — same-region (2, 3) AND the entire empty region 1
+    # (17, 18) — is denied with siteId (this is what the buggy versions leaked).
+    for sid in (2, 3, 17, 18):
+        assert payload[f"employee[sites][{sid}][siteId]"] == str(sid)
+        assert f"employee[sites][{sid}][isAvailable]" not in payload
     # No "all allowed" rollup flags.
     assert not any("isAllSitesAllowedByDistrict" in k for k in payload)
     assert not any("isAllDistrictsAllowedByRegion" in k for k in payload)
+
+
+def test_hierarchical_tenant_fully_granted_region():
+    # Grant BOTH sites of region 1 → the region is fully granted, so it is
+    # marked with employee[disabledRegions][]=1 (its "fully allowed" flag) and
+    # its sites are listed isAvailable — matching the real Backoffice form.
+    req = _sample_request(available_sites=["Wash 37135", "Wash 37055"])
+    payload = build_employee_step1_payload(
+        req,
+        site_tree=_hierarchical_tree(),
+        departments_by_name={"Greeter": 3},
+        wage_site_id=17,
+    )
+    assert payload["employee[disabledRegions][]"] == "1"
+    assert payload["employee[sites][17][isAvailable]"] == "17"
+    assert payload["employee[sites][18][isAvailable]"] == "18"
+    # Region 2 fully denied → each of its sites via siteId, no disabledRegions=2.
+    for sid in (1, 2, 3):
+        assert payload[f"employee[sites][{sid}][siteId]"] == str(sid)
+        assert f"employee[sites][{sid}][isAvailable]" not in payload
 
 
 def test_hierarchical_tenant_all_sites():

@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.5.3 — 2026-07-21
+
+### Fixed — hierarchical site restriction (`disabledRegions` meaning was inverted)
+
+- **Supersedes the v0.5.2 fix**, which still mis-restricted new hires: it emitted
+  `employee[disabledRegions][]=<regionId>` for every region the employee should **not** be in,
+  believing that flag *excluded* a region. It does the opposite — `disabledRegions[]=R` marks a
+  region as **fully granted**. So a single-store hire was granted every store in every *other*
+  region (the "employee's active sites are all the sites except the one they need" bug).
+- Verified live on the WashU tenant by creating an employee restricted to one store and reading the
+  server-stored access back: before the fix the account held 7 stores across the wrong regions;
+  after the fix it holds exactly the one selected store. The corrected encoding was also byte-matched
+  against 59 real restricted employees' edit forms.
+- Correct encoding now used by `create_employee` / `modify_employee`:
+  - a region (or district) whose sites are **all** granted → its `disabledRegions[]` /
+    `disabledDistricts[]` "fully-allowed" flag plus each of its sites as `[isAvailable]`;
+  - any **partially** granted region/district → walked to per-site, listing every site once
+    (granted → `[isAvailable]`, denied → `[siteId]`), including denied sites in fully-denied regions
+    (previously omitted, which is what leaked them);
+  - `isAll*` rollups omitted (`available_sites="all"` still uses `isAllRegionsAllowed`).
+- Flat-tenant encoding (`employee[siteIds][]` blocklist) is unchanged and still unverified.
+
 ## v0.5.2 — 2026-06-18
 
 ### Fixed — hierarchical site restriction (correct encoding, verified against the live form)

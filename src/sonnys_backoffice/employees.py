@@ -868,24 +868,31 @@ def _build_site_availability_fields(
 ) -> list[tuple[str, str]]:
     """Build site availability fields for a hierarchical or flat tenant.
 
-    Encoding for a hierarchical tenant (captured byte-for-byte from the
-    Backoffice form's own ``FormData`` submission on WashU):
+    Encoding for a hierarchical tenant, verified live on WashU by creating an
+    employee and reading the server-stored access back (and byte-matched against
+    59 real restricted employees' edit forms):
 
-    - A region with **no** granted sites is excluded wholesale via
-      ``employee[disabledRegions][]=<regionId>``; its sites are then disabled in
-      the form and emit nothing.
-    - A region with **at least one** granted site is left enabled, and each of
-      its sites is listed exactly once: granted → ``employee[sites][N][isAvailable]``,
-      denied → ``employee[sites][N][siteId]``.
-    - Every "all allowed" rollup (``isAllRegionsAllowed`` /
-      ``isAllDistrictsAllowedByRegion`` / ``isAllSitesAllowedByDistrict``) is
-      OMITTED so Symfony binds them false.
+    - ``employee[disabledRegions][]=<regionId>`` marks a region as **fully
+      granted** — the region's per-site editing is "disabled" precisely because
+      every one of its sites is allowed. It is **not** an exclusion flag. The
+      same holds for ``employee[disabledDistricts][]=<districtId>`` at the
+      district level.
+    - Every site is listed exactly once: granted → ``[isAvailable]``, denied →
+      ``[siteId]``. A denied site must still be listed (with ``siteId``) even
+      when its whole region is denied.
+    - A region/district is emitted as fully-granted (``disabledRegions`` /
+      ``disabledDistricts`` + its sites ``isAvailable``) only when **all** of its
+      sites are granted; otherwise it is walked down to per-site level.
+    - The ``isAll*`` "all allowed" rollups are omitted so Symfony binds them
+      false (``available_sites="all"`` uses ``isAllRegionsAllowed`` instead).
 
-    Two earlier encodings were wrong and are recorded here as guardrails: the
-    "complement siteId-only" version left an untouched region's rollup true and
-    leaked its whole district; the "siteId for every site + isAvailable for
-    granted" version sent *both* fields for granted sites, which the server read
-    as grant-all.
+    Three earlier encodings shipped and each broke production — recorded here as
+    guardrails: (1) "submit only the complement's siteId" left an untouched
+    region's rollup true and leaked its whole district; (2) "siteId for every
+    site + isAvailable for granted" sent both fields for granted sites, read as
+    grant-all; (3) "``disabledRegions`` for regions with no grant" inverted the
+    flag's meaning — the server read it as *grant those regions in full*, so a
+    single-store hire was granted every store in every other region.
 
     Flat tenants keep the blocklist encoding (``employee[siteIds][]`` for every
     non-granted site).
@@ -902,23 +909,52 @@ def _build_site_availability_fields(
 
     enabled_ids = {s.id for s in resolved}
 
-    if site_tree.is_hierarchical:
-        regions_with_grant = {s.region_id for s in site_tree.sites if s.id in enabled_ids}
-        # Exclude regions that have no granted site (deterministic order).
-        excluded_regions = sorted(
-            {s.region_id for s in site_tree.sites if s.region_id is not None} - regions_with_grant
-        )
-        for region_id in excluded_regions:
-            fields.append(("employee[disabledRegions][]", str(region_id)))
-        # For regions that keep at least one grant, list each site once.
-        for s in site_tree.sites:
-            if s.region_id in regions_with_grant or s.region_id is None:
-                key = "isAvailable" if s.id in enabled_ids else "siteId"
-                fields.append((f"employee[sites][{s.id}][{key}]", str(s.id)))
-    else:
+    if not site_tree.is_hierarchical:
         for s in site_tree.sites:
             if s.id not in enabled_ids:
                 fields.append(("employee[siteIds][]", str(s.id)))
+        return fields
+
+    # Group site ids by region and district, preserving the form's site order.
+    region_site_ids: dict[int | None, list[int]] = {}
+    district_site_ids: dict[int | None, list[int]] = {}
+    for s in site_tree.sites:
+        region_site_ids.setdefault(s.region_id, []).append(s.id)
+        district_site_ids.setdefault(s.district_id, []).append(s.id)
+
+    handled: set[int] = set()
+    for region in site_tree.regions:
+        rids = region_site_ids.get(region.id, [])
+        if not rids:
+            continue
+        if set(rids) <= enabled_ids:
+            # Whole region granted → its "fully allowed" flag + sites isAvailable.
+            fields.append(("employee[disabledRegions][]", str(region.id)))
+            for sid in rids:
+                fields.append((f"employee[sites][{sid}][isAvailable]", str(sid)))
+                handled.add(sid)
+            continue
+        # Region only partially (or not) granted → descend to its districts.
+        for district in (d for d in site_tree.districts if d.region_id == region.id):
+            dids = district_site_ids.get(district.id, [])
+            if not dids:
+                continue
+            if set(dids) <= enabled_ids:
+                fields.append(("employee[disabledDistricts][]", str(district.id)))
+                for sid in dids:
+                    fields.append((f"employee[sites][{sid}][isAvailable]", str(sid)))
+                    handled.add(sid)
+            else:
+                for sid in dids:
+                    key = "isAvailable" if sid in enabled_ids else "siteId"
+                    fields.append((f"employee[sites][{sid}][{key}]", str(sid)))
+                    handled.add(sid)
+
+    # Any site not attached to a listed region/district: emit it per-site.
+    for s in site_tree.sites:
+        if s.id not in handled:
+            key = "isAvailable" if s.id in enabled_ids else "siteId"
+            fields.append((f"employee[sites][{s.id}][{key}]", str(s.id)))
 
     return fields
 

@@ -43,37 +43,43 @@ def _flat_tree() -> SiteTree:
 
 
 def test_site_fields_hierarchical_restricted_lists_granted_isavailable():
-    # Grant sites 1 + 4 (both region 2); region 1 (site 17) has no grant.
+    # Grant sites 1 + 4 — the whole of region 2. Region 1 (site 17) has no grant.
     fields = _build_site_availability_fields(_hierarchical_tree(), ["WashU Fiesta", "WashU Niles"])
     names = [n for n, _ in fields]
     # No "all allowed" rollup flags.
     assert not any("isAllRegionsAllowed" in n for n in names)
     assert not any("isAllSitesAllowedByDistrict" in n for n in names)
     assert not any("isAllDistrictsAllowedByRegion" in n for n in names)
-    # Region 1 has no granted site → excluded wholesale; its site emits nothing.
-    assert ("employee[disabledRegions][]", "1") in fields
-    assert not any(n.startswith("employee[sites][17]") for n in names)
-    # Region 2 keeps a grant → each of its sites listed once as isAvailable.
+    # Region 2 is fully granted → its "fully allowed" flag + sites isAvailable.
+    assert ("employee[disabledRegions][]", "2") in fields
     assert ("employee[sites][1][isAvailable]", "1") in fields
     assert ("employee[sites][4][isAvailable]", "4") in fields
     assert not any(n == "employee[sites][1][siteId]" for n in names)
     assert not any(n == "employee[sites][4][siteId]" for n in names)
+    # Region 1 is fully denied → its site is listed via siteId, and the region is
+    # NOT flagged disabledRegions (that flag means fully-GRANTED, not excluded).
+    assert ("employee[sites][17][siteId]", "17") in fields
+    assert ("employee[disabledRegions][]", "1") not in fields
 
 
 def test_site_fields_hierarchical_single_site_niles_only():
-    # The exact scenario captured from the Backoffice form: grant ONLY Niles
-    # (site 4, region 2). Region 1 excluded; within region 2 Niles is available
-    # and its sibling (site 1) is denied via siteId.
+    # The onboarding scenario, verified live on WashU (create → read-back): grant
+    # ONLY Niles (site 4, region 2). No region/district is fully granted, so no
+    # disabled* rollups; Niles is isAvailable and every other site — its sibling
+    # (site 1) AND the whole empty region 1 (site 17) — is denied via siteId.
     fields = _build_site_availability_fields(_hierarchical_tree(), ["WashU Niles"])
-    assert ("employee[disabledRegions][]", "1") in fields  # region 1 excluded
+    names = [n for n, _ in fields]
+    assert not any(n == "employee[disabledRegions][]" for n in names)
+    assert not any(n == "employee[disabledDistricts][]" for n in names)
     assert ("employee[sites][4][isAvailable]", "4") in fields  # Niles granted
     assert ("employee[sites][1][siteId]", "1") in fields  # sibling denied
-    # Niles must NOT also carry a siteId (the v0.5.1 grant-all bug), and the
-    # denied sibling must NOT carry isAvailable.
-    names = [n for n, _ in fields]
+    # The empty region's site must still be denied via siteId — the inverted
+    # disabledRegions bug omitted it and leaked the region as a full grant.
+    assert ("employee[sites][17][siteId]", "17") in fields
+    # Niles must NOT also carry a siteId, and denied sites must NOT be isAvailable.
     assert "employee[sites][4][siteId]" not in names
     assert "employee[sites][1][isAvailable]" not in names
-    assert not any(n.startswith("employee[sites][17]") for n in names)
+    assert "employee[sites][17][isAvailable]" not in names
 
 
 def test_site_fields_hierarchical_all_sets_flag():
@@ -144,11 +150,13 @@ def test_modify_activate_with_sites_in_one_post():
     assert session.post.call_count == 1
     posted = session.post.call_args.kwargs["data"]
     assert ("employee[isActive]", "1") in posted
-    # Grant {1,4} (region 2) → region 1 excluded; sites 1 & 4 listed as isAvailable.
-    assert ("employee[disabledRegions][]", "1") in posted
+    # Grant {1,4} = all of region 2 → region 2 fully granted (disabledRegions=2)
+    # with its sites isAvailable; region 1 fully denied via siteId (site 17).
+    assert ("employee[disabledRegions][]", "2") in posted
     assert ("employee[sites][1][isAvailable]", "1") in posted
     assert ("employee[sites][4][isAvailable]", "4") in posted
-    assert not any(n.startswith("employee[sites][17]") for n, _ in posted)
+    assert ("employee[sites][17][siteId]", "17") in posted
+    assert ("employee[disabledRegions][]", "1") not in posted
     assert not any("isAllRegionsAllowed" in n for n, _ in posted)
 
 
