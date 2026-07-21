@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
@@ -29,7 +29,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
       
         
         <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
@@ -1270,6 +1270,34 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v053-2026-07-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.5.3 — 2026-07-21
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.5.3 — 2026-07-21">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed-hierarchical-site-restriction-disabledregions-meaning-was-inverted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed — hierarchical site restriction (disabledRegions meaning was inverted)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v052-2026-06-18" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1544,6 +1572,34 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v053-2026-07-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.5.3 — 2026-07-21
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.5.3 — 2026-07-21">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed-hierarchical-site-restriction-disabledregions-meaning-was-inverted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed — hierarchical site restriction (disabledRegions meaning was inverted)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v052-2026-06-18" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1804,6 +1860,27 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v053-2026-07-21">v0.5.3 — 2026-07-21<a class="headerlink" href="#v053-2026-07-21" title="Permanent link">&para;</a></h2>
+<h3 id="fixed-hierarchical-site-restriction-disabledregions-meaning-was-inverted">Fixed — hierarchical site restriction (<code>disabledRegions</code> meaning was inverted)<a class="headerlink" href="#fixed-hierarchical-site-restriction-disabledregions-meaning-was-inverted" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Supersedes the v0.5.2 fix</strong>, which still mis-restricted new hires: it emitted
+  <code>employee[disabledRegions][]=&lt;regionId&gt;</code> for every region the employee should <strong>not</strong> be in,
+  believing that flag <em>excluded</em> a region. It does the opposite — <code>disabledRegions[]=R</code> marks a
+  region as <strong>fully granted</strong>. So a single-store hire was granted every store in every <em>other</em>
+  region (the "employee's active sites are all the sites except the one they need" bug).</li>
+<li>Verified live on the WashU tenant by creating an employee restricted to one store and reading the
+  server-stored access back: before the fix the account held 7 stores across the wrong regions;
+  after the fix it holds exactly the one selected store. The corrected encoding was also byte-matched
+  against 59 real restricted employees' edit forms.</li>
+<li>Correct encoding now used by <code>create_employee</code> / <code>modify_employee</code>:</li>
+<li>a region (or district) whose sites are <strong>all</strong> granted → its <code>disabledRegions[]</code> /
+    <code>disabledDistricts[]</code> "fully-allowed" flag plus each of its sites as <code>[isAvailable]</code>;</li>
+<li>any <strong>partially</strong> granted region/district → walked to per-site, listing every site once
+    (granted → <code>[isAvailable]</code>, denied → <code>[siteId]</code>), including denied sites in fully-denied regions
+    (previously omitted, which is what leaked them);</li>
+<li><code>isAll*</code> rollups omitted (<code>available_sites="all"</code> still uses <code>isAllRegionsAllowed</code>).</li>
+<li>Flat-tenant encoding (<code>employee[siteIds][]</code> blocklist) is unchanged and still unverified.</li>
+</ul>
 <h2 id="v052-2026-06-18">v0.5.2 — 2026-06-18<a class="headerlink" href="#v052-2026-06-18" title="Permanent link">&para;</a></h2>
 <h3 id="fixed-hierarchical-site-restriction-correct-encoding-verified-against-the-live-form">Fixed — hierarchical site restriction (correct encoding, verified against the live form)<a class="headerlink" href="#fixed-hierarchical-site-restriction-correct-encoding-verified-against-the-live-form" title="Permanent link">&para;</a></h3>
 <ul>
@@ -1980,7 +2057,7 @@ matching logic is a pure, unit-tested helper in <code>employees.py</code>. Addit
       <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>
