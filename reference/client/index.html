@@ -3725,9 +3725,12 @@ narrow it to exactly one (message lists the candidate
 
     <div class="doc doc-contents ">
 
-        <p>Return True if no existing employee uses this POS User ID.</p>
-<p>The check uses a cached per-tenant employee index built lazily from
-<code>/employee?limit=10000&amp;active=all</code> and <code>/user/create</code>.</p>
+        <p>Return True if no existing employee (active or inactive) uses this POS User ID.</p>
+<p>The inverse of :meth:<code>pos_user_id_exists</code>, and delegates to it — a live,
+targeted <code>posUserId</code> search rather than the cached employee index — so
+the result is always current (a disabled employee's POS User ID still
+counts as taken). <code>refresh</code> is accepted for backward compatibility but
+is a no-op, since every call is already live.</p>
 
 
     </div>

@@ -1693,18 +1693,19 @@
 </code></pre></div>
 <h3 id="checking-a-single-pos-user-id-pos_user_id_exists">Checking a single POS User ID (<code>pos_user_id_exists</code>)<a class="headerlink" href="#checking-a-single-pos-user-id-pos_user_id_exists" title="Permanent link">&para;</a></h3>
 <p>When you only need to validate one POS User ID — for example, before assigning it
-during onboarding — use <code>pos_user_id_exists</code>. It is the positive counterpart to
-<code>is_pos_user_id_available</code> and returns <code>True</code> if the ID is already taken by <strong>any</strong>
-employee, <strong>active or inactive</strong> (POS User IDs stay reserved even after an employee
-is disabled):</p>
+during onboarding — use <code>pos_user_id_exists</code>. It returns <code>True</code> if the ID is already
+taken by <strong>any</strong> employee, <strong>active or inactive</strong> (POS User IDs stay reserved even
+after an employee is disabled):</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">if</span> <span class="n">client</span><span class="o">.</span><span class="n">pos_user_id_exists</span><span class="p">(</span><span class="mi">12345</span><span class="p">):</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;POS User ID 12345 is already in use — pick another&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p>Unlike the <code>is_*_available</code> helpers, this issues a fresh, targeted search on every
-call (<code>/employee</code> filtered by <code>posUserId</code> with <code>active=all</code>) instead of building or
-reusing the cached employee index — so the answer is always live, which is what you
-want for a last-moment uniqueness guard. It checks the <strong>POS User ID</strong> you assign,
-not the internal Backoffice employee id shown in <code>/employee/edit/&lt;id&gt;</code> URLs.</p>
+<p><code>is_pos_user_id_available</code> is its exact inverse (<code>not pos_user_id_exists(...)</code>); both
+issue a fresh, targeted search on every call (<code>/employee</code> filtered by <code>posUserId</code>
+with <code>active=all</code>) rather than building the cached employee index, so the answer is
+always live — which is what you want for a last-moment uniqueness guard. Both check
+the <strong>POS User ID</strong> you assign, not the internal Backoffice employee id shown in
+<code>/employee/edit/&lt;id&gt;</code> URLs. (<code>is_email_available</code> / <code>is_phone_available</code> still use the
+cached index, since email has no roster column to filter on.)</p>
 <h2 id="creating-with-a-linked-backoffice-user">Creating with a linked Backoffice user<a class="headerlink" href="#creating-with-a-linked-backoffice-user" title="Permanent link">&para;</a></h2>
 <p>Pass <code>requires_backoffice=True</code> along with <code>backoffice_username</code>:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">create_employee</span><span class="p">(</span>

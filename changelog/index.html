@@ -1270,6 +1270,34 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v071-2026-07-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.7.1 — 2026-07-24
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.7.1 — 2026-07-24">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v070-2026-07-24" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1639,6 +1667,34 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v071-2026-07-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.7.1 — 2026-07-24
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.7.1 — 2026-07-24">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v070-2026-07-24" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1994,6 +2050,16 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v071-2026-07-24">v0.7.1 — 2026-07-24<a class="headerlink" href="#v071-2026-07-24" title="Permanent link">&para;</a></h2>
+<h3 id="changed">Changed<a class="headerlink" href="#changed" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>is_pos_user_id_available</code> now delegates to <code>pos_user_id_exists</code> (a live, targeted <code>posUserId</code>
+  search) instead of building the cached employee index — so it's always current, including
+  disabled accounts, and no longer downloads the full roster. Its <code>refresh</code> argument is now a
+  no-op (kept for backward compatibility, since every call is already live). <code>is_email_available</code> /
+  <code>is_phone_available</code> are unchanged and still share the cached index (email has no roster column
+  to filter on).</li>
+</ul>
 <h2 id="v070-2026-07-24">v0.7.0 — 2026-07-24<a class="headerlink" href="#v070-2026-07-24" title="Permanent link">&para;</a></h2>
 <h3 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h3>
 <ul>
