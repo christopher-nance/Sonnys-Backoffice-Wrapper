@@ -144,11 +144,32 @@ def test_availability_check_caches_employee_index():
     mock_session.get.side_effect = get_side_effect
 
     client = _make_client_with_mock_session(mock_session)
-    client.is_pos_user_id_available(1)
+    # email + phone share the cached index: built once (roster + /user/create),
+    # reused thereafter. (is_pos_user_id_available no longer uses the index — it
+    # runs a live targeted search — so it is excluded from this caching check.)
     client.is_email_available("a@b.com")
     client.is_phone_available("1234567890")
-    # Two GETs on first call (list + user_create), none on subsequent
     assert len(get_calls) == 2
+
+
+def test_is_pos_user_id_available_uses_targeted_search():
+    mock_session = MagicMock()
+    employee_list_html = (FIXTURES / "employee_list.html").read_text(encoding="utf-8")
+    requested: list[str] = []
+
+    def get_side_effect(path, *args, **kwargs):
+        requested.append(path)
+        return MagicMock(text=employee_list_html, status_code=200)
+
+    mock_session.get.side_effect = get_side_effect
+    client = _make_client_with_mock_session(mock_session)
+
+    # 7217 is present in the fixture; 99999999 is not.
+    assert client.is_pos_user_id_available(7217) is False
+    assert client.is_pos_user_id_available(99999999) is True
+    # Live targeted posUserId search — never builds the /user/create-backed index.
+    assert requested and all(p.startswith("/employee?") and "posUserId=" in p for p in requested)
+    assert not any(p == "/user/create" for p in requested)
 
 
 def test_pos_user_id_exists_targeted_search():

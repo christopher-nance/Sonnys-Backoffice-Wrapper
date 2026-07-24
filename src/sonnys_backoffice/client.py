@@ -190,14 +190,15 @@ class SonnysBackofficeClient:
             return list(self._bo_permissions)
 
     def is_pos_user_id_available(self, pos_user_id: int, *, refresh: bool = False) -> bool:
-        """Return True if no existing employee uses this POS User ID.
+        """Return True if no existing employee (active or inactive) uses this POS User ID.
 
-        The check uses a cached per-tenant employee index built lazily from
-        `/employee?limit=10000&active=all` and `/user/create`.
+        The inverse of :meth:`pos_user_id_exists`, and delegates to it — a live,
+        targeted ``posUserId`` search rather than the cached employee index — so
+        the result is always current (a disabled employee's POS User ID still
+        counts as taken). ``refresh`` is accepted for backward compatibility but
+        is a no-op, since every call is already live.
         """
-        self._ensure_employee_index(refresh=refresh)
-        assert self._employee_index is not None
-        return pos_user_id not in self._employee_index.by_pos_user_id
+        return not self.pos_user_id_exists(pos_user_id)
 
     def pos_user_id_exists(self, pos_user_id: int) -> bool:
         """Return True if any employee — active OR inactive — uses this POS User ID.

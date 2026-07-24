@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.7.1 — 2026-07-24
+
+### Changed
+
+- `is_pos_user_id_available` now delegates to `pos_user_id_exists` (a live, targeted `posUserId`
+  search) instead of building the cached employee index — so it's always current, including
+  disabled accounts, and no longer downloads the full roster. Its `refresh` argument is now a
+  no-op (kept for backward compatibility, since every call is already live). `is_email_available` /
+  `is_phone_available` are unchanged and still share the cached index (email has no roster column
+  to filter on).
+
 ## v0.7.0 — 2026-07-24
 
 ### Features

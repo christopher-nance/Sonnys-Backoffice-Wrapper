@@ -72,12 +72,10 @@ if not client.is_email_available("jane.doe@example.com"):
     raise RuntimeError("email collision")
 ```
 
-These helpers reuse the client's cached per-tenant employee index, so repeated checks in the same session are free.
-
-To validate a single POS User ID against the live tenant (including disabled accounts, whose POS User IDs stay reserved), use `pos_user_id_exists` — the positive, always-live counterpart:
+`is_email_available` and `is_phone_available` reuse the client's cached per-tenant employee index, so repeated checks in the same session are free. `is_pos_user_id_available` instead runs a live, targeted `posUserId` search each call (it's the exact inverse of `pos_user_id_exists`), so it always reflects current truth — including disabled accounts, whose POS User IDs stay reserved:
 
 ```python
-if client.pos_user_id_exists(12345):
+if client.pos_user_id_exists(12345):        # or: if not client.is_pos_user_id_available(12345)
     raise RuntimeError("POS ID 12345 is already taken")
 ```
 

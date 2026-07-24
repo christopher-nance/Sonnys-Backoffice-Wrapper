@@ -72,21 +72,22 @@ if not client.is_pos_user_id_available(12345):
 ### Checking a single POS User ID (`pos_user_id_exists`)
 
 When you only need to validate one POS User ID — for example, before assigning it
-during onboarding — use `pos_user_id_exists`. It is the positive counterpart to
-`is_pos_user_id_available` and returns `True` if the ID is already taken by **any**
-employee, **active or inactive** (POS User IDs stay reserved even after an employee
-is disabled):
+during onboarding — use `pos_user_id_exists`. It returns `True` if the ID is already
+taken by **any** employee, **active or inactive** (POS User IDs stay reserved even
+after an employee is disabled):
 
 ```python
 if client.pos_user_id_exists(12345):
     raise ValueError("POS User ID 12345 is already in use — pick another")
 ```
 
-Unlike the `is_*_available` helpers, this issues a fresh, targeted search on every
-call (`/employee` filtered by `posUserId` with `active=all`) instead of building or
-reusing the cached employee index — so the answer is always live, which is what you
-want for a last-moment uniqueness guard. It checks the **POS User ID** you assign,
-not the internal Backoffice employee id shown in `/employee/edit/<id>` URLs.
+`is_pos_user_id_available` is its exact inverse (`not pos_user_id_exists(...)`); both
+issue a fresh, targeted search on every call (`/employee` filtered by `posUserId`
+with `active=all`) rather than building the cached employee index, so the answer is
+always live — which is what you want for a last-moment uniqueness guard. Both check
+the **POS User ID** you assign, not the internal Backoffice employee id shown in
+`/employee/edit/<id>` URLs. (`is_email_available` / `is_phone_available` still use the
+cached index, since email has no roster column to filter on.)
 
 ## Creating with a linked Backoffice user
 
