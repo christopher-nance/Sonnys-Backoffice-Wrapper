@@ -738,6 +738,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#search-the-roster-server-side-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search the roster (server-side filters)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#find-an-employee-by-name" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1386,6 +1397,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#search-the-roster-server-side-filters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search the roster (server-side filters)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#find-an-employee-by-name" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1474,11 +1496,26 @@ current values, pre-select dropdowns, and then write changes back with
 <p><code>active</code> is <code>"active"</code> (default), <code>"inactive"</code>, or <code>"all"</code>. Each <code>EmployeeSummary</code> carries
 <code>employee_id</code>, <code>pos_user_id</code>, <code>first_name</code>, <code>last_name</code>, <code>phone</code>, and <code>is_active</code>. For the
 full profile of a selected person, call <code>get_employee</code>.</p>
+<h2 id="search-the-roster-server-side-filters">Search the roster (server-side filters)<a class="headerlink" href="#search-the-roster-server-side-filters" title="Permanent link">&para;</a></h2>
+<p><code>search_employees()</code> pushes the filtering to the Backoffice, so only the matching rows come back
+instead of the whole roster (a targeted lookup is ~15× smaller than the full list):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">rows</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">search_employees</span><span class="p">(</span><span class="n">first_name</span><span class="o">=</span><span class="s2">&quot;Jane&quot;</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="s2">&quot;Doe&quot;</span><span class="p">)</span>   <span class="c1"># AND-combined</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">one</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">search_employees</span><span class="p">(</span><span class="n">pos_user_id</span><span class="o">=</span><span class="mi">12345</span><span class="p">)</span>                      <span class="c1"># exact POS User ID</span>
+</code></pre></div>
+<ul>
+<li><code>first_name</code> / <code>last_name</code> are <strong>case-insensitive prefix</strong> matches; <code>pos_user_id</code> is exact; all
+  provided filters are AND-combined.</li>
+<li>The query always includes disabled employees; <code>active</code> (<code>"all"</code> default, or <code>"active"</code> /
+  <code>"inactive"</code>) then filters the returned rows.</li>
+<li>Because the name match is a fuzzy prefix, narrow it yourself when you need an exact hit — that's
+  exactly what <code>find_employee</code> / <code>find_employees</code> do (below). <code>list_employees(first_name=…,
+  last_name=…)</code> accepts the same filters as a convenience.</li>
+</ul>
 <h2 id="find-an-employee-by-name">Find an employee by name<a class="headerlink" href="#find-an-employee-by-name" title="Permanent link">&para;</a></h2>
 <p>When you don't have a POS User ID, resolve one by name. This is the reliable lookup — the roster
 has no email column and Sonny's accounts often use a personal email, so email lookups miss.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">emp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">find_employee</span><span class="p">(</span><span class="n">first_name</span><span class="o">=</span><span class="s2">&quot;Jane&quot;</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="s2">&quot;Doe&quot;</span><span class="p">,</span> <span class="n">phone</span><span class="o">=</span><span class="s2">&quot;615-555-0001&quot;</span><span class="p">)</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="c1"># -&gt; a single EmployeeSummary; then e.g. client.disable_employee(pos_user_id=emp.pos_user_id)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">emp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">find_employee</span><span class="p">(</span><span class="n">first_name</span><span class="o">=</span><span class="s2">&quot;Jane&quot;</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="s2">&quot;Doe&quot;</span><span class="p">,</span> <span class="n">phone</span><span class="o">=</span><span class="s2">&quot;615-555-0001&quot;</span><span class="p">)</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1"># -&gt; a single EmployeeSummary; then e.g. client.disable_employee(pos_user_id=emp.pos_user_id)</span>
 </code></pre></div>
 <p><code>phone</code> is only used as a tiebreaker when several employees share a name (compared digits-only on
 the last 10 digits). A name with no match raises <code>NotFoundError</code>; a name that stays ambiguous
@@ -1486,19 +1523,22 @@ raises <code>AmbiguousMatchError</code> (its message lists the candidate POS Use
 <code>find_employees(first_name=…, last_name=…)</code> to get every name match without the phone narrowing.
 See <a href="../disable-employee/#finding-the-employee-by-name-the-reliable-key">Disabling an employee</a>
 for the full resolution rules.</p>
+<p>Both filter server-side (via <code>search_employees</code>) and then apply exact name matching, so they
+resolve one person without downloading the whole roster. Resolving by POS User ID —
+<code>disable_employee</code>, <code>modify_employee</code>, and the <code>get_employee*</code> readers — is targeted the same way.</p>
 <h2 id="read-one-employee-full-snapshot">Read one employee (full snapshot)<a class="headerlink" href="#read-one-employee-full-snapshot" title="Permanent link">&para;</a></h2>
 <p><code>get_employee()</code> fetches everything — identity, contact, departments, sites, active state,
 current pay + wage history, and the current permission level:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">emp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_employee</span><span class="p">(</span><span class="n">pos_user_id</span><span class="o">=</span><span class="mi">12345</span><span class="p">)</span>   <span class="c1"># or email=&quot;jane@example.com&quot;</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="nb">print</span><span class="p">(</span><span class="n">emp</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> <span class="n">emp</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span> <span class="n">emp</span><span class="o">.</span><span class="n">is_active</span><span class="p">)</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="nb">print</span><span class="p">(</span><span class="n">emp</span><span class="o">.</span><span class="n">departments</span><span class="p">,</span> <span class="n">emp</span><span class="o">.</span><span class="n">available_sites</span><span class="p">)</span>        <span class="c1"># available_sites is a list of names, or &quot;all&quot;</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="nb">print</span><span class="p">(</span><span class="n">emp</span><span class="o">.</span><span class="n">emergency_contact_name</span><span class="p">,</span> <span class="n">emp</span><span class="o">.</span><span class="n">adp_employee_id</span><span class="p">,</span> <span class="n">emp</span><span class="o">.</span><span class="n">start_date</span><span class="p">)</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="k">if</span> <span class="n">emp</span><span class="o">.</span><span class="n">current_wage</span><span class="p">:</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">emp</span><span class="o">.</span><span class="n">current_wage</span><span class="o">.</span><span class="n">rate</span><span class="p">,</span> <span class="n">emp</span><span class="o">.</span><span class="n">current_wage</span><span class="o">.</span><span class="n">overtime_rate</span><span class="p">,</span> <span class="n">emp</span><span class="o">.</span><span class="n">current_wage</span><span class="o">.</span><span class="n">overtime_eligible</span><span class="p">)</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="nb">print</span><span class="p">(</span><span class="n">emp</span><span class="o">.</span><span class="n">permission</span><span class="o">.</span><span class="n">template_name</span><span class="p">,</span> <span class="n">emp</span><span class="o">.</span><span class="n">permission</span><span class="o">.</span><span class="n">is_custom</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">emp</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_employee</span><span class="p">(</span><span class="n">pos_user_id</span><span class="o">=</span><span class="mi">12345</span><span class="p">)</span>   <span class="c1"># or email=&quot;jane@example.com&quot;</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="nb">print</span><span class="p">(</span><span class="n">emp</span><span class="o">.</span><span class="n">first_name</span><span class="p">,</span> <span class="n">emp</span><span class="o">.</span><span class="n">last_name</span><span class="p">,</span> <span class="n">emp</span><span class="o">.</span><span class="n">is_active</span><span class="p">)</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="nb">print</span><span class="p">(</span><span class="n">emp</span><span class="o">.</span><span class="n">departments</span><span class="p">,</span> <span class="n">emp</span><span class="o">.</span><span class="n">available_sites</span><span class="p">)</span>        <span class="c1"># available_sites is a list of names, or &quot;all&quot;</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="nb">print</span><span class="p">(</span><span class="n">emp</span><span class="o">.</span><span class="n">emergency_contact_name</span><span class="p">,</span> <span class="n">emp</span><span class="o">.</span><span class="n">adp_employee_id</span><span class="p">,</span> <span class="n">emp</span><span class="o">.</span><span class="n">start_date</span><span class="p">)</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="k">if</span> <span class="n">emp</span><span class="o">.</span><span class="n">current_wage</span><span class="p">:</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="nb">print</span><span class="p">(</span><span class="n">emp</span><span class="o">.</span><span class="n">current_wage</span><span class="o">.</span><span class="n">rate</span><span class="p">,</span> <span class="n">emp</span><span class="o">.</span><span class="n">current_wage</span><span class="o">.</span><span class="n">overtime_rate</span><span class="p">,</span> <span class="n">emp</span><span class="o">.</span><span class="n">current_wage</span><span class="o">.</span><span class="n">overtime_eligible</span><span class="p">)</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="nb">print</span><span class="p">(</span><span class="n">emp</span><span class="o">.</span><span class="n">permission</span><span class="o">.</span><span class="n">template_name</span><span class="p">,</span> <span class="n">emp</span><span class="o">.</span><span class="n">permission</span><span class="o">.</span><span class="n">is_custom</span><span class="p">)</span>
 </code></pre></div>
 <p>It raises <code>NotFoundError</code> if no employee matches the lookup key.</p>
 <h2 id="read-just-one-section-fewer-requests">Read just one section (fewer requests)<a class="headerlink" href="#read-just-one-section-fewer-requests" title="Permanent link">&para;</a></h2>
@@ -1530,16 +1570,16 @@ getters — each is one resolve request plus one page fetch:</p>
 <p>The motivating use case: your app shows a permission dropdown and writes the choice back to
 Sonny's. Populate the dropdown from Sonny's actual templates, pre-select the employee's
 current level, and post the change:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># 1. Options come from Sonny&#39;s, so they&#39;re always valid to write back.</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">templates</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">list_permissions</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;pos&quot;</span><span class="p">)]</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># 2. Pre-select the employee&#39;s current level.</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">current</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_employee_permission</span><span class="p">(</span><span class="n">pos_user_id</span><span class="o">=</span><span class="mi">12345</span><span class="p">)</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">selected</span> <span class="o">=</span> <span class="n">current</span><span class="o">.</span><span class="n">template_name</span>        <span class="c1"># None when the grants don&#39;t match a template exactly</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">is_custom</span> <span class="o">=</span> <span class="n">current</span><span class="o">.</span><span class="n">is_custom</span>           <span class="c1"># show a &quot;Custom&quot; entry in that case</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="c1"># 3. After the user picks one, write it back.</span>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="n">client</span><span class="o">.</span><span class="n">modify_employee</span><span class="p">(</span><span class="n">pos_user_id</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span> <span class="n">permission</span><span class="o">=</span><span class="n">chosen_template</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># 1. Options come from Sonny&#39;s, so they&#39;re always valid to write back.</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">templates</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">client</span><span class="o">.</span><span class="n">list_permissions</span><span class="p">(</span><span class="n">scope</span><span class="o">=</span><span class="s2">&quot;pos&quot;</span><span class="p">)]</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># 2. Pre-select the employee&#39;s current level.</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="n">current</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_employee_permission</span><span class="p">(</span><span class="n">pos_user_id</span><span class="o">=</span><span class="mi">12345</span><span class="p">)</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="n">selected</span> <span class="o">=</span> <span class="n">current</span><span class="o">.</span><span class="n">template_name</span>        <span class="c1"># None when the grants don&#39;t match a template exactly</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="n">is_custom</span> <span class="o">=</span> <span class="n">current</span><span class="o">.</span><span class="n">is_custom</span>           <span class="c1"># show a &quot;Custom&quot; entry in that case</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="c1"># 3. After the user picks one, write it back.</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="n">client</span><span class="o">.</span><span class="n">modify_employee</span><span class="p">(</span><span class="n">pos_user_id</span><span class="o">=</span><span class="mi">12345</span><span class="p">,</span> <span class="n">permission</span><span class="o">=</span><span class="n">chosen_template</span><span class="p">)</span>
 </code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Current permission is best-effort</p>

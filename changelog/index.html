@@ -1270,6 +1270,45 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v070-2026-07-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.7.0 — 2026-07-24
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.7.0 — 2026-07-24">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v060-2026-07-24" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1282,7 +1321,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
+  <a href="#features_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Features
@@ -1450,7 +1489,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#features_1" class="md-nav__link">
+  <a href="#features_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         Features
@@ -1489,7 +1528,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#features_2" class="md-nav__link">
+  <a href="#features_3" class="md-nav__link">
     <span class="md-ellipsis">
       
         Features
@@ -1539,7 +1578,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#features_3" class="md-nav__link">
+  <a href="#features_4" class="md-nav__link">
     <span class="md-ellipsis">
       
         Features
@@ -1600,6 +1639,45 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v070-2026-07-24" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.7.0 — 2026-07-24
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.7.0 — 2026-07-24">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v060-2026-07-24" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1612,7 +1690,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#features" class="md-nav__link">
+  <a href="#features_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Features
@@ -1780,7 +1858,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#features_1" class="md-nav__link">
+  <a href="#features_2" class="md-nav__link">
     <span class="md-ellipsis">
       
         Features
@@ -1819,7 +1897,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#features_2" class="md-nav__link">
+  <a href="#features_3" class="md-nav__link">
     <span class="md-ellipsis">
       
         Features
@@ -1869,7 +1947,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#features_3" class="md-nav__link">
+  <a href="#features_4" class="md-nav__link">
     <span class="md-ellipsis">
       
         Features
@@ -1916,8 +1994,28 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
-<h2 id="v060-2026-07-24">v0.6.0 — 2026-07-24<a class="headerlink" href="#v060-2026-07-24" title="Permanent link">&para;</a></h2>
+<h2 id="v070-2026-07-24">v0.7.0 — 2026-07-24<a class="headerlink" href="#v070-2026-07-24" title="Permanent link">&para;</a></h2>
 <h3 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>SonnysBackofficeClient.search_employees(first_name=…, last_name=…, pos_user_id=…, active=…)</code></strong>
+  — server-side filtered roster search. The Backoffice applies the filters (<code>first_name</code> /
+  <code>last_name</code> case-insensitive prefix, <code>pos_user_id</code> exact, AND-combined), so only the matching
+  rows are fetched instead of the whole roster. Returns <code>EmployeeSummary</code> rows.</li>
+<li><code>list_employees(...)</code> gained optional <code>first_name</code> / <code>last_name</code> server-side filters.</li>
+</ul>
+<h3 id="performance">Performance<a class="headerlink" href="#performance" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Employee lookups no longer download the entire roster.</strong> <code>find_employee</code> / <code>find_employees</code>
+  now filter by name server-side (then apply the same exact match + phone tiebreaker), and every
+  resolve-by-POS-User-ID path — <code>disable_employee</code>, <code>modify_employee</code>, and the <code>get_employee*</code>
+  readers — resolves via a targeted <code>posUserId</code> query. On a ~500-employee tenant this is roughly a
+  15× smaller response (~2.5 MB → ~165 KB) per lookup, and the result is always live.</li>
+<li>Discovered that the roster page <strong>does</strong> support server-side filtering via the Symfony form
+  fields <code>first_name</code> / <code>last_name</code> / <code>posUserId</code> (the earlier "no server-side search" finding had
+  probed the wrong param names). <code>pos_user_id_exists</code> now shares this search path.</li>
+</ul>
+<h2 id="v060-2026-07-24">v0.6.0 — 2026-07-24<a class="headerlink" href="#v060-2026-07-24" title="Permanent link">&para;</a></h2>
+<h3 id="features_1">Features<a class="headerlink" href="#features_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong><code>SonnysBackofficeClient.pos_user_id_exists(pos_user_id)</code></strong> — returns <code>True</code> if a POS
   User ID is already in use by any employee, <strong>active or inactive</strong> (POS User IDs stay
@@ -2015,7 +2113,7 @@ matching logic is a pure, unit-tested helper in <code>employees.py</code>. Addit
 <li><code>EmployeePermission.template_name</code> is a best-effort exact match of the employee's granted permission IDs against the tenant's templates (Sonny's doesn't store a clean "current template"); <code>is_custom</code> + the raw grant/override ID sets are exposed for customized employees.</li>
 </ul>
 <h2 id="v030-2026-06-15">v0.3.0 — 2026-06-15<a class="headerlink" href="#v030-2026-06-15" title="Permanent link">&para;</a></h2>
-<h3 id="features_1">Features<a class="headerlink" href="#features_1" title="Permanent link">&para;</a></h3>
+<h3 id="features_2">Features<a class="headerlink" href="#features_2" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong><code>modify_employee(activate=...)</code></strong> — reactivate a disabled employee (<code>activate=True</code>) or deactivate one (<code>activate=False</code>) via the <code>employee[isActive]</code> presence semantics. Composes with any other change, so you can reactivate and (re)assign sites/pay/permission in a single call.</li>
 <li><strong><code>modify_employee(wage_effective_date=...)</code></strong> and <strong><code>EmployeeModified.wage_effective_date</code></strong> — control and report the effective date of a pay change (see bug fixes below for the rule).</li>
@@ -2027,7 +2125,7 @@ matching logic is a pure, unit-tested helper in <code>employees.py</code>. Addit
 <li><strong>Overtime eligibility is preserved on pay changes.</strong> <code>modify_employee</code> read overtime-eligibility from the always-blank "add wage" form, which dropped eligibility on every raise. It now reads the employee's current wage record and preserves eligibility (recomputing overtime at 1.5× when not explicitly provided).</li>
 </ul>
 <h2 id="v020-2026-05-08-phase-1-complete">v0.2.0 — 2026-05-08 (Phase 1 Complete)<a class="headerlink" href="#v020-2026-05-08-phase-1-complete" title="Permanent link">&para;</a></h2>
-<h3 id="features_2">Features<a class="headerlink" href="#features_2" title="Permanent link">&para;</a></h3>
+<h3 id="features_3">Features<a class="headerlink" href="#features_3" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong><code>modify_employee</code></strong> — modify an existing employee's properties, compensation, or permission template via three independent form submissions:<ul>
 <li><strong>Properties</strong> (name, phone, email, departments, sites, emergency contact, ADP ID) via full-form round-trip on <code>/employee/update</code>.</li>
@@ -2050,7 +2148,7 @@ matching logic is a pure, unit-tested helper in <code>employees.py</code>. Addit
 </ul>
 <h2 id="v010-2026-04-13-milestone-1">v0.1.0 — 2026-04-13 (Milestone 1)<a class="headerlink" href="#v010-2026-04-13-milestone-1" title="Permanent link">&para;</a></h2>
 <p>Initial release.</p>
-<h3 id="features_3">Features<a class="headerlink" href="#features_3" title="Permanent link">&para;</a></h3>
+<h3 id="features_4">Features<a class="headerlink" href="#features_4" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>create_employee</code> — two-step POST flow (<code>/employee/insert</code> + <code>/employee/permissions/update</code>), with uniqueness pre-flight across POS User ID / email / phone, full permission matrix submission, wage-site attribution, hierarchical site detection, and optional linked Backoffice user creation.</li>
 <li><code>disable_employee</code> — full-form round-trip via <code>/employee/update</code> with <code>isActive</code> omitted, followed by a re-GET verification.</li>

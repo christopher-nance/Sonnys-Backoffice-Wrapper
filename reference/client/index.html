@@ -1279,6 +1279,50 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#sonnys_backoffice.SonnysBackofficeClient.list_employees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        list_employees
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sonnys_backoffice.SonnysBackofficeClient.search_employees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        search_employees
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sonnys_backoffice.SonnysBackofficeClient.find_employee" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_employee
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sonnys_backoffice.SonnysBackofficeClient.find_employees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_employees
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#sonnys_backoffice.SonnysBackofficeClient.is_pos_user_id_available" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1595,6 +1639,50 @@
     <span class="md-ellipsis">
       
         list_permissions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sonnys_backoffice.SonnysBackofficeClient.list_employees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        list_employees
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sonnys_backoffice.SonnysBackofficeClient.search_employees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        search_employees
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sonnys_backoffice.SonnysBackofficeClient.find_employee" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_employee
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sonnys_backoffice.SonnysBackofficeClient.find_employees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_employees
       
     </span>
   </a>
@@ -3106,6 +3194,515 @@ Backoffice user templates.</p>
               <div class="doc-md-description">
                 <p>If the tenant has no existing records from which to
 extract templates (e.g., an empty tenant with no employees).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="sonnys_backoffice.SonnysBackofficeClient.list_employees" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">list_employees</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="s1">&#39;active&#39;</span><span class="p">,</span> <span class="n">first_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#sonnys_backoffice.SonnysBackofficeClient.list_employees" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>List employees on the tenant as lightweight roster rows.</p>
+<p>Each row carries <code>employee_id</code>, <code>pos_user_id</code>, <code>first_name</code>,
+<code>last_name</code>, <code>phone</code>, and <code>is_active</code>. For a full profile of a
+selected employee, call :meth:<code>get_employee</code>.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>active</code>
+            </td>
+            <td>
+                  <code><span title="typing.Literal">Literal</span>[&#39;active&#39;, &#39;inactive&#39;, &#39;all&#39;]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>"active"</code> (default) returns only active employees,
+<code>"inactive"</code> only disabled ones, <code>"all"</code> everyone.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;active&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>first_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional server-side first-name filter (prefix,
+case-insensitive) — avoids downloading the whole roster.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>last_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional server-side last-name filter.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="sonnys_backoffice.EmployeeSummary (sonnys_backoffice.models.EmployeeSummary)" href="../models/#sonnys_backoffice.EmployeeSummary">EmployeeSummary</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>list[EmployeeSummary]: Matching roster rows.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="sonnys_backoffice.SonnysBackofficeClient.search_employees" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">search_employees</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">first_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">last_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pos_user_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="s1">&#39;all&#39;</span><span class="p">)</span></code>
+
+<a href="#sonnys_backoffice.SonnysBackofficeClient.search_employees" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Search employees with server-side filtering (active and inactive).</p>
+<p>One request. The Backoffice applies the filters, so only matching rows
+are fetched rather than the whole roster:</p>
+<ul>
+<li><code>first_name</code> / <code>last_name</code> — case-insensitive prefix match;</li>
+<li><code>pos_user_id</code> — exact;</li>
+<li>filters are AND-combined.</li>
+</ul>
+<p>Provide at least one filter (with none, this returns the full roster).
+The server query always includes disabled employees; the <code>active</code>
+argument then filters the <em>returned</em> rows.</p>
+<p>The server match is a fuzzy prefix, so callers needing an exact name
+match should narrow the result themselves — e.g. :meth:<code>find_employee</code>
+re-applies exact matching plus a phone tiebreaker on top of this.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>first_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>First-name filter (prefix, case-insensitive).</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>last_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Last-name filter (prefix, case-insensitive).</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>pos_user_id</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Exact POS User ID filter.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>active</code>
+            </td>
+            <td>
+                  <code><span title="typing.Literal">Literal</span>[&#39;active&#39;, &#39;inactive&#39;, &#39;all&#39;]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Filter returned rows — <code>"all"</code> (default), <code>"active"</code>,
+or <code>"inactive"</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;all&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="sonnys_backoffice.EmployeeSummary (sonnys_backoffice.models.EmployeeSummary)" href="../models/#sonnys_backoffice.EmployeeSummary">EmployeeSummary</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>list[EmployeeSummary]: Matching roster rows.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="sonnys_backoffice.SonnysBackofficeClient.find_employee" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">find_employee</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">first_name</span><span class="p">,</span> <span class="n">last_name</span><span class="p">,</span> <span class="n">phone</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="s1">&#39;active&#39;</span><span class="p">)</span></code>
+
+<a href="#sonnys_backoffice.SonnysBackofficeClient.find_employee" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Resolve a single employee by name, using phone as a tiebreaker.</p>
+<p>Name (first + last) is the reliable lookup key on Sonny's: the roster page
+has no email column, and Sonny's accounts are typically created with the
+employee's personal email rather than a work address — so email lookups
+often miss. When several employees share a name, pass <code>phone</code> to
+disambiguate (compared digits-only on the last 10, so a leading country
+code or formatting differences don't matter).</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>first_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>First name (trimmed + casefolded before matching).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>last_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Last name (trimmed + casefolded before matching).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>phone</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional tiebreaker used only when the name matches more than one.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>active</code>
+            </td>
+            <td>
+                  <code><span title="typing.Literal">Literal</span>[&#39;active&#39;, &#39;inactive&#39;, &#39;all&#39;]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Roster filter — defaults to <code>"active"</code> (the employee you'd
+typically want to act on, e.g. to disable).</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;active&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>EmployeeSummary</code></td>            <td>
+                  <code><a class="autorefs autorefs-internal" title="sonnys_backoffice.EmployeeSummary (sonnys_backoffice.models.EmployeeSummary)" href="../models/#sonnys_backoffice.EmployeeSummary">EmployeeSummary</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The single resolved employee.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="sonnys_backoffice.NotFoundError (sonnys_backoffice.exceptions.NotFoundError)" href="../exceptions/#sonnys_backoffice.NotFoundError">NotFoundError</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If no employee matches the name.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="sonnys_backoffice.exceptions.AmbiguousMatchError">AmbiguousMatchError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the name matches multiple and phone does not
+narrow it to exactly one (message lists the candidate
+<code>pos_user_id</code>s so a caller can fall back to manual confirmation).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="sonnys_backoffice.SonnysBackofficeClient.find_employees" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">find_employees</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">first_name</span><span class="p">,</span> <span class="n">last_name</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="s1">&#39;active&#39;</span><span class="p">)</span></code>
+
+<a href="#sonnys_backoffice.SonnysBackofficeClient.find_employees" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>All roster rows whose first+last name match (case-insensitive).</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>first_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>First name to match (trimmed + casefolded).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>last_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Last name to match (trimmed + casefolded).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>active</code>
+            </td>
+            <td>
+                  <code><span title="typing.Literal">Literal</span>[&#39;active&#39;, &#39;inactive&#39;, &#39;all&#39;]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Roster filter — <code>"active"</code> (default), <code>"inactive"</code>, or <code>"all"</code>.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;active&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="sonnys_backoffice.EmployeeSummary (sonnys_backoffice.models.EmployeeSummary)" href="../models/#sonnys_backoffice.EmployeeSummary">EmployeeSummary</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>list[EmployeeSummary]: Every matching row (possibly empty).</p>
               </div>
             </td>
           </tr>
