@@ -52,6 +52,7 @@ with SonnysBackofficeClient(
 - `list_sites`, `list_departments`, `list_permissions` — discovery helpers
 - `is_pos_user_id_available`, `is_email_available`, `is_phone_available` — pre-flight uniqueness checks
 - `pos_user_id_exists` — live check for whether a POS User ID is already taken (active or inactive)
+- `search_employees` — server-side filtered roster search by name or POS User ID (fetches only the matches)
 - Pydantic v2 input validation and typed result objects
 - Automatic site/region/district hierarchy detection
 - Case-insensitive permission name matching (unknown names raise `NotFoundError` listing the valid templates)

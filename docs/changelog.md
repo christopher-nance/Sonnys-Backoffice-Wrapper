@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.7.0 — 2026-07-24
+
+### Features
+
+- **`SonnysBackofficeClient.search_employees(first_name=…, last_name=…, pos_user_id=…, active=…)`**
+  — server-side filtered roster search. The Backoffice applies the filters (`first_name` /
+  `last_name` case-insensitive prefix, `pos_user_id` exact, AND-combined), so only the matching
+  rows are fetched instead of the whole roster. Returns `EmployeeSummary` rows.
+- `list_employees(...)` gained optional `first_name` / `last_name` server-side filters.
+
+### Performance
+
+- **Employee lookups no longer download the entire roster.** `find_employee` / `find_employees`
+  now filter by name server-side (then apply the same exact match + phone tiebreaker), and every
+  resolve-by-POS-User-ID path — `disable_employee`, `modify_employee`, and the `get_employee*`
+  readers — resolves via a targeted `posUserId` query. On a ~500-employee tenant this is roughly a
+  15× smaller response (~2.5 MB → ~165 KB) per lookup, and the result is always live.
+- Discovered that the roster page **does** support server-side filtering via the Symfony form
+  fields `first_name` / `last_name` / `posUserId` (the earlier "no server-side search" finding had
+  probed the wrong param names). `pos_user_id_exists` now shares this search path.
+
 ## v0.6.0 — 2026-07-24
 
 ### Features

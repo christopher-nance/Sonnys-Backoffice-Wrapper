@@ -187,6 +187,71 @@ def test_pos_user_id_exists_false_on_empty_result():
     assert client.pos_user_id_exists(7868172) is False
 
 
+def test_search_employees_builds_targeted_path_and_filters_active():
+    mock_session = MagicMock()
+    employee_list_html = (FIXTURES / "employee_list.html").read_text(encoding="utf-8")
+    requested: list[str] = []
+
+    def get_side_effect(path, *args, **kwargs):
+        requested.append(path)
+        return MagicMock(text=employee_list_html, status_code=200)
+
+    mock_session.get.side_effect = get_side_effect
+    client = _make_client_with_mock_session(mock_session)
+
+    rows = client.search_employees(first_name="Aaliyah", last_name="Roylance")
+    # A single targeted query carrying the name filters + active=all — no /user/create.
+    assert len(requested) == 1
+    assert requested[0].startswith("/employee?")
+    assert "first_name=Aaliyah" in requested[0]
+    assert "last_name=Roylance" in requested[0]
+    assert "active=all" in requested[0]
+    assert any(r.pos_user_id == 7217 for r in rows)
+
+    # The `active` argument filters the returned rows (fixture is all-active).
+    assert len(client.search_employees(pos_user_id=7217, active="active")) > 0
+    assert client.search_employees(pos_user_id=7217, active="inactive") == []
+
+
+def test_find_employee_uses_server_side_name_search():
+    mock_session = MagicMock()
+    employee_list_html = (FIXTURES / "employee_list.html").read_text(encoding="utf-8")
+    requested: list[str] = []
+
+    def get_side_effect(path, *args, **kwargs):
+        requested.append(path)
+        return MagicMock(text=employee_list_html, status_code=200)
+
+    mock_session.get.side_effect = get_side_effect
+    client = _make_client_with_mock_session(mock_session)
+
+    emp = client.find_employee(first_name="Aaliyah", last_name="Roylance")
+    assert emp.pos_user_id == 7217
+    # Filtered server-side by name; never pulls the full roster.
+    assert any("first_name=Aaliyah" in p and "last_name=Roylance" in p for p in requested)
+    assert not any(p == "/employee?limit=10000&active=all" for p in requested)
+
+
+def test_resolve_employee_id_by_pos_uses_targeted_search():
+    mock_session = MagicMock()
+    employee_list_html = (FIXTURES / "employee_list.html").read_text(encoding="utf-8")
+    requested: list[str] = []
+
+    def get_side_effect(path, *args, **kwargs):
+        requested.append(path)
+        return MagicMock(text=employee_list_html, status_code=200)
+
+    mock_session.get.side_effect = get_side_effect
+    client = _make_client_with_mock_session(mock_session)
+
+    # aaliyah roylance = emp 54, pos 7217
+    assert client._resolve_employee_id(pos_user_id=7217, email=None) == 54
+    # Targeted posUserId search — not the full roster, and no /user/create build.
+    assert any("posUserId=7217" in p for p in requested)
+    assert not any(p == "/employee?limit=10000&active=all" for p in requested)
+    assert not any(p == "/user/create" for p in requested)
+
+
 def test_disable_employee_invalidates_employee_index():
     mock_session = MagicMock()
     # Build index then disable; second call should re-fetch

@@ -15,6 +15,10 @@
         - list_sites
         - list_departments
         - list_permissions
+        - list_employees
+        - search_employees
+        - find_employee
+        - find_employees
         - is_pos_user_id_available
         - pos_user_id_exists
         - is_email_available

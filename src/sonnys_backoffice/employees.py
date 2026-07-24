@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from typing import Any
+from urllib.parse import urlencode
 
 from bs4 import BeautifulSoup
 
@@ -144,6 +145,36 @@ def build_employee_index(
         by_email=email_map,
         by_phone=phone_map,
     )
+
+
+def build_employee_search_path(
+    *,
+    first_name: str | None = None,
+    last_name: str | None = None,
+    pos_user_id: int | None = None,
+    limit: int = 10000,
+) -> str:
+    """Build a server-side-filtered ``/employee`` roster path.
+
+    The Backoffice roster honors the same Symfony form-field query params the
+    search box uses: ``first_name`` and ``last_name`` (case-insensitive prefix
+    match) and ``posUserId`` (exact), AND-combined. Only the matching rows come
+    back, so callers can resolve one employee without downloading the whole
+    roster. ``active=all`` is always included so disabled employees — whose POS
+    User IDs stay reserved — are returned too; ``limit`` guards against
+    pagination truncating a broad match. Values are URL-encoded.
+    """
+    params: list[tuple[str, str]] = [
+        ("sort_type", "first_name"),
+        ("sort_dir", "1"),
+        ("first_name", first_name or ""),
+        ("last_name", last_name or ""),
+    ]
+    if pos_user_id is not None:
+        params.append(("posUserId", str(pos_user_id)))
+    params.append(("active", "all"))
+    params.append(("limit", str(limit)))
+    return "/employee?" + urlencode(params)
 
 
 def find_employee_in_list_html(
@@ -970,7 +1001,13 @@ def disable_employee(
     "checked = true" regardless of value, so the only reliable disable is to
     POST every other form field unchanged and omit `isActive` entirely.
     """
-    list_resp = session.get("/employee?limit=10000&active=all")
+    # Resolve the internal employee_id. By POS User ID we can filter server-side
+    # (one small response); email has no roster column, so fall back to the full
+    # roster and scan (build_employee_index handles the dropdown case elsewhere).
+    if request.pos_user_id is not None:
+        list_resp = session.get(build_employee_search_path(pos_user_id=request.pos_user_id))
+    else:
+        list_resp = session.get("/employee?limit=10000&active=all")
     _check_create_response(list_resp)
     employee_id = find_employee_in_list_html(
         list_resp.text,

@@ -20,6 +20,24 @@ for row in client.list_employees(active="active"):
 `employee_id`, `pos_user_id`, `first_name`, `last_name`, `phone`, and `is_active`. For the
 full profile of a selected person, call `get_employee`.
 
+## Search the roster (server-side filters)
+
+`search_employees()` pushes the filtering to the Backoffice, so only the matching rows come back
+instead of the whole roster (a targeted lookup is ~15× smaller than the full list):
+
+```python
+rows = client.search_employees(first_name="Jane", last_name="Doe")   # AND-combined
+one = client.search_employees(pos_user_id=12345)                      # exact POS User ID
+```
+
+- `first_name` / `last_name` are **case-insensitive prefix** matches; `pos_user_id` is exact; all
+  provided filters are AND-combined.
+- The query always includes disabled employees; `active` (`"all"` default, or `"active"` /
+  `"inactive"`) then filters the returned rows.
+- Because the name match is a fuzzy prefix, narrow it yourself when you need an exact hit — that's
+  exactly what `find_employee` / `find_employees` do (below). `list_employees(first_name=…,
+  last_name=…)` accepts the same filters as a convenience.
+
 ## Find an employee by name
 
 When you don't have a POS User ID, resolve one by name. This is the reliable lookup — the roster
@@ -36,6 +54,10 @@ raises `AmbiguousMatchError` (its message lists the candidate POS User IDs). Use
 `find_employees(first_name=…, last_name=…)` to get every name match without the phone narrowing.
 See [Disabling an employee](disable-employee.md#finding-the-employee-by-name-the-reliable-key)
 for the full resolution rules.
+
+Both filter server-side (via `search_employees`) and then apply exact name matching, so they
+resolve one person without downloading the whole roster. Resolving by POS User ID —
+`disable_employee`, `modify_employee`, and the `get_employee*` readers — is targeted the same way.
 
 ## Read one employee (full snapshot)
 

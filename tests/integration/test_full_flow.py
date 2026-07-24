@@ -52,6 +52,33 @@ def test_pos_user_id_exists_active_and_inactive(client):
 
 
 @pytest.mark.integration
+def test_search_employees_server_side_filter(client):
+    # first_name filter returns matches across active AND inactive.
+    trevons = client.search_employees(first_name="Trevon")
+    names = {(e.first_name, e.last_name) for e in trevons}
+    assert ("Trevon", "Roots") in names  # active
+    assert ("Trevon", "Johnson") in names  # inactive
+    # Filters AND-combine to narrow to a single person.
+    roots = client.search_employees(first_name="Trevon", last_name="Roots")
+    assert [e.pos_user_id for e in roots] == [87151]
+    # POS User ID filter is exact; an unused id yields no rows.
+    assert client.search_employees(pos_user_id=7868172) == []
+    # The `active` argument filters the returned rows.
+    assert all(e.is_active for e in client.search_employees(first_name="Trevon", active="active"))
+    assert all(
+        not e.is_active for e in client.search_employees(first_name="Trevon", active="inactive")
+    )
+
+
+@pytest.mark.integration
+def test_find_employee_resolves_via_server_side_search(client):
+    # find_employee now filters server-side by name, then applies exact matching.
+    emp = client.find_employee(first_name="Trevon", last_name="Roots")
+    assert emp.pos_user_id == 87151
+    assert emp.is_active is True
+
+
+@pytest.mark.integration
 def test_create_and_disable_employee(tracked_client, unique_suffix, writes_allowed):
     """Create one throwaway employee, verify the result, then disable.
 

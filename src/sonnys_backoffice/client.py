@@ -15,6 +15,7 @@ from .departments import parse_departments
 from .employees import (
     EmployeeIndex,
     build_employee_index,
+    build_employee_search_path,
     find_employee_in_list_html,
     match_employees_by_name,
     parse_employee_permission,
@@ -223,11 +224,9 @@ class SonnysBackofficeClient:
             bool: True if the POS User ID is in use by any employee (active or
             inactive); False if it is free.
         """
-        html = self._session.get(
-            "/employee?sort_type=first_name&sort_dir=1&first_name=&last_name="
-            f"&posUserId={pos_user_id}&active=all"
-        ).text
-        return any(row.pos_user_id == pos_user_id for row in parse_employee_summaries(html))
+        return any(
+            row.pos_user_id == pos_user_id for row in self.search_employees(pos_user_id=pos_user_id)
+        )
 
     def is_email_available(self, email: str, *, refresh: bool = False) -> bool:
         """Return True if no existing employee uses this email (case-insensitive)."""
@@ -496,10 +495,15 @@ class SonnysBackofficeClient:
             EmployeeModified: Confirmation of which forms were submitted and
             any warnings.
         """
-        self._ensure_employee_list_html()
-        assert self._employee_list_html is not None
+        if pos_user_id is not None:
+            # POS User ID filters server-side — resolve without the full roster.
+            list_html = self._session.get(build_employee_search_path(pos_user_id=pos_user_id)).text
+        else:
+            self._ensure_employee_list_html()
+            assert self._employee_list_html is not None
+            list_html = self._employee_list_html
         employee_id = find_employee_in_list_html(
-            self._employee_list_html,
+            list_html,
             pos_user_id=pos_user_id,
             email=email,
         )
@@ -557,24 +561,76 @@ class SonnysBackofficeClient:
 
     # ── reads ────────────────────────────────────────────────────────────────
 
-    def list_employees(
+    def search_employees(
         self,
         *,
-        active: Literal["active", "inactive", "all"] = "active",
+        first_name: str | None = None,
+        last_name: str | None = None,
+        pos_user_id: int | None = None,
+        active: Literal["active", "inactive", "all"] = "all",
     ) -> list[EmployeeSummary]:
-        """List employees on the tenant as lightweight roster rows.
+        """Search employees with server-side filtering (active and inactive).
 
-        One request. Each row carries ``employee_id``, ``pos_user_id``,
-        ``first_name``, ``last_name``, ``phone``, and ``is_active``. For a full
-        profile of a selected employee, call :meth:`get_employee`.
+        One request. The Backoffice applies the filters, so only matching rows
+        are fetched rather than the whole roster:
+
+        - ``first_name`` / ``last_name`` — case-insensitive prefix match;
+        - ``pos_user_id`` — exact;
+        - filters are AND-combined.
+
+        Provide at least one filter (with none, this returns the full roster).
+        The server query always includes disabled employees; the ``active``
+        argument then filters the *returned* rows.
+
+        The server match is a fuzzy prefix, so callers needing an exact name
+        match should narrow the result themselves — e.g. :meth:`find_employee`
+        re-applies exact matching plus a phone tiebreaker on top of this.
 
         Args:
-            active: ``"active"`` (default) returns only active employees,
-                ``"inactive"`` only disabled ones, ``"all"`` everyone.
+            first_name: First-name filter (prefix, case-insensitive).
+            last_name: Last-name filter (prefix, case-insensitive).
+            pos_user_id: Exact POS User ID filter.
+            active: Filter returned rows — ``"all"`` (default), ``"active"``,
+                or ``"inactive"``.
 
         Returns:
             list[EmployeeSummary]: Matching roster rows.
         """
+        path = build_employee_search_path(
+            first_name=first_name, last_name=last_name, pos_user_id=pos_user_id
+        )
+        rows = parse_employee_summaries(self._session.get(path).text)
+        if active == "active":
+            return [r for r in rows if r.is_active]
+        if active == "inactive":
+            return [r for r in rows if not r.is_active]
+        return rows
+
+    def list_employees(
+        self,
+        *,
+        active: Literal["active", "inactive", "all"] = "active",
+        first_name: str | None = None,
+        last_name: str | None = None,
+    ) -> list[EmployeeSummary]:
+        """List employees on the tenant as lightweight roster rows.
+
+        Each row carries ``employee_id``, ``pos_user_id``, ``first_name``,
+        ``last_name``, ``phone``, and ``is_active``. For a full profile of a
+        selected employee, call :meth:`get_employee`.
+
+        Args:
+            active: ``"active"`` (default) returns only active employees,
+                ``"inactive"`` only disabled ones, ``"all"`` everyone.
+            first_name: Optional server-side first-name filter (prefix,
+                case-insensitive) — avoids downloading the whole roster.
+            last_name: Optional server-side last-name filter.
+
+        Returns:
+            list[EmployeeSummary]: Matching roster rows.
+        """
+        if first_name is not None or last_name is not None:
+            return self.search_employees(first_name=first_name, last_name=last_name, active=active)
         html = self._session.get("/employee?limit=10000&active=all").text
         rows = parse_employee_summaries(html)
         if active == "active":
@@ -600,7 +656,7 @@ class SonnysBackofficeClient:
         Returns:
             list[EmployeeSummary]: Every matching row (possibly empty).
         """
-        rows = self.list_employees(active=active)
+        rows = self.search_employees(first_name=first_name, last_name=last_name, active=active)
         return match_employees_by_name(rows, first_name=first_name, last_name=last_name)
 
     def find_employee(
@@ -636,7 +692,7 @@ class SonnysBackofficeClient:
                 narrow it to exactly one (message lists the candidate
                 ``pos_user_id``s so a caller can fall back to manual confirmation).
         """
-        rows = self.list_employees(active=active)
+        rows = self.search_employees(first_name=first_name, last_name=last_name, active=active)
         return resolve_employee_by_name(
             rows, first_name=first_name, last_name=last_name, phone=phone
         )
@@ -649,9 +705,13 @@ class SonnysBackofficeClient:
     ) -> int:
         if (pos_user_id is None) == (email is None):
             raise ValueError("exactly one of pos_user_id or email is required")
-        roster = self._session.get("/employee?limit=10000&active=all").text
         if pos_user_id is not None:
-            return find_employee_in_list_html(roster, pos_user_id=pos_user_id)
+            # POS User ID filters server-side — no need to pull the full roster.
+            html = self._session.get(build_employee_search_path(pos_user_id=pos_user_id)).text
+            return find_employee_in_list_html(html, pos_user_id=pos_user_id)
+        # Email isn't a roster column, so fall back to the full roster + the
+        # /user/create dropdown index for email resolution.
+        roster = self._session.get("/employee?limit=10000&active=all").text
         user_create = self._session.get("/user/create").text
         index = build_employee_index(employee_list_html=roster, user_create_html=user_create)
         assert email is not None
