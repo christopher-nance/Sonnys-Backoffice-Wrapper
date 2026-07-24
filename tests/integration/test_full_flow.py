@@ -43,6 +43,15 @@ def test_availability_helpers_work(client):
 
 
 @pytest.mark.integration
+def test_pos_user_id_exists_active_and_inactive(client):
+    # POS User IDs are reserved even when the account is disabled, so both of
+    # these existing records must report True; the unused id must report False.
+    assert client.pos_user_id_exists(9048) is True  # inactive employee
+    assert client.pos_user_id_exists(87151) is True  # active employee
+    assert client.pos_user_id_exists(7868172) is False  # not used by anyone
+
+
+@pytest.mark.integration
 def test_create_and_disable_employee(tracked_client, unique_suffix, writes_allowed):
     """Create one throwaway employee, verify the result, then disable.
 

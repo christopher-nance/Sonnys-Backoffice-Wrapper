@@ -16,5 +16,6 @@
         - list_departments
         - list_permissions
         - is_pos_user_id_available
+        - pos_user_id_exists
         - is_email_available
         - is_phone_available

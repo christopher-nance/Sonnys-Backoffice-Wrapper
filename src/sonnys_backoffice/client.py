@@ -198,6 +198,37 @@ class SonnysBackofficeClient:
         assert self._employee_index is not None
         return pos_user_id not in self._employee_index.by_pos_user_id
 
+    def pos_user_id_exists(self, pos_user_id: int) -> bool:
+        """Return True if any employee — active OR inactive — uses this POS User ID.
+
+        POS User IDs are reserved per tenant: a disabled employee still holds
+        theirs, so assigning one that is already taken makes ``create_employee``
+        fail. Call this to pre-flight a POS User ID before assigning it.
+
+        This is the positive counterpart to :meth:`is_pos_user_id_available`,
+        but issues a fresh, targeted search on every call (``/employee`` filtered
+        by ``posUserId`` with ``active=all``) rather than building or reusing the
+        cached employee index — so the result is always live. It checks the
+        **POS User ID** you assign, not the internal Backoffice employee id shown
+        in ``/employee/edit/<id>`` URLs.
+
+        The match is confirmed by an exact POS-User-ID comparison against the
+        returned rows, so the answer is correct even on a tenant that ignores the
+        filter and returns the full roster (it degrades to a full-roster scan).
+
+        Args:
+            pos_user_id: The POS User ID to check.
+
+        Returns:
+            bool: True if the POS User ID is in use by any employee (active or
+            inactive); False if it is free.
+        """
+        html = self._session.get(
+            "/employee?sort_type=first_name&sort_dir=1&first_name=&last_name="
+            f"&posUserId={pos_user_id}&active=all"
+        ).text
+        return any(row.pos_user_id == pos_user_id for row in parse_employee_summaries(html))
+
     def is_email_available(self, email: str, *, refresh: bool = False) -> bool:
         """Return True if no existing employee uses this email (case-insensitive)."""
         self._ensure_employee_index(refresh=refresh)

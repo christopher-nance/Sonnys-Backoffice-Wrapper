@@ -69,6 +69,25 @@ if not client.is_pos_user_id_available(12345):
     pos_user_id = find_next_free_id(client, starting_at=12346)
 ```
 
+### Checking a single POS User ID (`pos_user_id_exists`)
+
+When you only need to validate one POS User ID — for example, before assigning it
+during onboarding — use `pos_user_id_exists`. It is the positive counterpart to
+`is_pos_user_id_available` and returns `True` if the ID is already taken by **any**
+employee, **active or inactive** (POS User IDs stay reserved even after an employee
+is disabled):
+
+```python
+if client.pos_user_id_exists(12345):
+    raise ValueError("POS User ID 12345 is already in use — pick another")
+```
+
+Unlike the `is_*_available` helpers, this issues a fresh, targeted search on every
+call (`/employee` filtered by `posUserId` with `active=all`) instead of building or
+reusing the cached employee index — so the answer is always live, which is what you
+want for a last-moment uniqueness guard. It checks the **POS User ID** you assign,
+not the internal Backoffice employee id shown in `/employee/edit/<id>` URLs.
+
 ## Creating with a linked Backoffice user
 
 Pass `requires_backoffice=True` along with `backoffice_username`:

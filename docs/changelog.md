@@ -1,5 +1,22 @@
 # Changelog
 
+## v0.6.0 — 2026-07-24
+
+### Features
+
+- **`SonnysBackofficeClient.pos_user_id_exists(pos_user_id)`** — returns `True` if a POS
+  User ID is already in use by any employee, **active or inactive** (POS User IDs stay
+  reserved even after an employee is disabled). Use it to pre-flight a POS User ID before
+  assigning it, so onboarding doesn't fail on a duplicate.
+  - The positive counterpart to `is_pos_user_id_available`; unlike the `is_*_available`
+    helpers it issues a fresh, targeted search on every call (`/employee` filtered by
+    `posUserId` with `active=all`) instead of building/reusing the cached employee index —
+    so the result is always live.
+  - Matches on an exact POS-User-ID comparison of the returned rows, so it stays correct
+    even on a tenant that ignores the filter and returns the full roster.
+  - Checks the POS User ID you assign, not the internal Backoffice employee id shown in
+    `/employee/edit/<id>` URLs.
+
 ## v0.5.3 — 2026-07-21
 
 ### Fixed — hierarchical site restriction (`disabledRegions` meaning was inverted)

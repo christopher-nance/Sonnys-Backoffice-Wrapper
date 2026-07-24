@@ -151,6 +151,42 @@ def test_availability_check_caches_employee_index():
     assert len(get_calls) == 2
 
 
+def test_pos_user_id_exists_targeted_search():
+    mock_session = MagicMock()
+    employee_list_html = (FIXTURES / "employee_list.html").read_text(encoding="utf-8")
+    requested: list[str] = []
+
+    def get_side_effect(path, *args, **kwargs):
+        requested.append(path)
+        if path.startswith("/employee?"):
+            return MagicMock(text=employee_list_html, status_code=200)
+        raise AssertionError(f"unexpected GET: {path}")
+
+    mock_session.get.side_effect = get_side_effect
+    client = _make_client_with_mock_session(mock_session)
+
+    # 7217 is present in the roster fixture; 99999999 is not — exact POS-ID match
+    # (correct even when the server ignores the filter and returns the roster).
+    assert client.pos_user_id_exists(7217) is True
+    assert client.pos_user_id_exists(99999999) is False
+
+    # Every call is a fresh targeted search (no /user/create index build), asking
+    # the server to filter by posUserId across active AND inactive rows.
+    assert all(p.startswith("/employee?") for p in requested)
+    assert any("posUserId=7217" in p and "active=all" in p for p in requested)
+
+
+def test_pos_user_id_exists_false_on_empty_result():
+    mock_session = MagicMock()
+    # Empty search result (no employees table) → no rows → not in use.
+    mock_session.get.return_value = MagicMock(
+        text="<html><body>No Employees found based on this search criteria.</body></html>",
+        status_code=200,
+    )
+    client = _make_client_with_mock_session(mock_session)
+    assert client.pos_user_id_exists(7868172) is False
+
+
 def test_disable_employee_invalidates_employee_index():
     mock_session = MagicMock()
     # Build index then disable; second call should re-fetch

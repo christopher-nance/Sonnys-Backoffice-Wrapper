@@ -74,6 +74,13 @@ if not client.is_email_available("jane.doe@example.com"):
 
 These helpers reuse the client's cached per-tenant employee index, so repeated checks in the same session are free.
 
+To validate a single POS User ID against the live tenant (including disabled accounts, whose POS User IDs stay reserved), use `pos_user_id_exists` — the positive, always-live counterpart:
+
+```python
+if client.pos_user_id_exists(12345):
+    raise RuntimeError("POS ID 12345 is already taken")
+```
+
 ## What next?
 
 - [Creating an employee](../guides/create-employee.md) — every parameter explained
