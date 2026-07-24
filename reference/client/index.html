@@ -1290,6 +1290,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#sonnys_backoffice.SonnysBackofficeClient.pos_user_id_exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pos_user_id_exists
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#sonnys_backoffice.SonnysBackofficeClient.is_email_available" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1595,6 +1606,17 @@
     <span class="md-ellipsis">
       
         is_pos_user_id_available
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sonnys_backoffice.SonnysBackofficeClient.pos_user_id_exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pos_user_id_exists
       
     </span>
   </a>
@@ -3109,6 +3131,100 @@ extract templates (e.g., an empty tenant with no employees).</p>
         <p>Return True if no existing employee uses this POS User ID.</p>
 <p>The check uses a cached per-tenant employee index built lazily from
 <code>/employee?limit=10000&amp;active=all</code> and <code>/user/create</code>.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="sonnys_backoffice.SonnysBackofficeClient.pos_user_id_exists" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">pos_user_id_exists</span><span class="p">(</span><span class="n">pos_user_id</span><span class="p">)</span></code>
+
+<a href="#sonnys_backoffice.SonnysBackofficeClient.pos_user_id_exists" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return True if any employee — active OR inactive — uses this POS User ID.</p>
+<p>POS User IDs are reserved per tenant: a disabled employee still holds
+theirs, so assigning one that is already taken makes <code>create_employee</code>
+fail. Call this to pre-flight a POS User ID before assigning it.</p>
+<p>This is the positive counterpart to :meth:<code>is_pos_user_id_available</code>,
+but issues a fresh, targeted search on every call (<code>/employee</code> filtered
+by <code>posUserId</code> with <code>active=all</code>) rather than building or reusing the
+cached employee index — so the result is always live. It checks the
+<strong>POS User ID</strong> you assign, not the internal Backoffice employee id shown
+in <code>/employee/edit/&lt;id&gt;</code> URLs.</p>
+<p>The match is confirmed by an exact POS-User-ID comparison against the
+returned rows, so the answer is correct even on a tenant that ignores the
+filter and returns the full roster (it degrades to a full-roster scan).</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>pos_user_id</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The POS User ID to check.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+<th>Name</th>          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+<td><code>bool</code></td>            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>True if the POS User ID is in use by any employee (active or</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+<td></td>            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>inactive); False if it is free.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>

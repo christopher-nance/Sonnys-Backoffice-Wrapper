@@ -751,6 +751,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Uniqueness pre-flight">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#checking-a-single-pos-user-id-pos_user_id_exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checking a single POS User ID (pos_user_id_exists)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1438,6 +1455,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Uniqueness pre-flight">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#checking-a-single-pos-user-id-pos_user_id_exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checking a single POS User ID (pos_user_id_exists)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1657,14 +1691,28 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">if</span> <span class="ow">not</span> <span class="n">client</span><span class="o">.</span><span class="n">is_pos_user_id_available</span><span class="p">(</span><span class="mi">12345</span><span class="p">):</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">pos_user_id</span> <span class="o">=</span> <span class="n">find_next_free_id</span><span class="p">(</span><span class="n">client</span><span class="p">,</span> <span class="n">starting_at</span><span class="o">=</span><span class="mi">12346</span><span class="p">)</span>
 </code></pre></div>
+<h3 id="checking-a-single-pos-user-id-pos_user_id_exists">Checking a single POS User ID (<code>pos_user_id_exists</code>)<a class="headerlink" href="#checking-a-single-pos-user-id-pos_user_id_exists" title="Permanent link">&para;</a></h3>
+<p>When you only need to validate one POS User ID — for example, before assigning it
+during onboarding — use <code>pos_user_id_exists</code>. It is the positive counterpart to
+<code>is_pos_user_id_available</code> and returns <code>True</code> if the ID is already taken by <strong>any</strong>
+employee, <strong>active or inactive</strong> (POS User IDs stay reserved even after an employee
+is disabled):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">if</span> <span class="n">client</span><span class="o">.</span><span class="n">pos_user_id_exists</span><span class="p">(</span><span class="mi">12345</span><span class="p">):</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;POS User ID 12345 is already in use — pick another&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>Unlike the <code>is_*_available</code> helpers, this issues a fresh, targeted search on every
+call (<code>/employee</code> filtered by <code>posUserId</code> with <code>active=all</code>) instead of building or
+reusing the cached employee index — so the answer is always live, which is what you
+want for a last-moment uniqueness guard. It checks the <strong>POS User ID</strong> you assign,
+not the internal Backoffice employee id shown in <code>/employee/edit/&lt;id&gt;</code> URLs.</p>
 <h2 id="creating-with-a-linked-backoffice-user">Creating with a linked Backoffice user<a class="headerlink" href="#creating-with-a-linked-backoffice-user" title="Permanent link">&para;</a></h2>
 <p>Pass <code>requires_backoffice=True</code> along with <code>backoffice_username</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">create_employee</span><span class="p">(</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="o">...</span><span class="p">,</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">requires_backoffice</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="n">backoffice_username</span><span class="o">=</span><span class="s2">&quot;janedoe&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="p">)</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">backoffice_password</span><span class="p">)</span>  <span class="c1"># auto-generated 12-char password</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">create_employee</span><span class="p">(</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="o">...</span><span class="p">,</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">requires_backoffice</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">backoffice_username</span><span class="o">=</span><span class="s2">&quot;janedoe&quot;</span><span class="p">,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">)</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">backoffice_password</span><span class="p">)</span>  <span class="c1"># auto-generated 12-char password</span>
 </code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Milestone 1 limitation</p>
@@ -1672,21 +1720,21 @@
 </div>
 <p>The linked employee must be <strong>active</strong> at the moment of BO user creation. Since <code>create_employee</code> always creates the employee first and then the BO user, this is automatic for new hires. It only becomes a concern when re-linking a BO account to a previously-disabled employee — which Milestone 1 doesn't support.</p>
 <h2 id="the-returned-employeecreated-object">The returned <code>EmployeeCreated</code> object<a class="headerlink" href="#the-returned-employeecreated-object" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">EmployeeCreated</span><span class="p">:</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">employee_id</span><span class="p">:</span> <span class="nb">int</span>                  <span class="c1"># the internal Backoffice ID</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span class="n">pos_user_id</span><span class="p">:</span> <span class="nb">int</span>                  <span class="c1"># echoed from the request</span>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="n">pos_pin</span><span class="p">:</span> <span class="nb">int</span>                      <span class="c1"># either the passed value or auto-generated</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="n">first_name</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="n">last_name</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">email</span><span class="p">:</span> <span class="nb">str</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">backoffice_user_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>    <span class="c1"># only set when requires_backoffice=True</span>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">backoffice_username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="n">backoffice_password</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>   <span class="c1"># auto-generated if not supplied</span>
-<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="n">permission_applied</span><span class="p">:</span> <span class="nb">str</span>           <span class="c1"># the resolved template name</span>
-<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="n">sites_granted</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>          <span class="c1"># site names, resolved from available_sites</span>
-<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="n">departments</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>            <span class="c1"># with Greeter included</span>
-<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="n">wage_site</span><span class="p">:</span> <span class="nb">str</span>                    <span class="c1"># the wage attribution site name</span>
-<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="n">warnings</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>               <span class="c1"># BO template deferral, etc.</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">class</span><span class="w"> </span><span class="nc">EmployeeCreated</span><span class="p">:</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">employee_id</span><span class="p">:</span> <span class="nb">int</span>                  <span class="c1"># the internal Backoffice ID</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">pos_user_id</span><span class="p">:</span> <span class="nb">int</span>                  <span class="c1"># echoed from the request</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">pos_pin</span><span class="p">:</span> <span class="nb">int</span>                      <span class="c1"># either the passed value or auto-generated</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">first_name</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="n">last_name</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="n">email</span><span class="p">:</span> <span class="nb">str</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="n">backoffice_user_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span>    <span class="c1"># only set when requires_backoffice=True</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="n">backoffice_username</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="n">backoffice_password</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span>   <span class="c1"># auto-generated if not supplied</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>    <span class="n">permission_applied</span><span class="p">:</span> <span class="nb">str</span>           <span class="c1"># the resolved template name</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    <span class="n">sites_granted</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>          <span class="c1"># site names, resolved from available_sites</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>    <span class="n">departments</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>            <span class="c1"># with Greeter included</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>    <span class="n">wage_site</span><span class="p">:</span> <span class="nb">str</span>                    <span class="c1"># the wage attribution site name</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>    <span class="n">warnings</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>               <span class="c1"># BO template deferral, etc.</span>
 </code></pre></div>
 <p>Always log or persist <code>pos_pin</code> and <code>backoffice_password</code> — Backoffice does not show them again.</p>
 

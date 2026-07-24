@@ -1475,6 +1475,7 @@
 <li><code>create_backoffice_user</code> — standalone or linked to an existing employee</li>
 <li><code>list_sites</code>, <code>list_departments</code>, <code>list_permissions</code> — discovery helpers</li>
 <li><code>is_pos_user_id_available</code>, <code>is_email_available</code>, <code>is_phone_available</code> — pre-flight uniqueness checks</li>
+<li><code>pos_user_id_exists</code> — live check for whether a POS User ID is already taken (active or inactive)</li>
 <li>Pydantic v2 input validation and typed result objects</li>
 <li>Automatic site/region/district hierarchy detection</li>
 <li>Case-insensitive permission name matching (unknown names raise <code>NotFoundError</code> listing the valid templates)</li>
