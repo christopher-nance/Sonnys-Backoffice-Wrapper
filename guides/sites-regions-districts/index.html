@@ -1532,7 +1532,13 @@
 <p>The encoding is subtle, so the wrapper hides it for you:</p>
 <ul>
 <li><strong>Flat tenants</strong> use a <em>blocklist</em>: <code>employee[siteIds][]</code> lists the sites to <strong>exclude</strong>.</li>
-<li><strong>Hierarchical tenants</strong> also work by exclusion. The <code>employee[isAllRegionsAllowed]</code> flag is <strong>omitted entirely</strong> (the Backoffice form binds a checkbox's mere <em>presence</em> as "true", so sending it — even as <code>0</code> — would grant every region). Each non-granted site is then marked unavailable by submitting only its <code>employee[sites][N][siteId]</code>; sites left unmentioned stay available. In other words, the wrapper submits the <em>complement</em> of your requested list.</li>
+<li><strong>Hierarchical tenants</strong> use inverted-looking controls. The <code>employee[isAllRegionsAllowed]</code>
+  flag is <strong>omitted entirely</strong> for a restricted selection. Fully denied groups emit their checked
+  <code>disabledRegions[]</code> / <code>disabledDistricts[]</code> controls. Every site is represented exactly once:
+  granted sites use the enabled hidden <code>employee[sites][N][siteId]</code>; denied sites use the checked
+  <code>employee[sites][N][isAvailable]</code> control (the UI labels that checked state <strong>No</strong>). The wrapper
+  reads the stored edit form back before applying permissions and fails closed if Sonny's persisted
+  a different site set.</li>
 </ul>
 <p>This is the same "presence = true" gotcha that <code>disable_employee</code> works around for <code>employee[isActive]</code>.</p>
 <h2 id="unknown-site-names">Unknown site names<a class="headerlink" href="#unknown-site-names" title="Permanent link">&para;</a></h2>

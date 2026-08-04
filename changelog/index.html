@@ -1270,6 +1270,34 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v072-2026-08-04" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.7.2 — 2026-08-04
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.7.2 — 2026-08-04">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed-hierarchical-site-control-polarity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed — hierarchical site control polarity
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v071-2026-07-24" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1667,6 +1695,34 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#v072-2026-08-04" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v0.7.2 — 2026-08-04
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="v0.7.2 — 2026-08-04">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed-hierarchical-site-control-polarity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed — hierarchical site control polarity
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v071-2026-07-24" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2050,6 +2106,24 @@
 
 
 <h1 id="changelog">Changelog<a class="headerlink" href="#changelog" title="Permanent link">&para;</a></h1>
+<h2 id="v072-2026-08-04">v0.7.2 — 2026-08-04<a class="headerlink" href="#v072-2026-08-04" title="Permanent link">&para;</a></h2>
+<h3 id="fixed-hierarchical-site-control-polarity">Fixed — hierarchical site control polarity<a class="headerlink" href="#fixed-hierarchical-site-control-polarity" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Restored the live Sonny's form semantics for hierarchical tenants. Checked
+  <code>disabledRegions[]</code> / <code>disabledDistricts[]</code> controls deny an entire group; an available site is
+  represented by its enabled hidden <code>[siteId]</code>, while a denied site is represented by its checked
+  <code>[isAvailable]</code> control. The field name is misleading: the edit UI labels that checked state
+  <strong>No</strong>. The prior encoder reversed all three meanings and produced the exact complement of the
+  requested sites.</li>
+<li>Corrected <code>parse_employee_profile</code> to use the same polarity and honor checked parent denial and
+  all-allowed rollups. The captured production edit form for employee 54 now parses as Fiesta-only
+  instead of every site except Fiesta.</li>
+<li>Added a fail-closed verification step for hierarchical creates: after <code>/employee/insert</code>, the
+  wrapper reads <code>/employee/edit/&lt;id&gt;</code> and compares the stored sites with the request before it
+  applies a POS permission template. A mismatch raises <code>BackofficeServerError</code>; <code>"all"</code> and an
+  explicit set containing every site normalize to the same access set.</li>
+<li>Flat-tenant <code>employee[siteIds][]</code> behavior is unchanged.</li>
+</ul>
 <h2 id="v071-2026-07-24">v0.7.1 — 2026-07-24<a class="headerlink" href="#v071-2026-07-24" title="Permanent link">&para;</a></h2>
 <h3 id="changed">Changed<a class="headerlink" href="#changed" title="Permanent link">&para;</a></h3>
 <ul>
@@ -2097,6 +2171,11 @@
     <code>/employee/edit/&lt;id&gt;</code> URLs.</li>
 </ul>
 <h2 id="v053-2026-07-21">v0.5.3 — 2026-07-21<a class="headerlink" href="#v053-2026-07-21" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p><strong>Superseded by v0.7.2:</strong> the polarity diagnosis in this release was incorrect. The captured
+employee-54 edit form and the original live create script show that checked <code>disabled*</code> and
+<code>[isAvailable]</code> controls mean <strong>No</strong>, while an enabled <code>[siteId]</code> means available.</p>
+</blockquote>
 <h3 id="fixed-hierarchical-site-restriction-disabledregions-meaning-was-inverted">Fixed — hierarchical site restriction (<code>disabledRegions</code> meaning was inverted)<a class="headerlink" href="#fixed-hierarchical-site-restriction-disabledregions-meaning-was-inverted" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Supersedes the v0.5.2 fix</strong>, which still mis-restricted new hires: it emitted
