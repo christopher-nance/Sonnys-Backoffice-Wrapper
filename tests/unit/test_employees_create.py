@@ -5,13 +5,15 @@ from unittest.mock import MagicMock
 import pytest
 
 from sonnys_backoffice.employees import EmployeeIndex, create_employee
-from sonnys_backoffice.exceptions import DuplicateError
+from sonnys_backoffice.exceptions import BackofficeServerError, DuplicateError
 from sonnys_backoffice.models import (
     CreateEmployeeRequest,
     Department,
+    District,
     EmployeeCreated,
     Permission,
     PermissionFieldMeta,
+    Region,
     Site,
 )
 from sonnys_backoffice.sites import SiteTree
@@ -21,6 +23,40 @@ def _flat_tree() -> SiteTree:
     return SiteTree(
         is_hierarchical=False,
         sites=[Site(id=17, name="Wash 37135")],
+    )
+
+
+def _hierarchical_tree() -> SiteTree:
+    return SiteTree(
+        is_hierarchical=True,
+        regions=[Region(id=1, name="Region")],
+        districts=[District(id=1, name="District", region_id=1)],
+        sites=[
+            Site(id=17, name="Wash 37135", district_id=1, region_id=1),
+            Site(id=18, name="Wash 37055", district_id=1, region_id=1),
+        ],
+    )
+
+
+def _hierarchical_readback(*, available_ids: set[int] | str) -> str:
+    all_checked = " checked" if available_ids == "all" else ""
+    site_controls: list[str] = []
+    for site_id in (17, 18):
+        is_available = available_ids == "all" or site_id in available_ids
+        checked = "" if is_available else " checked"
+        disabled = "" if is_available else " disabled"
+        site_controls.extend(
+            [
+                f'<input type="checkbox" name="employee[sites][{site_id}][isAvailable]"{checked}>',
+                f'<input type="hidden" name="employee[sites][{site_id}][siteId]" '
+                f'value="{site_id}"{disabled}>',
+            ]
+        )
+    return (
+        '<form action="/employee/update">'
+        f'<input type="checkbox" name="employee[isAllRegionsAllowed]"{all_checked}>'
+        + "".join(site_controls)
+        + "</form>"
     )
 
 
@@ -290,3 +326,71 @@ def test_create_employee_raises_on_already_exists_in_response_body():
             pos_permissions=_pos_perms(),
             pos_permission_schema=_pos_schema(),
         )
+
+
+def test_create_employee_verifies_hierarchical_sites_before_permissions():
+    session = _make_mock_session(employee_id=42)
+    session.get.return_value = MagicMock(
+        status_code=200,
+        headers={},
+        text=_hierarchical_readback(available_ids={17}),
+    )
+
+    result = create_employee(
+        session=session,
+        request=_valid_request(available_sites=["Wash 37135"]),
+        site_tree=_hierarchical_tree(),
+        departments=_depts(),
+        pos_permissions=_pos_perms(),
+        pos_permission_schema=_pos_schema(),
+    )
+
+    assert result.sites_granted == ["Wash 37135"]
+    session.get.assert_called_once_with("/employee/edit/42")
+    assert session.post.call_args_list[1].args[0] == "/employee/permissions/update"
+
+
+def test_create_employee_skips_permissions_when_site_readback_mismatches():
+    session = _make_mock_session(employee_id=42)
+    session.get.return_value = MagicMock(
+        status_code=200,
+        headers={},
+        text=_hierarchical_readback(available_ids="all"),
+    )
+
+    with pytest.raises(BackofficeServerError, match="site access verification failed"):
+        create_employee(
+            session=session,
+            request=_valid_request(available_sites=["Wash 37135"]),
+            site_tree=_hierarchical_tree(),
+            departments=_depts(),
+            pos_permissions=_pos_perms(),
+            pos_permission_schema=_pos_schema(),
+        )
+
+    assert session.post.call_count == 1
+    assert all(
+        call.args[0] != "/employee/permissions/update" for call in session.post.call_args_list
+    )
+
+
+def test_create_employee_normalizes_all_and_explicit_full_site_sets():
+    session = _make_mock_session(employee_id=42)
+    session.get.return_value = MagicMock(
+        status_code=200,
+        headers={},
+        text=_hierarchical_readback(available_ids="all"),
+    )
+
+    result = create_employee(
+        session=session,
+        request=_valid_request(available_sites=["Wash 37135", "Wash 37055"]),
+        site_tree=_hierarchical_tree(),
+        departments=_depts(),
+        pos_permissions=_pos_perms(),
+        pos_permission_schema=_pos_schema(),
+    )
+
+    assert set(result.sites_granted) == {"Wash 37135", "Wash 37055"}
+    session.get.assert_called_once_with("/employee/edit/42")
+    assert session.post.call_count == 2

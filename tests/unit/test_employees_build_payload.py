@@ -138,30 +138,28 @@ def test_hierarchical_tenant_specific_site_selection():
         departments_by_name={"Cashier": 1, "Greeter": 3},
         wage_site_id=1,
     )
-    # Verified live on WashU (create → read-back): employee[disabledRegions][]=R
-    # means region R is FULLY GRANTED, not excluded. When no region/district is
-    # fully granted, emit NO disabled* rollups and list EVERY site once:
-    # granted → isAvailable, denied → siteId (including the whole empty region 1).
+    # Captured from a live Fiesta-only employee edit form: checked disabled*
+    # controls mean "No", checked isAvailable controls mean "No", and an
+    # enabled hidden siteId means the site is available.
     assert "employee[isAllRegionsAllowed]" not in payload
-    assert "employee[disabledRegions][]" not in payload
-    assert "employee[disabledDistricts][]" not in payload
-    # Granted site → isAvailable only.
-    assert payload["employee[sites][1][isAvailable]"] == "1"
-    assert "employee[sites][1][siteId]" not in payload
-    # Every other site — same-region (2, 3) AND the entire empty region 1
-    # (17, 18) — is denied with siteId (this is what the buggy versions leaked).
+    assert payload["employee[disabledRegions][]"] == "1"
+    assert payload["employee[disabledDistricts][]"] == "1"
+    # Granted site → siteId only.
+    assert payload["employee[sites][1][siteId]"] == "1"
+    assert "employee[sites][1][isAvailable]" not in payload
+    # Every other site — same-region (2, 3) and the fully denied region 1
+    # (17, 18) — is denied with isAvailable only.
     for sid in (2, 3, 17, 18):
-        assert payload[f"employee[sites][{sid}][siteId]"] == str(sid)
-        assert f"employee[sites][{sid}][isAvailable]" not in payload
+        assert payload[f"employee[sites][{sid}][isAvailable]"] == str(sid)
+        assert f"employee[sites][{sid}][siteId]" not in payload
     # No "all allowed" rollup flags.
     assert not any("isAllSitesAllowedByDistrict" in k for k in payload)
     assert not any("isAllDistrictsAllowedByRegion" in k for k in payload)
 
 
-def test_hierarchical_tenant_fully_granted_region():
-    # Grant BOTH sites of region 1 → the region is fully granted, so it is
-    # marked with employee[disabledRegions][]=1 (its "fully allowed" flag) and
-    # its sites are listed isAvailable — matching the real Backoffice form.
+def test_hierarchical_tenant_fully_granted_region_is_not_disabled():
+    # Grant both sites of region 1. Its disabled* controls must remain absent;
+    # region 2 is the fully denied region.
     req = _sample_request(available_sites=["Wash 37135", "Wash 37055"])
     payload = build_employee_step1_payload(
         req,
@@ -169,13 +167,14 @@ def test_hierarchical_tenant_fully_granted_region():
         departments_by_name={"Greeter": 3},
         wage_site_id=17,
     )
-    assert payload["employee[disabledRegions][]"] == "1"
-    assert payload["employee[sites][17][isAvailable]"] == "17"
-    assert payload["employee[sites][18][isAvailable]"] == "18"
-    # Region 2 fully denied → each of its sites via siteId, no disabledRegions=2.
+    assert payload["employee[disabledRegions][]"] == "2"
+    assert payload["employee[disabledDistricts][]"] == "2"
+    assert payload["employee[sites][17][siteId]"] == "17"
+    assert payload["employee[sites][18][siteId]"] == "18"
+    # Region 2 fully denied → each site is the checked isAvailable control.
     for sid in (1, 2, 3):
-        assert payload[f"employee[sites][{sid}][siteId]"] == str(sid)
-        assert f"employee[sites][{sid}][isAvailable]" not in payload
+        assert payload[f"employee[sites][{sid}][isAvailable]"] == str(sid)
+        assert f"employee[sites][{sid}][siteId]" not in payload
 
 
 def test_hierarchical_tenant_all_sites():

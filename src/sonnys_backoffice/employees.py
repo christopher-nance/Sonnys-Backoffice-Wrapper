@@ -363,12 +363,59 @@ def _parse_available_sites(soup: BeautifulSoup, site_tree: SiteTree | None):
     ):
         return "all"
     enabled_ids: set[int] = set()
-    for el in soup.find_all("input"):
-        n = el.get("name") or ""
-        if n.endswith("][isAvailable]") and el.has_attr("checked"):
-            inner = n[len("employee[sites][") :].split("]")[0]
-            if inner.isdigit():
-                enabled_ids.add(int(inner))
+    if site_tree and site_tree.is_hierarchical:
+        disabled_regions = {
+            int(el["value"])
+            for el in soup.find_all("input", attrs={"name": "employee[disabledRegions][]"})
+            if el.has_attr("checked") and (el.get("value") or "").isdigit()
+        }
+        disabled_districts = {
+            int(el["value"])
+            for el in soup.find_all("input", attrs={"name": "employee[disabledDistricts][]"})
+            if el.has_attr("checked") and (el.get("value") or "").isdigit()
+        }
+        all_districts_regions = {
+            int(el["value"])
+            for el in soup.find_all(
+                "input", attrs={"name": "employee[isAllDistrictsAllowedByRegion][]"}
+            )
+            if el.has_attr("checked") and (el.get("value") or "").isdigit()
+        }
+        all_sites_districts: set[int] = set()
+        for el in soup.find_all("input"):
+            name = el.get("name") or ""
+            match = re.fullmatch(r"employee\[isAllSitesAllowedByDistrict\]\[(\d+)\]", name)
+            if match and el.has_attr("checked"):
+                all_sites_districts.add(int(match.group(1)))
+
+        for site in site_tree.sites:
+            if site.region_id in disabled_regions or site.district_id in disabled_districts:
+                continue
+            if site.region_id in all_districts_regions or site.district_id in all_sites_districts:
+                enabled_ids.add(site.id)
+                continue
+            availability = soup.find(
+                "input", attrs={"name": f"employee[sites][{site.id}][isAvailable]"}
+            )
+            site_id = soup.find("input", attrs={"name": f"employee[sites][{site.id}][siteId]"})
+            # The live hierarchical form labels the checked state "No". Its
+            # paired hidden siteId is enabled only for an available site.
+            if (
+                availability is not None
+                and not availability.has_attr("checked")
+                and site_id is not None
+                and not site_id.has_attr("disabled")
+            ):
+                enabled_ids.add(site.id)
+    else:
+        # Preserve the legacy flat-tenant interpretation. No flat tenant was
+        # available to verify the hierarchical control polarity against.
+        for el in soup.find_all("input"):
+            n = el.get("name") or ""
+            if n.endswith("][isAvailable]") and el.has_attr("checked"):
+                inner = n[len("employee[sites][") :].split("]")[0]
+                if inner.isdigit():
+                    enabled_ids.add(int(inner))
     id_to_name = {s.id: s.name for s in site_tree.sites} if site_tree else {}
     return sorted(id_to_name[i] for i in enabled_ids if i in id_to_name)
 
@@ -663,6 +710,27 @@ def create_employee(
     _check_create_response(resp1)
     employee_id = _extract_employee_id_from_response(resp1)
 
+    # Fail closed before granting a POS permission template. The WashU tenant
+    # is hierarchical and has historically accepted a site payload while
+    # persisting the opposite access set, so independently read the stored form
+    # back and compare normalized site-name sets.
+    if site_tree.is_hierarchical:
+        verify_resp = session.get(f"/employee/edit/{employee_id}")
+        _check_create_response(verify_resp)
+        stored_sites = _parse_available_sites(
+            BeautifulSoup(verify_resp.text, "html.parser"), site_tree
+        )
+        expected_names = {site.name for site in resolved_sites_for_wage}
+        stored_names = (
+            {site.name for site in site_tree.sites} if stored_sites == "all" else set(stored_sites)
+        )
+        if stored_names != expected_names:
+            raise BackofficeServerError(
+                f"site access verification failed for employee {employee_id}: "
+                f"expected={sorted(expected_names)!r}, stored={sorted(stored_names)!r}; "
+                "permission template was not applied"
+            )
+
     step2_payload = build_employee_step2_permissions_payload(
         permission=pos_perm,
         permission_schema=pos_permission_schema,
@@ -899,31 +967,19 @@ def _build_site_availability_fields(
 ) -> list[tuple[str, str]]:
     """Build site availability fields for a hierarchical or flat tenant.
 
-    Encoding for a hierarchical tenant, verified live on WashU by creating an
-    employee and reading the server-stored access back (and byte-matched against
-    59 real restricted employees' edit forms):
+    Hierarchical controls have inverted-looking names. The live WashU edit form
+    labels checked ``disabledRegions`` / ``disabledDistricts`` / per-site
+    ``isAvailable`` controls as "No":
 
-    - ``employee[disabledRegions][]=<regionId>`` marks a region as **fully
-      granted** — the region's per-site editing is "disabled" precisely because
-      every one of its sites is allowed. It is **not** an exclusion flag. The
-      same holds for ``employee[disabledDistricts][]=<districtId>`` at the
-      district level.
-    - Every site is listed exactly once: granted → ``[isAvailable]``, denied →
-      ``[siteId]``. A denied site must still be listed (with ``siteId``) even
-      when its whole region is denied.
-    - A region/district is emitted as fully-granted (``disabledRegions`` /
-      ``disabledDistricts`` + its sites ``isAvailable``) only when **all** of its
-      sites are granted; otherwise it is walked down to per-site level.
-    - The ``isAll*`` "all allowed" rollups are omitted so Symfony binds them
-      false (``available_sites="all"`` uses ``isAllRegionsAllowed`` instead).
+    - a fully denied region/district emits its ``disabled*`` checkbox;
+    - an available site emits only its enabled hidden ``[siteId]`` field;
+    - a denied site emits only its checked ``[isAvailable]`` checkbox;
+    - restricted selections omit every ``isAll*`` rollup. Literal
+      ``available_sites="all"`` uses ``isAllRegionsAllowed``.
 
-    Three earlier encodings shipped and each broke production — recorded here as
-    guardrails: (1) "submit only the complement's siteId" left an untouched
-    region's rollup true and leaked its whole district; (2) "siteId for every
-    site + isAvailable for granted" sent both fields for granted sites, read as
-    grant-all; (3) "``disabledRegions`` for regions with no grant" inverted the
-    flag's meaning — the server read it as *grant those regions in full*, so a
-    single-store hire was granted every store in every other region.
+    This matches the captured edit form for employee 54 (Fiesta only) and the
+    original live-verified create script. Never send both fields for one site:
+    Symfony binds checkbox presence as true regardless of its submitted value.
 
     Flat tenants keep the blocklist encoding (``employee[siteIds][]`` for every
     non-granted site).
@@ -946,46 +1002,29 @@ def _build_site_availability_fields(
                 fields.append(("employee[siteIds][]", str(s.id)))
         return fields
 
-    # Group site ids by region and district, preserving the form's site order.
+    # Checked disabled* controls mean "No". Emit them for every group with no
+    # available site, matching the live form's stored state.
     region_site_ids: dict[int | None, list[int]] = {}
     district_site_ids: dict[int | None, list[int]] = {}
     for s in site_tree.sites:
         region_site_ids.setdefault(s.region_id, []).append(s.id)
         district_site_ids.setdefault(s.district_id, []).append(s.id)
 
-    handled: set[int] = set()
     for region in site_tree.regions:
         rids = region_site_ids.get(region.id, [])
-        if not rids:
-            continue
-        if set(rids) <= enabled_ids:
-            # Whole region granted → its "fully allowed" flag + sites isAvailable.
+        if rids and not enabled_ids.intersection(rids):
             fields.append(("employee[disabledRegions][]", str(region.id)))
-            for sid in rids:
-                fields.append((f"employee[sites][{sid}][isAvailable]", str(sid)))
-                handled.add(sid)
-            continue
-        # Region only partially (or not) granted → descend to its districts.
-        for district in (d for d in site_tree.districts if d.region_id == region.id):
-            dids = district_site_ids.get(district.id, [])
-            if not dids:
-                continue
-            if set(dids) <= enabled_ids:
-                fields.append(("employee[disabledDistricts][]", str(district.id)))
-                for sid in dids:
-                    fields.append((f"employee[sites][{sid}][isAvailable]", str(sid)))
-                    handled.add(sid)
-            else:
-                for sid in dids:
-                    key = "isAvailable" if sid in enabled_ids else "siteId"
-                    fields.append((f"employee[sites][{sid}][{key}]", str(sid)))
-                    handled.add(sid)
 
-    # Any site not attached to a listed region/district: emit it per-site.
+    for district in site_tree.districts:
+        dids = district_site_ids.get(district.id, [])
+        if dids and not enabled_ids.intersection(dids):
+            fields.append(("employee[disabledDistricts][]", str(district.id)))
+
+    # Every site is represented exactly once. The key polarity is dictated by
+    # the live form, not by the misleading isAvailable field name.
     for s in site_tree.sites:
-        if s.id not in handled:
-            key = "isAvailable" if s.id in enabled_ids else "siteId"
-            fields.append((f"employee[sites][{s.id}][{key}]", str(s.id)))
+        key = "siteId" if s.id in enabled_ids else "isAvailable"
+        fields.append((f"employee[sites][{s.id}][{key}]", str(s.id)))
 
     return fields
 

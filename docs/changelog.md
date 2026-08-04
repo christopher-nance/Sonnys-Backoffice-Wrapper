@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.7.2 — 2026-08-04
+
+### Fixed — hierarchical site control polarity
+
+- Restored the live Sonny's form semantics for hierarchical tenants. Checked
+  `disabledRegions[]` / `disabledDistricts[]` controls deny an entire group; an available site is
+  represented by its enabled hidden `[siteId]`, while a denied site is represented by its checked
+  `[isAvailable]` control. The field name is misleading: the edit UI labels that checked state
+  **No**. The prior encoder reversed all three meanings and produced the exact complement of the
+  requested sites.
+- Corrected `parse_employee_profile` to use the same polarity and honor checked parent denial and
+  all-allowed rollups. The captured production edit form for employee 54 now parses as Fiesta-only
+  instead of every site except Fiesta.
+- Added a fail-closed verification step for hierarchical creates: after `/employee/insert`, the
+  wrapper reads `/employee/edit/<id>` and compares the stored sites with the request before it
+  applies a POS permission template. A mismatch raises `BackofficeServerError`; `"all"` and an
+  explicit set containing every site normalize to the same access set.
+- Flat-tenant `employee[siteIds][]` behavior is unchanged.
+
 ## v0.7.1 — 2026-07-24
 
 ### Changed
@@ -50,6 +69,10 @@
     `/employee/edit/<id>` URLs.
 
 ## v0.5.3 — 2026-07-21
+
+> **Superseded by v0.7.2:** the polarity diagnosis in this release was incorrect. The captured
+> employee-54 edit form and the original live create script show that checked `disabled*` and
+> `[isAvailable]` controls mean **No**, while an enabled `[siteId]` means available.
 
 ### Fixed — hierarchical site restriction (`disabledRegions` meaning was inverted)
 

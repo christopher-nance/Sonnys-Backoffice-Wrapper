@@ -3,6 +3,10 @@
 **Date:** 2026-06-15
 **Status:** Approved
 
+> **Superseded behavior note (v0.7.2, 2026-08-04):** this historical design described checked
+> hierarchical per-site `isAvailable` controls as granted. The live edit form labels checked as
+> **No**: unchecked/enabled `siteId` means granted, while checked `isAvailable` means denied.
+
 ## Goal
 
 Make the wrapper a full read/write interface to Sonny's Back Office, not just write.

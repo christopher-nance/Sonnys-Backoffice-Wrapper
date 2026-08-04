@@ -83,12 +83,12 @@ _EDIT = """
     <option value="3" selected>Greeter</option>
   </select>
   <input type="checkbox" name="employee[isAllRegionsAllowed]">
-  <input type="checkbox" name="employee[sites][1][isAvailable]" checked>
+  <input type="checkbox" name="employee[sites][1][isAvailable]">
   <input name="employee[sites][1][siteId]" value="1">
-  <input type="checkbox" name="employee[sites][4][isAvailable]" checked>
+  <input type="checkbox" name="employee[sites][4][isAvailable]">
   <input name="employee[sites][4][siteId]" value="4">
-  <input type="checkbox" name="employee[sites][17][isAvailable]">
-  <input name="employee[sites][17][siteId]" value="17">
+  <input type="checkbox" name="employee[sites][17][isAvailable]" checked>
+  <input name="employee[sites][17][siteId]" value="17" disabled>
 </form>
 """
 

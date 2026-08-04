@@ -40,7 +40,13 @@ When you pass a list of site names (rather than `"all"`), the wrapper grants exa
 The encoding is subtle, so the wrapper hides it for you:
 
 - **Flat tenants** use a *blocklist*: `employee[siteIds][]` lists the sites to **exclude**.
-- **Hierarchical tenants** also work by exclusion. The `employee[isAllRegionsAllowed]` flag is **omitted entirely** (the Backoffice form binds a checkbox's mere *presence* as "true", so sending it — even as `0` — would grant every region). Each non-granted site is then marked unavailable by submitting only its `employee[sites][N][siteId]`; sites left unmentioned stay available. In other words, the wrapper submits the *complement* of your requested list.
+- **Hierarchical tenants** use inverted-looking controls. The `employee[isAllRegionsAllowed]`
+  flag is **omitted entirely** for a restricted selection. Fully denied groups emit their checked
+  `disabledRegions[]` / `disabledDistricts[]` controls. Every site is represented exactly once:
+  granted sites use the enabled hidden `employee[sites][N][siteId]`; denied sites use the checked
+  `employee[sites][N][isAvailable]` control (the UI labels that checked state **No**). The wrapper
+  reads the stored edit form back before applying permissions and fails closed if Sonny's persisted
+  a different site set.
 
 This is the same "presence = true" gotcha that `disable_employee` works around for `employee[isActive]`.
 
